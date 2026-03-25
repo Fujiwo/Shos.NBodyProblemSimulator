@@ -92,7 +92,7 @@ agent: agent
 - `Tests/` (将来の検証コード・検証データ配置先)
 - `README.md` (英語)
 - `README.ja.md` (README.md の日本語版)
-- `LICENSE.md` (MIT ライセンス)
+- `LICENSE` (MIT ライセンス)
 
 # GitHub Copilot カスタマイズ成果物要件
 ## 1. Agent Skills
