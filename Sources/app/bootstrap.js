@@ -10,13 +10,16 @@ export function bootstrapApp(documentRef) {
   const rootElement = documentRef.querySelector('[data-role="app-root"]');
   const canvasElement = documentRef.querySelector('[data-role="viewport-canvas"]');
 
-  const store = new AppStore(createInitialModel());
   const persistence = new PersistenceFacade();
+  const loadResult = persistence.load();
+  const store = new AppStore(createInitialModel(loadResult.appState));
   const renderer = new RendererFacade(canvasElement);
   const controller = new SimulationController(store, persistence);
   const uiShell = new UiShell(rootElement, controller);
-  const layoutService = new LayoutService(documentRef.documentElement, renderer);
+  const renderCurrentModel = () => renderer.render(store.getState());
+  const layoutService = new LayoutService(documentRef.documentElement, renderer, renderCurrentModel);
 
+  controller.refreshValidation();
   uiShell.bindEvents();
 
   store.subscribe((model) => {
@@ -24,13 +27,14 @@ export function bootstrapApp(documentRef) {
     renderer.render(model);
   });
 
-  const persistedState = persistence.load();
+  const statusParts = [];
 
-  if (persistedState) {
-    controller.setStatus("Persistence restore is stubbed in Phase 1. Loaded state will be used in a later phase.");
+  if (loadResult.statusMessage) {
+    statusParts.push(loadResult.statusMessage);
   }
 
-  controller.setStatus(`Renderer initialized in ${renderer.getModeLabel()}.`);
+  statusParts.push(`Renderer initialized in ${renderer.getModeLabel()}.`);
+  controller.setStatus(statusParts.join(" "));
 
   layoutService.start();
 

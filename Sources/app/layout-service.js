@@ -1,7 +1,8 @@
 export class LayoutService {
-  constructor(documentRoot, renderer) {
+  constructor(documentRoot, renderer, onRender) {
     this.documentRoot = documentRoot;
     this.renderer = renderer;
+    this.onRender = onRender;
     this.handleResize = this.handleResize.bind(this);
   }
 
@@ -13,5 +14,6 @@ export class LayoutService {
   handleResize() {
     this.documentRoot.style.setProperty("--app-height", `${window.innerHeight}px`);
     this.renderer.resize();
+    this.onRender?.();
   }
 }

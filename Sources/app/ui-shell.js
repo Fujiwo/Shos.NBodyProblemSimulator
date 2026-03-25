@@ -9,9 +9,23 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
-function bodyCardTemplate(body, isExpanded, disabled) {
+function getFieldKey(bodyId, fieldPath) {
+  return `body:${bodyId}:${fieldPath}`;
+}
+
+function resolveFieldValue(runtime, bodyId, fieldPath, fallbackValue) {
+  const key = getFieldKey(bodyId, fieldPath);
+  return runtime.fieldDrafts[key] ?? fallbackValue;
+}
+
+function renderFieldError(fieldErrors, key) {
+  return fieldErrors[key] ? `<span class="field-error">${escapeHtml(fieldErrors[key])}</span>` : "<span class=\"field-error\"></span>";
+}
+
+function bodyCardTemplate(body, isExpanded, disabled, runtime) {
   const disabledAttribute = disabled ? " disabled" : "";
   const openAttribute = isExpanded ? " open" : "";
+  const fieldErrors = runtime.fieldErrors;
 
   return `
     <details class="body-card" data-body-card="${body.id}"${openAttribute}>
@@ -25,41 +39,50 @@ function bodyCardTemplate(body, isExpanded, disabled) {
       </summary>
       <div class="body-card-body">
         <div class="body-grid">
-          <label class="field field--full">
+          <label class="field field--full${fieldErrors[getFieldKey(body.id, "name")] ? " field--error" : ""}">
             <span>Name</span>
-            <input data-body-id="${body.id}" data-field="name" type="text" value="${escapeHtml(body.name)}" maxlength="32"${disabledAttribute}>
+            <input data-body-id="${body.id}" data-field="name" type="text" value="${escapeHtml(resolveFieldValue(runtime, body.id, "name", body.name))}" maxlength="32"${disabledAttribute}>
+            ${renderFieldError(fieldErrors, getFieldKey(body.id, "name"))}
           </label>
-          <label class="field">
+          <label class="field${fieldErrors[getFieldKey(body.id, "mass")] ? " field--error" : ""}">
             <span>Mass</span>
-            <input data-body-id="${body.id}" data-field="mass" type="number" step="0.1" value="${body.mass}"${disabledAttribute}>
+            <input data-body-id="${body.id}" data-field="mass" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "mass", body.mass))}"${disabledAttribute}>
+            ${renderFieldError(fieldErrors, getFieldKey(body.id, "mass"))}
           </label>
-          <label class="field">
+          <label class="field${fieldErrors[getFieldKey(body.id, "color")] ? " field--error" : ""}">
             <span>Color</span>
-            <input data-body-id="${body.id}" data-field="color" type="color" value="${escapeHtml(body.color)}"${disabledAttribute}>
+            <input data-body-id="${body.id}" data-field="color" type="color" value="${escapeHtml(resolveFieldValue(runtime, body.id, "color", body.color))}"${disabledAttribute}>
+            ${renderFieldError(fieldErrors, getFieldKey(body.id, "color"))}
           </label>
-          <label class="field">
+          <label class="field${fieldErrors[getFieldKey(body.id, "position.x")] ? " field--error" : ""}">
             <span>Position X</span>
-            <input data-body-id="${body.id}" data-field="position.x" type="number" step="0.1" value="${body.position.x}"${disabledAttribute}>
+            <input data-body-id="${body.id}" data-field="position.x" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "position.x", body.position.x))}"${disabledAttribute}>
+            ${renderFieldError(fieldErrors, getFieldKey(body.id, "position.x"))}
           </label>
-          <label class="field">
+          <label class="field${fieldErrors[getFieldKey(body.id, "position.y")] ? " field--error" : ""}">
             <span>Position Y</span>
-            <input data-body-id="${body.id}" data-field="position.y" type="number" step="0.1" value="${body.position.y}"${disabledAttribute}>
+            <input data-body-id="${body.id}" data-field="position.y" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "position.y", body.position.y))}"${disabledAttribute}>
+            ${renderFieldError(fieldErrors, getFieldKey(body.id, "position.y"))}
           </label>
-          <label class="field">
+          <label class="field${fieldErrors[getFieldKey(body.id, "position.z")] ? " field--error" : ""}">
             <span>Position Z</span>
-            <input data-body-id="${body.id}" data-field="position.z" type="number" step="0.1" value="${body.position.z}"${disabledAttribute}>
+            <input data-body-id="${body.id}" data-field="position.z" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "position.z", body.position.z))}"${disabledAttribute}>
+            ${renderFieldError(fieldErrors, getFieldKey(body.id, "position.z"))}
           </label>
-          <label class="field">
+          <label class="field${fieldErrors[getFieldKey(body.id, "velocity.x")] ? " field--error" : ""}">
             <span>Velocity X</span>
-            <input data-body-id="${body.id}" data-field="velocity.x" type="number" step="0.1" value="${body.velocity.x}"${disabledAttribute}>
+            <input data-body-id="${body.id}" data-field="velocity.x" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "velocity.x", body.velocity.x))}"${disabledAttribute}>
+            ${renderFieldError(fieldErrors, getFieldKey(body.id, "velocity.x"))}
           </label>
-          <label class="field">
+          <label class="field${fieldErrors[getFieldKey(body.id, "velocity.y")] ? " field--error" : ""}">
             <span>Velocity Y</span>
-            <input data-body-id="${body.id}" data-field="velocity.y" type="number" step="0.1" value="${body.velocity.y}"${disabledAttribute}>
+            <input data-body-id="${body.id}" data-field="velocity.y" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "velocity.y", body.velocity.y))}"${disabledAttribute}>
+            ${renderFieldError(fieldErrors, getFieldKey(body.id, "velocity.y"))}
           </label>
-          <label class="field">
+          <label class="field${fieldErrors[getFieldKey(body.id, "velocity.z")] ? " field--error" : ""}">
             <span>Velocity Z</span>
-            <input data-body-id="${body.id}" data-field="velocity.z" type="number" step="0.1" value="${body.velocity.z}"${disabledAttribute}>
+            <input data-body-id="${body.id}" data-field="velocity.z" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "velocity.z", body.velocity.z))}"${disabledAttribute}>
+            ${renderFieldError(fieldErrors, getFieldKey(body.id, "velocity.z"))}
           </label>
         </div>
       </div>
@@ -86,7 +109,19 @@ export class UiShell {
       metricSimulationTime: rootElement.querySelector('[data-role="metric-simulation-time"]'),
       metricEnergyError: rootElement.querySelector('[data-role="metric-energy-error"]'),
       metricActivePreset: rootElement.querySelector('[data-role="metric-active-preset"]'),
-      metricBodyCount: rootElement.querySelector('[data-role="metric-body-count"]')
+      metricBodyCount: rootElement.querySelector('[data-role="metric-body-count"]'),
+      controlFieldWrappers: {
+        bodyCount: rootElement.querySelector('[data-field-wrapper="bodyCount"]'),
+        seed: rootElement.querySelector('[data-field-wrapper="seed"]'),
+        timeStep: rootElement.querySelector('[data-field-wrapper="timeStep"]'),
+        softening: rootElement.querySelector('[data-field-wrapper="softening"]')
+      },
+      controlFieldErrors: {
+        bodyCount: rootElement.querySelector('[data-field-error="bodyCount"]'),
+        seed: rootElement.querySelector('[data-field-error="seed"]'),
+        timeStep: rootElement.querySelector('[data-field-error="timeStep"]'),
+        softening: rootElement.querySelector('[data-field-error="softening"]')
+      }
     };
   }
 
@@ -115,17 +150,17 @@ export class UiShell {
       }
 
       if (target.matches('[data-role="seed"]')) {
-        this.controller.updateSimulationConfig("seed", target.value === "" ? null : Number(target.value));
+        this.controller.updateSimulationConfig("seed", target.value);
         return;
       }
 
       if (target.matches('[data-role="time-step"]')) {
-        this.controller.updateSimulationConfig("timeStep", Number(target.value));
+        this.controller.updateSimulationConfig("timeStep", target.value);
         return;
       }
 
       if (target.matches('[data-role="softening"]')) {
-        this.controller.updateSimulationConfig("softening", Number(target.value));
+        this.controller.updateSimulationConfig("softening", target.value);
         return;
       }
 
@@ -163,13 +198,15 @@ export class UiShell {
     this.elements.statusMessage.textContent = runtime.statusMessage;
     this.elements.bodyCount.value = String(appState.bodyCount);
     this.elements.presetId.value = appState.simulationConfig.presetId || "random-cluster";
-    this.elements.seed.value = appState.simulationConfig.seed ?? "";
-    this.elements.timeStep.value = String(appState.simulationConfig.timeStep);
-    this.elements.softening.value = String(appState.simulationConfig.softening);
+    this.elements.seed.value = runtime.fieldDrafts.seed ?? (appState.simulationConfig.seed ?? "");
+    this.elements.timeStep.value = runtime.fieldDrafts.timeStep ?? String(appState.simulationConfig.timeStep);
+    this.elements.softening.value = runtime.fieldDrafts.softening ?? String(appState.simulationConfig.softening);
     this.elements.showTrails.checked = appState.uiState.showTrails;
     this.elements.bodyCount.disabled = bodyInputsDisabled;
     this.elements.presetId.disabled = bodyInputsDisabled;
     this.elements.seed.disabled = bodyInputsDisabled;
+    this.elements.timeStep.disabled = bodyInputsDisabled;
+    this.elements.softening.disabled = bodyInputsDisabled;
 
     this.rootElement.querySelector('[data-action="generate"]').disabled = false;
     this.rootElement.querySelector('[data-action="start"]').disabled = !canStart;
@@ -181,8 +218,14 @@ export class UiShell {
       .map((error) => `<li>${escapeHtml(error)}</li>`)
       .join("");
 
+    for (const key of ["bodyCount", "seed", "timeStep", "softening"]) {
+      const errorMessage = runtime.fieldErrors[key] ?? "";
+      this.elements.controlFieldWrappers[key]?.classList.toggle("field--error", Boolean(errorMessage));
+      this.elements.controlFieldErrors[key].textContent = errorMessage;
+    }
+
     this.elements.bodyCardList.innerHTML = appState.bodies
-      .map((body) => bodyCardTemplate(body, appState.uiState.expandedBodyPanels.includes(body.id), bodyInputsDisabled))
+      .map((body) => bodyCardTemplate(body, appState.uiState.expandedBodyPanels.includes(body.id), bodyInputsDisabled, runtime))
       .join("");
 
     this.elements.metricFps.textContent = runtime.metrics.fps;

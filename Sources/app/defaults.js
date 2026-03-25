@@ -1,4 +1,4 @@
-export const APP_VERSION = "0.1.0-phase1";
+export const APP_VERSION = "0.2.0-phase2";
 export const STORAGE_KEY = "nbody-simulator.state";
 
 const BODY_COLORS = [
@@ -138,13 +138,15 @@ export function createInitialRuntimeState() {
       energyError: "--"
     },
     statusMessage: "Phase 1 scaffold ready. Physics, Generate, and persisted restore land in later phases.",
-    validationErrors: []
+    validationErrors: [],
+    fieldErrors: {},
+    fieldDrafts: {}
   };
 }
 
-export function createInitialModel() {
+export function createInitialModel(appState = createInitialAppState()) {
   return {
-    appState: createInitialAppState(),
+    appState,
     runtime: createInitialRuntimeState()
   };
 }

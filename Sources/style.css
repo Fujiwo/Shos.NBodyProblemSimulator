@@ -168,6 +168,20 @@ h2 {
   gap: 8px;
 }
 
+.field.field--error input,
+.field.field--error select,
+.body-grid .field.field--error input {
+  border-color: rgba(141, 61, 46, 0.55);
+  background: rgba(255, 244, 240, 0.92);
+}
+
+.field-error {
+  min-height: 1.1em;
+  color: var(--danger);
+  font-size: 0.79rem;
+  line-height: 1.3;
+}
+
 .field span,
 .validation-title,
 dt {
@@ -236,6 +250,10 @@ button:disabled {
 
 .validation-list li {
   color: var(--danger);
+}
+
+.validation-list li + li {
+  margin-top: 6px;
 }
 
 .body-card-list {

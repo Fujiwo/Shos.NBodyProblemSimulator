@@ -1,10 +1,10 @@
 import {
-  clampBodyCount,
   clone,
   createBody,
   createCommittedInitialState,
   normalizeExpandedPanels
 } from "./defaults.js";
+import { getPresetRule, normalizeBodyCountForPreset } from "./state-rules.js";
 
 function isFiniteNumber(value) {
   return Number.isFinite(Number(value));
@@ -26,60 +26,128 @@ function setNestedValue(target, fieldPath, value) {
   current[segments[segments.length - 1]] = value;
 }
 
+function getBodyFieldKey(bodyId, fieldPath) {
+  return `body:${bodyId}:${fieldPath}`;
+}
+
+function deleteKeysWithPrefix(object, prefix) {
+  for (const key of Object.keys(object)) {
+    if (key.startsWith(prefix)) {
+      delete object[key];
+    }
+  }
+}
+
 export class SimulationController {
   constructor(store, persistence) {
     this.store = store;
     this.persistence = persistence;
   }
 
-  getValidationErrors(appState) {
-    const errors = [];
+  computeValidation(appState, fieldDrafts = {}) {
+    const fieldErrors = {};
+
+    const bodyCountRule = getPresetRule(appState.simulationConfig.presetId);
 
     if (!Number.isInteger(appState.bodyCount) || appState.bodyCount < 2 || appState.bodyCount > 10) {
-      errors.push("Body count must be between 2 and 10.");
+      fieldErrors.bodyCount = "Body count must be between 2 and 10.";
+    } else if (appState.bodyCount < bodyCountRule.min || appState.bodyCount > bodyCountRule.max) {
+      fieldErrors.bodyCount = `${appState.simulationConfig.presetId} requires ${bodyCountRule.min === bodyCountRule.max ? bodyCountRule.min : `${bodyCountRule.min} to ${bodyCountRule.max}`} bodies.`;
     }
 
     if (appState.bodies.length !== appState.bodyCount) {
-      errors.push("Body count must match the number of configured body cards.");
+      fieldErrors.bodyCount = "Body count must match the number of configured body cards.";
     }
 
     for (const body of appState.bodies) {
       if (!body.name || body.name.trim().length < 1 || body.name.trim().length > 32) {
-        errors.push(`${body.id}: Name must be between 1 and 32 characters.`);
+        fieldErrors[getBodyFieldKey(body.id, "name")] = "Name must be between 1 and 32 characters.";
       }
 
       if (!isFiniteNumber(body.mass) || Number(body.mass) <= 0) {
-        errors.push(`${body.id}: Mass must be greater than 0.`);
+        fieldErrors[getBodyFieldKey(body.id, "mass")] = "Mass must be greater than 0.";
       }
 
       for (const axis of ["x", "y", "z"]) {
         if (!isFiniteNumber(body.position[axis]) || !isFiniteNumber(body.velocity[axis])) {
-          errors.push(`${body.id}: Position and velocity values must be finite numbers.`);
-          break;
+          if (!isFiniteNumber(body.position[axis])) {
+            fieldErrors[getBodyFieldKey(body.id, `position.${axis}`)] = "Value must be a finite number.";
+          }
+
+          if (!isFiniteNumber(body.velocity[axis])) {
+            fieldErrors[getBodyFieldKey(body.id, `velocity.${axis}`)] = "Value must be a finite number.";
+          }
         }
       }
 
       if (!body.color) {
-        errors.push(`${body.id}: Color is required.`);
+        fieldErrors[getBodyFieldKey(body.id, "color")] = "Color is required.";
       }
     }
 
     if (!isFiniteNumber(appState.simulationConfig.timeStep) || Number(appState.simulationConfig.timeStep) <= 0) {
-      errors.push("Time Step must be greater than 0.");
+      fieldErrors.timeStep = "Time Step must be greater than 0.";
     }
 
     if (!isFiniteNumber(appState.simulationConfig.softening) || Number(appState.simulationConfig.softening) < 0) {
-      errors.push("Softening must be 0 or greater.");
+      fieldErrors.softening = "Softening must be 0 or greater.";
     }
 
-    return [...new Set(errors)];
+    if (appState.simulationConfig.presetId === "random-cluster") {
+      const seed = appState.simulationConfig.seed;
+
+      if (!Number.isInteger(seed) || seed < 0 || seed > 4294967295) {
+        fieldErrors.seed = "Seed must be a 32-bit unsigned integer for random-cluster.";
+      }
+    }
+
+    for (const [key, rawValue] of Object.entries(fieldDrafts)) {
+      if (key === "timeStep") {
+        if (!isFiniteNumber(rawValue) || Number(rawValue) <= 0) {
+          fieldErrors.timeStep = "Time Step must be greater than 0.";
+        }
+      } else if (key === "softening") {
+        if (!isFiniteNumber(rawValue) || Number(rawValue) < 0) {
+          fieldErrors.softening = "Softening must be 0 or greater.";
+        }
+      } else if (key === "seed") {
+        if (appState.simulationConfig.presetId === "random-cluster") {
+          if (!isFiniteNumber(rawValue) || !Number.isInteger(Number(rawValue)) || Number(rawValue) < 0 || Number(rawValue) > 4294967295) {
+            fieldErrors.seed = "Seed must be a 32-bit unsigned integer for random-cluster.";
+          }
+        }
+      } else if (key.startsWith("body:")) {
+        const [, , fieldPath] = key.split(":");
+
+        if (fieldPath === "name" && (!rawValue || String(rawValue).trim().length < 1 || String(rawValue).trim().length > 32)) {
+          fieldErrors[key] = "Name must be between 1 and 32 characters.";
+        } else if (fieldPath === "color" && !rawValue) {
+          fieldErrors[key] = "Color is required.";
+        } else if (fieldPath === "mass") {
+          if (!isFiniteNumber(rawValue) || Number(rawValue) <= 0) {
+            fieldErrors[key] = "Mass must be greater than 0.";
+          }
+        } else if (fieldPath.startsWith("position.") || fieldPath.startsWith("velocity.")) {
+          if (!isFiniteNumber(rawValue)) {
+            fieldErrors[key] = "Value must be a finite number.";
+          }
+        }
+      }
+    }
+
+    return {
+      fieldErrors,
+      validationErrors: [...new Set(Object.values(fieldErrors))]
+    };
   }
 
   mutateAppState(mutator, options = {}) {
     this.store.update((model) => {
       mutator(model.appState, model.runtime);
 
-      model.runtime.validationErrors = this.getValidationErrors(model.appState);
+      const validation = this.computeValidation(model.appState, model.runtime.fieldDrafts);
+      model.runtime.fieldErrors = validation.fieldErrors;
+      model.runtime.validationErrors = validation.validationErrors;
 
       if (options.commitWhenIdle && model.appState.uiState.playbackState === "idle" && model.runtime.validationErrors.length === 0) {
         model.appState.committedInitialState = createCommittedInitialState(model.appState);
@@ -90,7 +158,15 @@ export class SimulationController {
       }
     });
 
-    this.persistence.stage(this.store.getState().appState);
+    if (options.shouldPersist !== false) {
+      this.persistence.stage(this.store.getState().appState);
+    }
+  }
+
+  refreshValidation() {
+    this.mutateAppState(() => {}, {
+      shouldPersist: false
+    });
   }
 
   setStatus(message) {
@@ -100,10 +176,25 @@ export class SimulationController {
   }
 
   updateBodyCount(value) {
-    const nextBodyCount = clampBodyCount(value);
+    const currentState = this.store.getState();
+    const presetId = currentState.appState.simulationConfig.presetId;
+    const parsed = Number.parseInt(value, 10);
 
-    this.mutateAppState((appState) => {
+    if (!Number.isFinite(parsed) || parsed < 2 || parsed > 10) {
+      this.mutateAppState((appState, runtime) => {
+        runtime.fieldDrafts.bodyCount = undefined;
+      }, {
+        shouldPersist: false,
+        statusMessage: "Body count reverted to the last valid value."
+      });
+      return;
+    }
+
+    const nextBodyCount = normalizeBodyCountForPreset(presetId, parsed);
+
+    this.mutateAppState((appState, runtime) => {
       const currentBodies = clone(appState.bodies);
+      const removedBodyIds = currentBodies.slice(nextBodyCount).map((body) => body.id);
       const nextBodies = currentBodies.slice(0, nextBodyCount);
 
       for (let index = nextBodies.length; index < nextBodyCount; index += 1) {
@@ -112,16 +203,98 @@ export class SimulationController {
 
       appState.bodyCount = nextBodyCount;
       appState.bodies = nextBodies;
+      appState.uiState.selectedBodyId = nextBodies.some((body) => body.id === appState.uiState.selectedBodyId)
+        ? appState.uiState.selectedBodyId
+        : null;
+      appState.uiState.cameraTarget = nextBodies.some((body) => body.id === appState.uiState.cameraTarget)
+        ? appState.uiState.cameraTarget
+        : "system-center";
       appState.uiState.expandedBodyPanels = normalizeExpandedPanels(appState.uiState.expandedBodyPanels, appState.bodies);
+
+      for (const bodyId of removedBodyIds) {
+        deleteKeysWithPrefix(runtime.fieldDrafts, `body:${bodyId}:`);
+      }
     }, {
       commitWhenIdle: true,
-      statusMessage: "Body count scaffold updated. Phase 2 will add full validation and persistence."
+      statusMessage: nextBodyCount !== parsed
+        ? `${presetId} body count was normalized to match the selected preset.`
+        : "Body count updated."
     });
   }
 
-  updateSimulationConfig(key, value) {
+  normalizeBodyCollectionForPreset(appState, runtime) {
+    const normalizedCount = normalizeBodyCountForPreset(appState.simulationConfig.presetId, appState.bodyCount);
+
+    if (normalizedCount === appState.bodyCount && appState.bodies.length === appState.bodyCount) {
+      return normalizedCount;
+    }
+
+    const removedBodyIds = clone(appState.bodies).slice(normalizedCount).map((body) => body.id);
+    const nextBodies = clone(appState.bodies).slice(0, normalizedCount);
+
+    for (let index = nextBodies.length; index < normalizedCount; index += 1) {
+      nextBodies.push(createBody(index));
+    }
+
+    appState.bodyCount = normalizedCount;
+    appState.bodies = nextBodies;
+    appState.uiState.selectedBodyId = nextBodies.some((body) => body.id === appState.uiState.selectedBodyId)
+      ? appState.uiState.selectedBodyId
+      : null;
+    appState.uiState.cameraTarget = nextBodies.some((body) => body.id === appState.uiState.cameraTarget)
+      ? appState.uiState.cameraTarget
+      : "system-center";
+    appState.uiState.expandedBodyPanels = normalizeExpandedPanels(appState.uiState.expandedBodyPanels, nextBodies);
+
+    for (const bodyId of removedBodyIds) {
+      deleteKeysWithPrefix(runtime.fieldDrafts, `body:${bodyId}:`);
+    }
+
+    return normalizedCount;
+  }
+
+  updateSimulationConfig(key, rawValue) {
+    if (key === "presetId") {
+      this.mutateAppState((appState, runtime) => {
+        appState.simulationConfig[key] = rawValue;
+        const normalizedCount = this.normalizeBodyCollectionForPreset(appState, runtime);
+        delete runtime.fieldDrafts.bodyCount;
+        if (appState.simulationConfig.presetId !== "random-cluster") {
+          delete runtime.fieldDrafts.seed;
+        }
+        runtime.statusMessage = `${appState.simulationConfig.presetId} selected. Body count is ${normalizedCount}.`;
+      }, {
+        commitWhenIdle: true
+      });
+      return;
+    }
+
+    if (key === "timeStep" || key === "softening" || key === "seed") {
+      const fieldKey = key;
+      const isSeedOptional = key === "seed" && this.store.getState().appState.simulationConfig.presetId !== "random-cluster" && rawValue === "";
+      const isValidNumber = rawValue !== "" && isFiniteNumber(rawValue);
+      const parsedValue = rawValue === "" ? null : Number(rawValue);
+
+      if (isSeedOptional || (key === "seed" ? isValidNumber && Number.isInteger(parsedValue) && parsedValue >= 0 && parsedValue <= 4294967295 : isValidNumber && (key !== "timeStep" || parsedValue > 0) && (key !== "softening" || parsedValue >= 0))) {
+        this.mutateAppState((appState, runtime) => {
+          appState.simulationConfig[key] = parsedValue;
+          delete runtime.fieldDrafts[fieldKey];
+        }, {
+          commitWhenIdle: true
+        });
+        return;
+      }
+
+      this.mutateAppState((appState, runtime) => {
+        runtime.fieldDrafts[fieldKey] = rawValue;
+      }, {
+        shouldPersist: false
+      });
+      return;
+    }
+
     this.mutateAppState((appState) => {
-      appState.simulationConfig[key] = value;
+      appState.simulationConfig[key] = rawValue;
     }, {
       commitWhenIdle: true
     });
@@ -136,6 +309,7 @@ export class SimulationController {
   }
 
   updateBodyField(bodyId, fieldPath, rawValue) {
+    const fieldKey = getBodyFieldKey(bodyId, fieldPath);
     this.mutateAppState((appState) => {
       const body = appState.bodies.find((entry) => entry.id === bodyId);
 
@@ -153,10 +327,61 @@ export class SimulationController {
         "velocity.z"
       ];
 
-      const value = numericFields.includes(fieldPath) ? toNumber(rawValue, 0) : rawValue;
-      setNestedValue(body, fieldPath, value);
+      if (numericFields.includes(fieldPath)) {
+        if (rawValue === "" || !isFiniteNumber(rawValue)) {
+          return;
+        }
+
+        setNestedValue(body, fieldPath, toNumber(rawValue, 0));
+        return;
+      }
+
+      if (fieldPath === "name") {
+        if (rawValue === "") {
+          return;
+        }
+
+        setNestedValue(body, fieldPath, rawValue);
+        return;
+      }
+
+      if (fieldPath === "color") {
+        if (rawValue === "") {
+          return;
+        }
+
+        setNestedValue(body, fieldPath, rawValue);
+      }
     }, {
-      commitWhenIdle: true
+      commitWhenIdle: rawValue !== "" && (fieldPath === "name" ? rawValue.trim().length >= 1 && rawValue.trim().length <= 32 : true),
+      shouldPersist: rawValue !== "" && (!fieldPath.startsWith("position.") && !fieldPath.startsWith("velocity.") ? true : isFiniteNumber(rawValue))
+    });
+
+    const isNumericField = [
+      "mass",
+      "position.x",
+      "position.y",
+      "position.z",
+      "velocity.x",
+      "velocity.y",
+      "velocity.z"
+    ].includes(fieldPath);
+
+    const isValid = isNumericField
+      ? rawValue !== "" && isFiniteNumber(rawValue)
+      : fieldPath === "name"
+        ? rawValue.trim().length >= 1 && rawValue.trim().length <= 32
+        : rawValue !== "";
+
+    this.mutateAppState((appState, runtime) => {
+      if (isValid) {
+        delete runtime.fieldDrafts[fieldKey];
+        return;
+      }
+
+      runtime.fieldDrafts[fieldKey] = rawValue;
+    }, {
+      shouldPersist: false
     });
   }
 
@@ -173,8 +398,8 @@ export class SimulationController {
   }
 
   start() {
-    const { appState } = this.store.getState();
-    const validationErrors = this.getValidationErrors(appState);
+    const { appState, runtime } = this.store.getState();
+    const validationErrors = this.computeValidation(appState, runtime.fieldDrafts).validationErrors;
 
     if (validationErrors.length > 0) {
       this.setStatus("Resolve validation issues before starting the simulation scaffold.");
@@ -237,7 +462,7 @@ export class SimulationController {
       appState.uiState.cameraTarget = "system-center";
       runtime.simulationTime = 0;
 
-      if (this.getValidationErrors(appState).length === 0) {
+      if (this.computeValidation(appState, runtime.fieldDrafts).validationErrors.length === 0) {
         appState.committedInitialState = createCommittedInitialState(appState);
       }
     }, {
