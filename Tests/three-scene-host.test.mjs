@@ -312,6 +312,21 @@ function testSystemCenterCameraTracksCenterOfMass() {
   assert.deepEqual(host.camera.lookAtTarget, { x: 5, y: 0, z: 0 });
 }
 
+function testSystemCenterFallsBackToPositionAverageWhenTotalMassIsZero() {
+  globalThis.THREE = createThreeStub();
+  globalThis.window = { devicePixelRatio: 1 };
+
+  const host = new ThreeSceneHost(createCanvasStub(), {});
+  const bodies = [
+    { id: "body-1", name: "earth", mass: 0, position: { x: 2, y: 1, z: -1 }, color: "#3366ff" },
+    { id: "body-2", name: "mars", mass: 0, position: { x: 6, y: 3, z: 1 }, color: "#ff6633" }
+  ];
+
+  host.render(createModel({ bodies, simulationTime: 1, showTrails: false, cameraTarget: "system-center" }));
+
+  assert.deepEqual(host.camera.lookAtTarget, { x: 4, y: 2, z: 0 });
+}
+
 function testMeshRemovalDisposesMeshAndTrailResources() {
   globalThis.THREE = createThreeStub();
   globalThis.window = { devicePixelRatio: 1 };
@@ -354,6 +369,7 @@ testTextureFallbackAndLoadedTexture();
 testTrailResetAndCameraTarget();
 testResizeUpdatesRendererAndCamera();
 testSystemCenterCameraTracksCenterOfMass();
+testSystemCenterFallsBackToPositionAverageWhenTotalMassIsZero();
 testMeshRemovalDisposesMeshAndTrailResources();
 
 console.log("three-scene-host.test.mjs ok");

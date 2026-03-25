@@ -95,9 +95,40 @@ function testStartRejectsValidationErrorsAndSetsStatusMessage() {
   assert.deepEqual(loopCalls, []);
 }
 
+function testStartRejectsWhileRunningAndSetsStatusMessage() {
+  const { store, controller, loopCalls } = createControllerHarness();
+
+  controller.refreshValidation();
+  controller.start();
+  controller.start();
+
+  const state = store.getState();
+
+  assert.equal(state.appState.uiState.playbackState, "running");
+  assert.equal(state.runtime.statusMessage, "Simulation is already running. Pause or Reset before starting again.");
+  assert.deepEqual(loopCalls, ["start"]);
+}
+
+function testStartRejectsWhilePausedAndSetsStatusMessage() {
+  const { store, controller, loopCalls } = createControllerHarness();
+
+  controller.refreshValidation();
+  controller.start();
+  controller.pause();
+  controller.start();
+
+  const state = store.getState();
+
+  assert.equal(state.appState.uiState.playbackState, "paused");
+  assert.equal(state.runtime.statusMessage, "Use Resume to continue or Reset to restart from the committed initial state.");
+  assert.deepEqual(loopCalls, ["start", "pause"]);
+}
+
 testTransitionGuards();
 testCameraTargetNormalization();
 testGenerateResetsRuntimeAndCommitsState();
 testStartRejectsValidationErrorsAndSetsStatusMessage();
+testStartRejectsWhileRunningAndSetsStatusMessage();
+testStartRejectsWhilePausedAndSetsStatusMessage();
 
 console.log("simulation-controller.test.mjs ok");
