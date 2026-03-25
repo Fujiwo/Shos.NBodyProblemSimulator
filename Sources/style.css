@@ -372,6 +372,16 @@ button:disabled {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.metrics-item--full {
+  grid-column: 1 / -1;
+}
+
+.metrics-item--full dd {
+  font-size: 0.92rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
 dd {
   margin: 4px 0 0;
   font-size: 1.1rem;

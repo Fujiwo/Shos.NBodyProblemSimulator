@@ -22,6 +22,20 @@ function renderFieldError(fieldErrors, key) {
   return fieldErrors[key] ? `<span class="field-error">${escapeHtml(fieldErrors[key])}</span>` : "<span class=\"field-error\"></span>";
 }
 
+function formatCurrentSeed(seed) {
+  return seed === null ? "Preset fixed" : String(seed);
+}
+
+function formatReproducibilityKey(appState) {
+  const { presetId, seed } = appState.simulationConfig;
+
+  if (presetId === "random-cluster") {
+    return `${presetId} | seed=${seed ?? "auto"} | bodyCount=${appState.bodyCount}`;
+  }
+
+  return presetId;
+}
+
 function bodyCardTemplate(body, isExpanded, disabled, runtime) {
   const disabledAttribute = disabled ? " disabled" : "";
   const openAttribute = isExpanded ? " open" : "";
@@ -109,7 +123,9 @@ export class UiShell {
       metricSimulationTime: rootElement.querySelector('[data-role="metric-simulation-time"]'),
       metricEnergyError: rootElement.querySelector('[data-role="metric-energy-error"]'),
       metricActivePreset: rootElement.querySelector('[data-role="metric-active-preset"]'),
+      metricCurrentSeed: rootElement.querySelector('[data-role="metric-current-seed"]'),
       metricBodyCount: rootElement.querySelector('[data-role="metric-body-count"]'),
+      metricReproducibilityKey: rootElement.querySelector('[data-role="metric-reproducibility-key"]'),
       controlFieldWrappers: {
         bodyCount: rootElement.querySelector('[data-field-wrapper="bodyCount"]'),
         seed: rootElement.querySelector('[data-field-wrapper="seed"]'),
@@ -232,6 +248,8 @@ export class UiShell {
     this.elements.metricSimulationTime.textContent = runtime.simulationTime.toFixed(3);
     this.elements.metricEnergyError.textContent = runtime.metrics.energyError;
     this.elements.metricActivePreset.textContent = appState.simulationConfig.presetId || "none";
+    this.elements.metricCurrentSeed.textContent = formatCurrentSeed(appState.simulationConfig.seed);
     this.elements.metricBodyCount.textContent = String(appState.bodyCount);
+    this.elements.metricReproducibilityKey.textContent = formatReproducibilityKey(appState);
   }
 }
