@@ -1,15 +1,14 @@
-const TEXTURE_ROOT = "./images";
-
-function normalizeTextureKey(name) {
-  return String(name ?? "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "")
-    .trim();
-}
-
 function createVector(x = 0, y = 0, z = 0) {
   return { x, y, z };
 }
+
+import {
+  createBodyMaterialVisual,
+  getTexturePath,
+  normalizeTextureKey,
+  resolveLoadedTexture,
+  syncTrailHistoryEntries
+} from "./renderer-helpers.js";
 
 export class ThreeSceneHost {
   constructor(canvasElement, options = {}) {
@@ -139,12 +138,13 @@ export class ThreeSceneHost {
 
   createBodyMaterial(body) {
     const texture = this.resolveTexture(body.name);
+    const visual = createBodyMaterialVisual(body.color, texture);
 
     return new this.three.MeshStandardMaterial({
-      map: texture,
-      color: texture ? 0xffffff : body.color,
-      emissive: texture ? 0x111111 : body.color,
-      emissiveIntensity: texture ? 0.05 : 0.15,
+      map: visual.map,
+      color: visual.color,
+      emissive: visual.emissive,
+      emissiveIntensity: visual.emissiveIntensity,
       metalness: 0.18,
       roughness: 0.36
     });
@@ -152,22 +152,16 @@ export class ThreeSceneHost {
 
   updateBodyMaterial(material, body) {
     const texture = this.resolveTexture(body.name);
+    const visual = createBodyMaterialVisual(body.color, texture);
 
     if (material.map !== texture) {
       material.map = texture;
       material.needsUpdate = true;
     }
 
-    if (texture) {
-      material.color.set(0xffffff);
-      material.emissive.set(0x111111);
-      material.emissiveIntensity = 0.05;
-      return;
-    }
-
-    material.color.set(body.color);
-    material.emissive.set(body.color);
-    material.emissiveIntensity = 0.15;
+    material.color.set(visual.color);
+    material.emissive.set(visual.emissive);
+    material.emissiveIntensity = visual.emissiveIntensity;
   }
 
   resolveTexture(bodyName) {
@@ -177,17 +171,19 @@ export class ThreeSceneHost {
       return null;
     }
 
-    const cachedTexture = this.textureCache.get(textureKey);
+    const loadedTexture = resolveLoadedTexture(this.textureCache, bodyName);
 
-    if (cachedTexture?.status === "loaded") {
-      return cachedTexture.texture;
+    if (loadedTexture) {
+      return loadedTexture;
     }
+
+    const cachedTexture = this.textureCache.get(textureKey);
 
     if (cachedTexture?.status === "loading" || cachedTexture?.status === "error") {
       return null;
     }
 
-    const texturePath = `${TEXTURE_ROOT}/${textureKey}.jpg`;
+    const texturePath = getTexturePath(bodyName);
     this.textureCache.set(textureKey, { status: "loading" });
 
     this.textureLoader.load(
@@ -243,45 +239,30 @@ export class ThreeSceneHost {
 
   syncTrails(model) {
     const { appState, runtime } = model;
+    const nextTrailHistory = syncTrailHistoryEntries({
+      trailHistory: this.trailHistory,
+      bodies: appState.bodies,
+      showTrails: appState.uiState.showTrails,
+      simulationTime: runtime.simulationTime,
+      maxTrailPoints: appState.simulationConfig.maxTrailPoints,
+      selectPoint: (body) => ({ x: body.position.x, y: body.position.y, z: body.position.z })
+    });
 
-    if (!appState.uiState.showTrails) {
+    if (nextTrailHistory.size === 0) {
       this.resetTrails();
       return;
     }
 
-    if (runtime.simulationTime === 0) {
-      this.resetTrails();
-    }
-
-    const activeIds = new Set(appState.bodies.map((body) => body.id));
-
     for (const bodyId of [...this.trailHistory.keys()]) {
-      if (!activeIds.has(bodyId)) {
+      if (!nextTrailHistory.has(bodyId)) {
         this.removeTrail(bodyId);
       }
     }
 
-    const maxPoints = Math.max(2, Number(appState.simulationConfig.maxTrailPoints) || 300);
+    this.trailHistory = nextTrailHistory;
 
     for (const body of appState.bodies) {
-      let history = this.trailHistory.get(body.id);
-
-      if (!history) {
-        history = [];
-        this.trailHistory.set(body.id, history);
-      }
-
-      const lastPoint = history.at(-1);
-      const nextPoint = new this.three.Vector3(body.position.x, body.position.y, body.position.z);
-
-      if (!lastPoint || !lastPoint.equals(nextPoint)) {
-        history.push(nextPoint);
-      }
-
-      while (history.length > maxPoints) {
-        history.shift();
-      }
-
+      const history = this.trailHistory.get(body.id) ?? [];
       let trailLine = this.trailLines.get(body.id);
 
       if (!trailLine) {
@@ -298,7 +279,7 @@ export class ThreeSceneHost {
       }
 
       trailLine.material.color.set(body.color);
-      trailLine.geometry.setFromPoints(history);
+      trailLine.geometry.setFromPoints(history.map((point) => new this.three.Vector3(point.x, point.y, point.z)));
     }
   }
 

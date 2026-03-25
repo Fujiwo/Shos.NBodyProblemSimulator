@@ -1,4 +1,5 @@
 import { ThreeSceneHost } from "./three-scene-host.js";
+import { syncTrailHistoryEntries } from "./renderer-helpers.js";
 
 export class RendererFacade {
   constructor(canvasElement) {
@@ -39,41 +40,14 @@ export class RendererFacade {
 
   syncTrailHistory(model) {
     const { appState, runtime } = model;
-
-    if (!appState.uiState.showTrails) {
-      this.resetTrailHistory();
-      return;
-    }
-
-    if (runtime.simulationTime === 0) {
-      this.resetTrailHistory();
-    }
-
-    const activeIds = new Set(appState.bodies.map((body) => body.id));
-
-    for (const bodyId of this.trailHistory.keys()) {
-      if (!activeIds.has(bodyId)) {
-        this.trailHistory.delete(bodyId);
-      }
-    }
-
-    for (const body of appState.bodies) {
-      const history = this.trailHistory.get(body.id) ?? [];
-      const lastPoint = history.at(-1);
-      const nextPoint = { x: body.position.x, y: body.position.y };
-
-      if (!lastPoint || lastPoint.x !== nextPoint.x || lastPoint.y !== nextPoint.y) {
-        history.push(nextPoint);
-      }
-
-      const maxPoints = Math.max(2, Number(appState.simulationConfig.maxTrailPoints) || 300);
-
-      while (history.length > maxPoints) {
-        history.shift();
-      }
-
-      this.trailHistory.set(body.id, history);
-    }
+    this.trailHistory = syncTrailHistoryEntries({
+      trailHistory: this.trailHistory,
+      bodies: appState.bodies,
+      showTrails: appState.uiState.showTrails,
+      simulationTime: runtime.simulationTime,
+      maxTrailPoints: appState.simulationConfig.maxTrailPoints,
+      selectPoint: (body) => ({ x: body.position.x, y: body.position.y, z: 0 })
+    });
   }
 
   render(model) {
