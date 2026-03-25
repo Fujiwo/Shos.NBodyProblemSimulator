@@ -64,13 +64,16 @@ class PerspectiveCameraStub extends Object3DStub {
     super();
     this.aspect = 1;
     this.lookAtTarget = null;
+    this.projectionMatrixUpdates = 0;
   }
 
   lookAt(x, y, z) {
     this.lookAtTarget = { x, y, z };
   }
 
-  updateProjectionMatrix() {}
+  updateProjectionMatrix() {
+    this.projectionMatrixUpdates += 1;
+  }
 }
 
 class RendererStub {
@@ -194,10 +197,10 @@ function createThreeStub() {
   };
 }
 
-function createCanvasStub() {
+function createCanvasStub(width = 640, height = 360) {
   return {
     getBoundingClientRect() {
-      return { width: 640, height: 360 };
+      return { width, height };
     }
   };
 }
@@ -274,6 +277,41 @@ function testTrailResetAndCameraTarget() {
   assert.equal(host.trailHistory.size, 0);
 }
 
+function testResizeUpdatesRendererAndCamera() {
+  globalThis.THREE = createThreeStub();
+  globalThis.window = { devicePixelRatio: 1.5 };
+
+  const host = new ThreeSceneHost(createCanvasStub(800, 400), {});
+
+  host.resize();
+
+  assert.deepEqual(host.renderer.size, { width: 800, height: 400 });
+  assert.equal(host.renderer.pixelRatio, 1.5);
+  assert.equal(host.camera.aspect, 2);
+  assert.equal(host.camera.projectionMatrixUpdates, 1);
+}
+
+function testSystemCenterCameraTracksCenterOfMass() {
+  globalThis.THREE = createThreeStub();
+  globalThis.window = { devicePixelRatio: 1 };
+
+  const host = new ThreeSceneHost(createCanvasStub(), {});
+  const bodiesA = [
+    { id: "body-1", name: "earth", mass: 1, position: { x: 0, y: 0, z: 0 }, color: "#3366ff" },
+    { id: "body-2", name: "mars", mass: 3, position: { x: 4, y: 0, z: 0 }, color: "#ff6633" }
+  ];
+  const bodiesB = [
+    { id: "body-1", name: "earth", mass: 1, position: { x: 2, y: 0, z: 0 }, color: "#3366ff" },
+    { id: "body-2", name: "mars", mass: 3, position: { x: 6, y: 0, z: 0 }, color: "#ff6633" }
+  ];
+
+  host.render(createModel({ bodies: bodiesA, simulationTime: 1, showTrails: false, cameraTarget: "system-center" }));
+  assert.deepEqual(host.camera.lookAtTarget, { x: 3, y: 0, z: 0 });
+
+  host.render(createModel({ bodies: bodiesB, simulationTime: 2, showTrails: false, cameraTarget: "system-center" }));
+  assert.deepEqual(host.camera.lookAtTarget, { x: 5, y: 0, z: 0 });
+}
+
 function testMeshRemovalDisposesMeshAndTrailResources() {
   globalThis.THREE = createThreeStub();
   globalThis.window = { devicePixelRatio: 1 };
@@ -314,6 +352,8 @@ function testMeshRemovalDisposesMeshAndTrailResources() {
 
 testTextureFallbackAndLoadedTexture();
 testTrailResetAndCameraTarget();
+testResizeUpdatesRendererAndCamera();
+testSystemCenterCameraTracksCenterOfMass();
 testMeshRemovalDisposesMeshAndTrailResources();
 
 console.log("three-scene-host.test.mjs ok");

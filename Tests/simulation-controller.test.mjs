@@ -81,8 +81,23 @@ function testGenerateResetsRuntimeAndCommitsState() {
   );
 }
 
+function testStartRejectsValidationErrorsAndSetsStatusMessage() {
+  const { store, controller, loopCalls } = createControllerHarness();
+
+  controller.updateSimulationConfig("timeStep", "0");
+  controller.start();
+
+  const state = store.getState();
+
+  assert.equal(state.appState.uiState.playbackState, "idle");
+  assert.equal(state.runtime.statusMessage, "Resolve validation issues before starting the simulation.");
+  assert.ok(state.runtime.validationErrors.includes("Time Step must be greater than 0."));
+  assert.deepEqual(loopCalls, []);
+}
+
 testTransitionGuards();
 testCameraTargetNormalization();
 testGenerateResetsRuntimeAndCommitsState();
+testStartRejectsValidationErrorsAndSetsStatusMessage();
 
 console.log("simulation-controller.test.mjs ok");

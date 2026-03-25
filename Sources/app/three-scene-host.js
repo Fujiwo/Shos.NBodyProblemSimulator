@@ -224,6 +224,30 @@ export class ThreeSceneHost {
       return createVector();
     }
 
+    const weightedCenter = appState.bodies.reduce((accumulator, body) => {
+      const mass = Number.isFinite(body.mass) && body.mass > 0 ? body.mass : 0;
+
+      return {
+        x: accumulator.x + (body.position.x * mass),
+        y: accumulator.y + (body.position.y * mass),
+        z: accumulator.z + (body.position.z * mass),
+        totalMass: accumulator.totalMass + mass
+      };
+    }, {
+      x: 0,
+      y: 0,
+      z: 0,
+      totalMass: 0
+    });
+
+    if (weightedCenter.totalMass > 0) {
+      return createVector(
+        weightedCenter.x / weightedCenter.totalMass,
+        weightedCenter.y / weightedCenter.totalMass,
+        weightedCenter.z / weightedCenter.totalMass
+      );
+    }
+
     const center = appState.bodies.reduce((accumulator, body) => ({
       x: accumulator.x + body.position.x,
       y: accumulator.y + body.position.y,
