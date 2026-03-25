@@ -32,6 +32,7 @@ agent: agent
 - Three.js scaffold renderer と 2D fallback
 - `committedInitialState` の保存更新
 - `Sources/images/` 配下に texture 候補画像が存在する
+- `Sources/vendor/three.module.min.js` と `Sources/vendor/three.core.min.js` のローカル Three.js bundle が存在する
 
 Phase 3 では、これらを全面的に作り直すのではなく、既存境界を活かして physics loop を差し込んでください。
 
@@ -187,11 +188,13 @@ $$
 要件は以下とする。
 
 - Three.js 利用可能時は既存 `ThreeSceneHost` に反映すること
+- Three.js は CDN ではなく `Sources/vendor/three.module.min.js` のローカル import で利用すること
 - Three.js material の texture source は `Sources/images/` 配下の画像ファイルを使うこと
 - texture 解決は `Body.name` の小文字英字ベース名から対応画像を探す方針を既定にすること
 - `sun.jpg`、`mercury.jpg`、`venus.jpg`、`earth.jpg`、`moon.jpg`、`mars.jpg`、`jupiter.jpg`、`saturn.jpg` を初回対象として扱えること
 - 対応画像が存在しない Body は color-only material へ fallback し、描画を継続すること
 - fallback 2D 描画でも最新 positions が見えること
+- Three.js 初期化失敗時は 2D fallback へ切り替え、texture unavailable 理由を英語ステータスメッセージへ出すこと
 - Body mass に応じた既存サイズ表現を壊さないこと
 - resize 経路を壊さないこと
 

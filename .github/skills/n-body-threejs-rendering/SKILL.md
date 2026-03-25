@@ -25,7 +25,7 @@ argument-hint: Describe the renderer feature, camera behavior, or resize/renderi
 4. camera が system center または指定 target に向けられる設計か。
 5. overlay 更新責務が renderer と過度に結合していないか。
 6. WebGL が使えない時の fallback があるか。
-7. CDN 依存か module import かを明示しているか。
+7. Three.js の実行時読み込みが `Sources/vendor/three.module.min.js` と `Sources/vendor/three.core.min.js` のローカル配布で固定されているか。
 8. trail を入れる場合、点数上限や更新コストを考慮しているか。
 9. Body material の texture source が `Sources/images/` 配下に固定されているか。
 10. texture 解決キーが `Body.name` の小文字英数字ベース名として一貫しているか。
@@ -37,7 +37,7 @@ argument-hint: Describe the renderer feature, camera behavior, or resize/renderi
 2. scene host を内部実装として分離する。
 3. `resize`、`render`、`syncMeshes` を独立した責務にする。
 4. camera target と overlay 更新は renderer 外部から state で渡す。
-5. fallback mode を残す場合は mode 切替理由を UI へ出せるようにする。
+5. fallback mode を残す場合は mode 切替理由と texture unavailable 理由を UI へ出せるようにする。
 6. texture path 解決、TextureLoader 利用、material 更新は renderer 内へ閉じ込める。
 7. texture の非同期読み込み完了後に、追加 state mutation なしで再描画できる経路を用意する。
 
@@ -47,4 +47,5 @@ argument-hint: Describe the renderer feature, camera behavior, or resize/renderi
 - resize で stale frame が残らないか。
 - mesh dispose 漏れがないか。
 - Three.js 初期化失敗時に UI 全体が巻き込まれないか。
+- ローカル配布ファイル更新時に `three.module.min.js` と `three.core.min.js` の片方だけ差し替えていないか。
 - `Sources/images/` に存在しない名前の Body でも描画停止や例外連鎖を起こさないか。

@@ -23,6 +23,7 @@ argument-hint: Describe the feature, bug, or files to work on
 3. シミュレーション状態と表示状態を区別する。
 4. メインスレッド負荷が高い場合は Web Worker を優先的に検討する。
 5. Three.js の Body texture は `Sources/images/` 配下から解決し、texture 不在判定は renderer の責務に閉じ込める。
+6. Three.js の実行時ファイルは `Sources/vendor/three.module.min.js` と `Sources/vendor/three.core.min.js` をローカル配布し、CDN へ依存しない。
 
 ## 実装時の確認項目
 
@@ -45,6 +46,8 @@ argument-hint: Describe the feature, bug, or files to work on
    - 時間刻みの破綻
    - 軌跡表示の暴走
 5. Three.js 描画を扱う時は以下を確認する。
+   - `Sources/vendor/three.module.min.js` からローカル読み込みする
+   - `Sources/vendor/three.core.min.js` の依存漏れを作らない
    - `Body.name` から texture basename を小文字英数字で正規化する
    - `Sources/images/` 配下の既存画像を優先して使う
    - 対応画像がない場合は color-only material に fallback する

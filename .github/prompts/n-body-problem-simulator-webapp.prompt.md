@@ -51,6 +51,7 @@ agent: agent
 # システムおよび技術要件
 - 言語・ライブラリ: HTML5, CSS3, JavaScript (ES6+)。
 - 描画ライブラリ: Three.js などの 3D 描画ライブラリの使用は必須とする。
+- Three.js の実行時ファイルは `Sources/vendor/three.module.min.js` と `Sources/vendor/three.core.min.js` のローカル配布を前提に設計すること。
 - Three.js の Body マテリアル画像テクスチャは `Sources/images/` 配下の画像ファイルを使う前提で設計すること。
 - UI 実装方針: React などの UI フレームワーク、外部状態管理ライブラリは使用せず、Vanilla JavaScript で構築すること。
 - レスポンシブ対応: PC、タブレット、スマートフォンに対応するモバイルファースト設計とし、3D 描画キャンバス領域は画面サイズと UI レイアウトに応じて動的にスケーリングすること。
@@ -80,6 +81,7 @@ agent: agent
 - 計画書内で、対象デバイス、目標 FPS、1 フレーム当たりの演算予算、許容するエネルギー誤差評価方法を必ず数値付きで定義すること。
 - 物理演算ロジックと 3D 描画処理を明確に分離したオブジェクト指向設計とし、天体数が最大 10 個に増減しても柔軟に対応できる設計にすること。
 - renderer 設計では、`Sources/images/` 配下の画像ファイルを texture source として解決する責務と、texture 不在時の fallback material 方針を明記すること。
+- renderer 設計では、Three.js 初期化失敗時に 2D fallback を継続し、texture unavailable 理由を UI へ出す方針も明記すること。
 - 精度維持とメインスレッドのブロック回避のため、Web Worker を採用する案と採用しない案を比較した上で、採用方針を明示すること。
 - Web Worker の有効化判定は Desktop だけで閉じず、サポート対象のモバイルブラウザでの再計測方針まで明記すること。
 - アニメーションには `requestAnimationFrame` を基本とし、必要に応じて `async/await` を補助的に用いること。

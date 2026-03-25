@@ -250,6 +250,25 @@ function testTextureFallbackAndLoadedTexture() {
   assert.equal(plutoMesh.material.map, null);
   assert.equal(plutoMesh.material.color.value, "#ff6633");
   assert.ok(invalidateCalls >= 1);
+  assert.equal(host.getInitializationStatus().modeLabel, "Three.js textured mode");
+  assert.equal(
+    host.getInitializationStatus().message,
+    "Renderer initialized in Three.js textured mode. Texture-backed bodies will load from local Sources/images assets when names match."
+  );
+}
+
+function testInitializationStatusReportsFallbackReason() {
+  delete globalThis.THREE;
+  globalThis.window = { devicePixelRatio: 1 };
+
+  const host = new ThreeSceneHost(createCanvasStub(), {});
+  const status = host.getInitializationStatus();
+
+  assert.equal(status.modeLabel, "2D fallback mode");
+  assert.equal(
+    status.message,
+    "Renderer initialized in 2D fallback mode. Texture-backed bodies are unavailable because Three.js failed to initialize (Three.js global is unavailable.)."
+  );
 }
 
 function testTrailResetAndCameraTarget() {
@@ -366,6 +385,7 @@ function testMeshRemovalDisposesMeshAndTrailResources() {
 }
 
 testTextureFallbackAndLoadedTexture();
+testInitializationStatusReportsFallbackReason();
 testTrailResetAndCameraTarget();
 testResizeUpdatesRendererAndCamera();
 testSystemCenterCameraTracksCenterOfMass();

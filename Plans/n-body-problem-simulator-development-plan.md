@@ -40,7 +40,7 @@
 
 - 実行環境はクライアントサイドのブラウザのみ
 - 使用技術は HTML5、CSS3、JavaScript ES6+
-- 3D 描画には Three.js を採用する
+- 3D 描画には Three.js を採用し、実行時 bundle は `Sources/vendor/three.module.min.js` と `Sources/vendor/three.core.min.js` のローカル配布で固定する
 - UI は Vanilla JavaScript で構築し、React や外部状態管理ライブラリは使わない
 - Body 数は 2 以上 10 以下
 - 各 Body は質量、初期位置ベクトル、初速度ベクトルを必須項目とする
@@ -323,6 +323,10 @@ $$
   - 3D シーン管理の実装コストを下げられる
   - Body 数が最大 10 のため、ライブラリオーバーヘッドが問題になりにくい
   - カメラ、ライト、座標補助表示、軌跡描画を段階的に導入しやすい
+  - CDN 到達性に依存せず、オフラインまたは制限環境でも textured mode を起動しやすい
+
+- 実行時読み込みは `Sources/main.js` から `Sources/vendor/three.module.min.js` を import し、同ディレクトリの `three.core.min.js` を相対依存として解決する構成に固定する
+- `three` npm dependency の更新時は、`Sources/vendor/three.module.min.js` と `Sources/vendor/three.core.min.js` を同時更新する
 
 ### 5.3 マテリアル画像テクスチャ方針
 
@@ -342,6 +346,7 @@ $$
   - 例: `Jupiter` -> `jupiter.jpg`
 - 一致する画像が存在しない Body は、描画を止めずに color-only material へ fallback する
 - texture 読み込み失敗はシミュレーション停止要件にしない
+- Three.js 自体の初期化失敗時は 2D fallback renderer へ切り替え、texture unavailable 理由を UI ステータスメッセージへ表示する
 - texture path 解決は renderer 側の責務とし、physics や persistence へ混在させない
 - texture の有無は `localStorage` 保存対象に含めず、画像ファイル配置と `Body.name` の対応で決定する
 
