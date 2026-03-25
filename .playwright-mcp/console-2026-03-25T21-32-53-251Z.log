@@ -1,0 +1,2 @@
+[    8216ms] [ERROR] Access to script at 'https://unpkg.com/three@0.180.0/build/three.min.js' from origin 'http://127.0.0.1:8123' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://127.0.0.1:8123/:0
+[    8217ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://unpkg.com/three@0.180.0/build/three.min.js:0

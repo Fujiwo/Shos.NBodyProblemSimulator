@@ -100,7 +100,7 @@
             <p class="eyebrow">Visualization</p>
             <h2 id="viewport-heading">Viewport</h2>
           </div>
-          <p class="viewport-note">Three.js view with texture-backed bodies, runtime camera targeting, and fallback 2D rendering.</p>
+          <p class="viewport-note">Local Three.js textured view when available, with color-only 2D fallback if renderer initialization fails.</p>
         </div>
 
         <div class="viewport-stage">
@@ -143,7 +143,6 @@
     </main>
   </div>
 
-  <script src="https://unpkg.com/three@0.180.0/build/three.min.js" crossorigin="anonymous"></script>
-  <script type="module" src="./main.js"></script>
+  <script type="module" src="./main.js?v=local-threejs"></script>
 </body>
 </html>

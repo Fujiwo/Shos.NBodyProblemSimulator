@@ -1,0 +1,24 @@
+{
+  "name": "shos.nbodyproblemsimulator",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Browser-only 3D N-body problem simulator with local Three.js textured rendering.",
+  "main": "Sources/main.js",
+  "scripts": {
+    "test": "node ./Tests/phase3-smoke.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fujiwo/Shos.NBodyProblemSimulator.git"
+  },
+  "keywords": [],
+  "author": "Fujio Kojima",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Fujiwo/Shos.NBodyProblemSimulator/issues"
+  },
+  "homepage": "https://github.com/Fujiwo/Shos.NBodyProblemSimulator#readme",
+  "dependencies": {
+    "three": "^0.183.2"
+  }
+}

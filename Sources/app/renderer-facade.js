@@ -21,6 +21,10 @@ export class RendererFacade {
     return this.threeSceneHost.getModeLabel();
   }
 
+  getInitializationStatus() {
+    return this.threeSceneHost.getInitializationStatus();
+  }
+
   resize() {
     const bounds = this.canvasElement.getBoundingClientRect();
     const width = Math.max(1, Math.floor(bounds.width * this.pixelRatio));

@@ -72,6 +72,22 @@ export class ThreeSceneHost {
     return this.ready ? "Three.js textured mode" : "2D fallback mode";
   }
 
+  getInitializationStatus() {
+    if (this.ready) {
+      return {
+        modeLabel: this.getModeLabel(),
+        message: "Renderer initialized in Three.js textured mode. Texture-backed bodies will load from local Sources/images assets when names match."
+      };
+    }
+
+    const reason = this.initError?.message ?? "Unknown renderer initialization error.";
+
+    return {
+      modeLabel: this.getModeLabel(),
+      message: `Renderer initialized in 2D fallback mode. Texture-backed bodies are unavailable because Three.js failed to initialize (${reason}).`
+    };
+  }
+
   resize() {
     if (!this.ready) {
       return;

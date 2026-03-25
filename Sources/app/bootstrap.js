@@ -36,7 +36,7 @@ export function bootstrapApp(documentRef) {
     statusParts.push(loadResult.statusMessage);
   }
 
-  statusParts.push(`Renderer initialized in ${renderer.getModeLabel()}.`);
+  statusParts.push(renderer.getInitializationStatus().message);
   controller.setStatus(statusParts.join(" "));
 
   layoutService.start();
