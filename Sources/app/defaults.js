@@ -14,6 +14,17 @@ const BODY_COLORS = [
   "#f9a8d4"
 ];
 
+const BODY_NAMES = [
+  "sun",
+  "mercury",
+  "venus",
+  "earth",
+  "moon",
+  "mars",
+  "jupiter",
+  "saturn"
+];
+
 const BODY_LAYOUT = [
   { position: { x: -0.8, y: 0.0, z: 0.0 }, velocity: { x: 0.0, y: -0.16, z: 0.0 } },
   { position: { x: 0.8, y: 0.0, z: 0.0 }, velocity: { x: 0.0, y: 0.16, z: 0.0 } },
@@ -51,10 +62,11 @@ export function clampBodyCount(value) {
 
 export function createBody(index) {
   const preset = BODY_LAYOUT[index % BODY_LAYOUT.length];
+  const defaultName = BODY_NAMES[index] ?? `Body ${index + 1}`;
 
   return {
     id: `body-${index + 1}`,
-    name: `Body ${index + 1}`,
+    name: defaultName,
     mass: 1,
     position: clone(preset.position),
     velocity: clone(preset.velocity),

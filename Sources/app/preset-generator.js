@@ -133,19 +133,16 @@ function removeCenterOfMassVelocity(bodies) {
 function createBinaryOrbitBodies() {
   const orbitRadius = 0.85;
   const orbitalSpeed = Math.sqrt(1 / (4 * orbitRadius));
-  const names = ["Primary", "Secondary"];
 
   return [
     {
       ...createBody(0),
-      name: names[0],
       mass: 1,
       position: { x: -orbitRadius, y: 0, z: 0 },
       velocity: { x: 0, y: -orbitalSpeed, z: 0 }
     },
     {
       ...createBody(1),
-      name: names[1],
       mass: 1,
       position: { x: orbitRadius, y: 0, z: 0 },
       velocity: { x: 0, y: orbitalSpeed, z: 0 }
@@ -156,19 +153,16 @@ function createBinaryOrbitBodies() {
 function createFigureEightBodies() {
   const template = [
     {
-      name: "Body A",
       mass: 1,
       position: { x: -0.97000436, y: 0.24308753, z: 0 },
       velocity: { x: 0.466203685, y: 0.43236573, z: 0 }
     },
     {
-      name: "Body B",
       mass: 1,
       position: { x: 0.97000436, y: -0.24308753, z: 0 },
       velocity: { x: 0.466203685, y: 0.43236573, z: 0 }
     },
     {
-      name: "Body C",
       mass: 1,
       position: { x: 0, y: 0, z: 0 },
       velocity: { x: -0.93240737, y: -0.86473146, z: 0 }
