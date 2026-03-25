@@ -4,7 +4,14 @@ export class RendererFacade {
   constructor(canvasElement) {
     this.canvasElement = canvasElement;
     this.pixelRatio = Math.max(1, window.devicePixelRatio || 1);
-    this.threeSceneHost = new ThreeSceneHost(canvasElement);
+    this.latestModel = null;
+    this.threeSceneHost = new ThreeSceneHost(canvasElement, {
+      onInvalidate: () => {
+        if (this.latestModel) {
+          this.render(this.latestModel);
+        }
+      }
+    });
     this.context = this.threeSceneHost.ready ? null : canvasElement.getContext("2d");
   }
 
@@ -26,6 +33,8 @@ export class RendererFacade {
   }
 
   render(model) {
+    this.latestModel = model;
+
     if (this.threeSceneHost.render(model)) {
       return;
     }

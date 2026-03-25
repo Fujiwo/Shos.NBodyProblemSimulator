@@ -1,8 +1,19 @@
+const TEXTURE_ROOT = "./images";
+
+function normalizeTextureKey(name) {
+  return String(name ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "")
+    .trim();
+}
+
 export class ThreeSceneHost {
-  constructor(canvasElement) {
+  constructor(canvasElement, options = {}) {
     this.canvasElement = canvasElement;
+    this.onInvalidate = typeof options.onInvalidate === "function" ? options.onInvalidate : null;
     this.three = globalThis.THREE;
     this.meshes = new Map();
+    this.textureCache = new Map();
     this.ready = false;
     this.initError = null;
 
@@ -26,6 +37,7 @@ export class ThreeSceneHost {
       });
       this.renderer.outputColorSpace = this.three.SRGBColorSpace;
       this.renderer.setClearColor(0x000000, 0);
+      this.textureLoader = new this.three.TextureLoader();
 
       const ambientLight = new this.three.AmbientLight(0xffffff, 1.1);
       const keyLight = new this.three.DirectionalLight(0xcdeaff, 1.9);
@@ -85,13 +97,7 @@ export class ThreeSceneHost {
     for (const body of bodies) {
       if (!this.meshes.has(body.id)) {
         const geometry = new this.three.SphereGeometry(0.16, 24, 24);
-        const material = new this.three.MeshStandardMaterial({
-          color: body.color,
-          emissive: body.color,
-          emissiveIntensity: 0.15,
-          metalness: 0.18,
-          roughness: 0.36
-        });
+        const material = this.createBodyMaterial(body);
         const mesh = new this.three.Mesh(geometry, material);
         this.meshes.set(body.id, mesh);
         this.scene.add(mesh);
@@ -101,8 +107,83 @@ export class ThreeSceneHost {
       const scale = Math.max(0.65, Math.sqrt(body.mass) * 0.45);
       mesh.position.set(body.position.x, body.position.y, body.position.z);
       mesh.scale.setScalar(scale);
-      mesh.material.color.set(body.color);
-      mesh.material.emissive.set(body.color);
+      this.updateBodyMaterial(mesh.material, body);
+    }
+  }
+
+  createBodyMaterial(body) {
+    const texture = this.resolveTexture(body.name);
+
+    return new this.three.MeshStandardMaterial({
+      map: texture,
+      color: texture ? 0xffffff : body.color,
+      emissive: texture ? 0x111111 : body.color,
+      emissiveIntensity: texture ? 0.05 : 0.15,
+      metalness: 0.18,
+      roughness: 0.36
+    });
+  }
+
+  updateBodyMaterial(material, body) {
+    const texture = this.resolveTexture(body.name);
+
+    if (material.map !== texture) {
+      material.map = texture;
+      material.needsUpdate = true;
+    }
+
+    if (texture) {
+      material.color.set(0xffffff);
+      material.emissive.set(0x111111);
+      material.emissiveIntensity = 0.05;
+      return;
+    }
+
+    material.color.set(body.color);
+    material.emissive.set(body.color);
+    material.emissiveIntensity = 0.15;
+  }
+
+  resolveTexture(bodyName) {
+    const textureKey = normalizeTextureKey(bodyName);
+
+    if (!textureKey || !this.textureLoader) {
+      return null;
+    }
+
+    const cachedTexture = this.textureCache.get(textureKey);
+
+    if (cachedTexture?.status === "loaded") {
+      return cachedTexture.texture;
+    }
+
+    if (cachedTexture?.status === "loading" || cachedTexture?.status === "error") {
+      return null;
+    }
+
+    const texturePath = `${TEXTURE_ROOT}/${textureKey}.jpg`;
+    this.textureCache.set(textureKey, { status: "loading" });
+
+    this.textureLoader.load(
+      texturePath,
+      (texture) => {
+        texture.colorSpace = this.three.SRGBColorSpace;
+        this.textureCache.set(textureKey, { status: "loaded", texture });
+        this.requestRender();
+      },
+      undefined,
+      () => {
+        this.textureCache.set(textureKey, { status: "error" });
+        this.requestRender();
+      }
+    );
+
+    return null;
+  }
+
+  requestRender() {
+    if (this.onInvalidate) {
+      this.onInvalidate();
     }
   }
 

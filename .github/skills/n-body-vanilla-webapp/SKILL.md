@@ -22,6 +22,7 @@ argument-hint: Describe the feature, bug, or files to work on
 2. UI 制御と永続化を物理演算クラスへ混在させない。
 3. シミュレーション状態と表示状態を区別する。
 4. メインスレッド負荷が高い場合は Web Worker を優先的に検討する。
+5. Three.js の Body texture は `Sources/images/` 配下から解決し、texture 不在判定は renderer の責務に閉じ込める。
 
 ## 実装時の確認項目
 
@@ -43,6 +44,10 @@ argument-hint: Describe the feature, bug, or files to work on
    - softening の有無
    - 時間刻みの破綻
    - 軌跡表示の暴走
+5. Three.js 描画を扱う時は以下を確認する。
+   - `Body.name` から texture basename を小文字英数字で正規化する
+   - `Sources/images/` 配下の既存画像を優先して使う
+   - 対応画像がない場合は color-only material に fallback する
 
 ## UI 実装時の確認項目
 
@@ -56,3 +61,4 @@ argument-hint: Describe the feature, bug, or files to work on
 - 描画都合のコードが物理演算ロジックに混ざっていないか。
 - 可変長の Body 設定追加で配列や UI が破綻しないか。
 - localStorage のキーと復元仕様が将来拡張に耐えるか。
+- texture path や画像有無の分岐が persistence や controller へ漏れていないか。

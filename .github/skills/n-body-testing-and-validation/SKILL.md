@@ -33,6 +33,7 @@ argument-hint: Describe the test target, acceptance criteria, or validation gap
 7. 360px 幅で UI が破綻しないか確認する。
 8. 性能確認では対象ブラウザと測定条件を固定する。
 9. エネルギー誤差確認ではステップ数、preset、許容値を明示する。
+10. texture あり Body と texture なし Body の両方で描画継続を確認する。
 
 ## 推奨ワークフロー
 
@@ -41,6 +42,7 @@ argument-hint: Describe the test target, acceptance criteria, or validation gap
 3. state transition、persistence、rendering を別観点で扱う。
 4. 数値検証は UI 挙動確認と混ぜずに扱う。
 5. パフォーマンス検証では対象端末、Body 数、trail 条件、ブラウザを固定する。
+6. renderer 検証では `Sources/images/` に存在する名前と存在しない名前を分けて確認する。
 
 ## レビュー時の優先観点
 
@@ -48,3 +50,4 @@ argument-hint: Describe the test target, acceptance criteria, or validation gap
 - 再現性の検証で再現キーが欠けていないか。
 - 保存復元確認が happy path のみになっていないか。
 - パフォーマンス検証が対象ブラウザを欠いていないか。
+- texture 読み込み失敗時の fallback が検証対象から漏れていないか。
