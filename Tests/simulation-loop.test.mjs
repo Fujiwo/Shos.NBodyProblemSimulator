@@ -98,9 +98,42 @@ function testEnergyReferenceResetsAndReinitializes() {
   assert.notEqual(state.runtime.metrics.energyError, "--");
 }
 
+function testIdleStateDoesNotUpdateFpsMetric() {
+  const { store, loop } = createLoopHarness();
+
+  setPlaybackState(store, "idle");
+  loop.handleFrame(100);
+  loop.handleFrame(700);
+
+  const state = store.getState();
+
+  assert.equal(state.runtime.metrics.fps, "--");
+}
+
+function testInvalidTimeStepIsNoOp() {
+  const { store, loop } = createLoopHarness();
+  const before = store.getState();
+
+  store.update((model) => {
+    model.appState.simulationConfig.timeStep = 0;
+    model.appState.uiState.playbackState = "running";
+  });
+
+  loop.lastFrameTime = 0;
+  loop.handleFrame(1000);
+
+  const after = store.getState();
+
+  assert.equal(loop.stepCount, 0);
+  assert.equal(after.runtime.simulationTime, before.runtime.simulationTime);
+  assert.deepEqual(after.appState.bodies, before.appState.bodies);
+}
+
 testAccumulatorCapLimitsStepsPerFrame();
 testPausedStateDoesNotAdvanceBodiesOrTime();
 testFpsWindowUpdatesAfterThreshold();
 testEnergyReferenceResetsAndReinitializes();
+testIdleStateDoesNotUpdateFpsMetric();
+testInvalidTimeStepIsNoOp();
 
 console.log("simulation-loop.test.mjs ok");

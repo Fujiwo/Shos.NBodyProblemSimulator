@@ -274,7 +274,46 @@ function testTrailResetAndCameraTarget() {
   assert.equal(host.trailHistory.size, 0);
 }
 
+function testMeshRemovalDisposesMeshAndTrailResources() {
+  globalThis.THREE = createThreeStub();
+  globalThis.window = { devicePixelRatio: 1 };
+
+  const host = new ThreeSceneHost(createCanvasStub(), {});
+  const initialBodies = [
+    { id: "body-1", name: "earth", mass: 1, position: { x: 0, y: 0, z: 0 }, color: "#3366ff" },
+    { id: "body-2", name: "mars", mass: 1, position: { x: 1, y: 0, z: 0 }, color: "#ff6633" }
+  ];
+
+  host.render(createModel({ bodies: initialBodies, simulationTime: 1, showTrails: true }));
+  host.render(createModel({
+    bodies: initialBodies.map((body, index) => ({
+      ...body,
+      position: { x: body.position.x + index + 1, y: 0, z: 0 }
+    })),
+    simulationTime: 2,
+    showTrails: true
+  }));
+
+  const removedMesh = host.meshes.get("body-2");
+  const removedTrail = host.trailLines.get("body-2");
+
+  host.render(createModel({
+    bodies: [initialBodies[0]],
+    simulationTime: 3,
+    showTrails: true
+  }));
+
+  assert.equal(host.meshes.has("body-2"), false);
+  assert.equal(host.trailLines.has("body-2"), false);
+  assert.equal(host.trailHistory.has("body-2"), false);
+  assert.equal(removedMesh.geometry.disposed, true);
+  assert.equal(removedMesh.material.disposed, true);
+  assert.equal(removedTrail.geometry.disposed, true);
+  assert.equal(removedTrail.material.disposed, true);
+}
+
 testTextureFallbackAndLoadedTexture();
 testTrailResetAndCameraTarget();
+testMeshRemovalDisposesMeshAndTrailResources();
 
 console.log("three-scene-host.test.mjs ok");
