@@ -239,6 +239,10 @@ Reset 実行時の復元内容は以下で固定する。
 
 - 各 Body を球体メッシュで描画する。
 - 各 Body の色は `Body.color` を使う。
+- Body マテリアルの画像テクスチャは `Sources/images/` 配下の画像ファイルから取得する。
+- texture 解決の既定キーは `Body.name` の小文字英字ベース名とし、`Earth` は `earth.jpg`、`Mars` は `mars.jpg` のように対応付ける。
+- 初回利用対象の既存画像は `sun.jpg`、`mercury.jpg`、`venus.jpg`、`earth.jpg`、`moon.jpg`、`mars.jpg`、`jupiter.jpg`、`saturn.jpg` とする。
+- 対応する画像が存在しない Body は color-only material へ fallback し、描画やシミュレーションを停止しない。
 - 原点補助および座標把握のための基準表示を用意する。
 - camera はシーン全体を視認可能な初期位置から開始する。
 
@@ -260,6 +264,8 @@ Reset 実行時の復元内容は以下で固定する。
 受け入れ基準は以下とする。
 
 - 各 Body が一意の色で描画されること
+- 対応画像がある Body は `Sources/images/` 配下の画像を texture として描画されること
+- 対応画像がない Body でも fallback material で描画が継続すること
 - `showTrails = false` で軌跡が非表示になること
 - Overlay の値が 1 秒以内の遅延で更新されること
 

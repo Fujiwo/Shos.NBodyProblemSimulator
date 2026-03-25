@@ -314,6 +314,7 @@ $$
 - 3D シーン、カメラ、マテリアル、Orbit 操作の基盤が整う
 - ブラウザ上の 3D 教育可視化アプリと相性が良い
 - 保守性と開発速度のバランスがよい
+- `Sources/images/` 配下の画像をマテリアルテクスチャとして扱いやすい
 
 ### 5.2 採用方針
 
@@ -322,6 +323,27 @@ $$
   - 3D シーン管理の実装コストを下げられる
   - Body 数が最大 10 のため、ライブラリオーバーヘッドが問題になりにくい
   - カメラ、ライト、座標補助表示、軌跡描画を段階的に導入しやすい
+
+### 5.3 マテリアル画像テクスチャ方針
+
+- Three.js の Body マテリアルは、可能な限り `Sources/images/` 配下の画像ファイルをテクスチャとして使う
+- 初期 asset 置き場は `Sources/images/` に固定する
+- 初回利用対象の既存ファイルは以下とする
+  - `sun.jpg`
+  - `mercury.jpg`
+  - `venus.jpg`
+  - `earth.jpg`
+  - `moon.jpg`
+  - `mars.jpg`
+  - `jupiter.jpg`
+  - `saturn.jpg`
+- texture の選択キーは `Body.name` を小文字化し、空白を `-` に寄せず英字小文字ベース名へ正規化した値を基本とする
+  - 例: `Earth` -> `earth.jpg`
+  - 例: `Jupiter` -> `jupiter.jpg`
+- 一致する画像が存在しない Body は、描画を止めずに color-only material へ fallback する
+- texture 読み込み失敗はシミュレーション停止要件にしない
+- texture path 解決は renderer 側の責務とし、physics や persistence へ混在させない
+- texture の有無は `localStorage` 保存対象に含めず、画像ファイル配置と `Body.name` の対応で決定する
 
 ## 6. クラス設計方針と責務分担
 
@@ -339,6 +361,7 @@ $$
 - Renderer3D
   - Three.js scene 管理
   - Body mesh 更新
+  - texture 読み込みと material 生成
   - trail 更新
 - UIController
   - フォーム入力管理
@@ -536,6 +559,7 @@ UiState {
 
 - Three.js scene, camera, renderer を実装する
 - Body mesh と color 管理を実装する
+- `Sources/images/` 配下の画像を使った texture material を実装する
 - trail 描画を実装する
 - overlay metrics を実装する
 
