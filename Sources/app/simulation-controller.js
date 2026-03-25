@@ -4,6 +4,7 @@ import {
   createCommittedInitialState,
   normalizeExpandedPanels
 } from "./defaults.js";
+import { generatePresetBodies } from "./preset-generator.js";
 import { getPresetRule, normalizeBodyCountForPreset } from "./state-rules.js";
 
 function isFiniteNumber(value) {
@@ -457,16 +458,31 @@ export class SimulationController {
 
   generate() {
     this.mutateAppState((appState, runtime) => {
+      const generation = generatePresetBodies({
+        presetId: appState.simulationConfig.presetId,
+        bodyCount: appState.bodyCount,
+        seed: runtime.fieldDrafts.seed === "" ? null : appState.simulationConfig.seed
+      });
+
+      appState.bodyCount = generation.bodyCount;
+      appState.bodies = generation.bodies;
+      appState.simulationConfig.presetId = generation.presetId;
+      appState.simulationConfig.seed = generation.seed;
       appState.uiState.playbackState = "idle";
       appState.uiState.selectedBodyId = null;
       appState.uiState.cameraTarget = "system-center";
+      appState.uiState.expandedBodyPanels = normalizeExpandedPanels([], appState.bodies);
       runtime.simulationTime = 0;
+      runtime.metrics.fps = "--";
+      runtime.metrics.energyError = "--";
+      runtime.fieldDrafts = {};
+      runtime.statusMessage = generation.presetId === "random-cluster"
+        ? `Random cluster generated with seed ${generation.seed}.`
+        : `Preset initial conditions generated for ${generation.presetId}.`;
 
       if (this.computeValidation(appState, runtime.fieldDrafts).validationErrors.length === 0) {
         appState.committedInitialState = createCommittedInitialState(appState);
       }
-    }, {
-      statusMessage: "Generate wiring is ready. Preset-driven body generation lands in Phase 5."
     });
   }
 }
