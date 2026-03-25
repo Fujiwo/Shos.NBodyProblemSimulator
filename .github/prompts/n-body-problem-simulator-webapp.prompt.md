@@ -1,6 +1,6 @@
 ---
 name: n-body-problem-simulator-webapp
-description: Create or revise a concrete development plan for the 3D N-body problem simulator in this repository, and prepare the repository-level GitHub Copilot customization files that support the project workflow.
+description: Create or revise a concrete development plan for the 3D N-body problem simulator in this repository, and create or revise the repository-level GitHub Copilot customization files that support the project workflow. Japanese triggers: 開発計画書, 仕様検討, プロンプト整備, skills 更新.
 argument-hint: Add any extra constraints, target devices, or planning focus
 agent: agent
 ---
@@ -16,12 +16,12 @@ agent: agent
 
 # 今回の成果物
 1. `Plans/` 配下に保存する前提の開発計画書 1 件。
-2. `.github/skills/` 配下に追加する Agent Skill 一式。
-3. `.github/copilot-instructions.md` 1 件。
+2. 必要に応じて `.github/skills/` 配下の既存 Skill の改訂、または不足分の追加。
+3. 必要に応じて `.github/copilot-instructions.md` の改訂。
 
 # 重要な制約事項(絶対遵守)
 1. アプリ本体コード生成の禁止: 今回は計画とリポジトリ内カスタマイズ整備のフェーズです。`Sources/` 配下に置く HTML、CSS、JavaScript などのアプリ本体実装コードは生成しないでください。
-2. 例外的に生成してよいファイル: GitHub Copilot カスタマイズ用途の Markdown ファイル(`.github/skills/` 配下の `SKILL.md`、`.github/copilot-instructions.md`)は今回の成果物として作成して構いません。
+2. 例外的に生成してよいファイル: GitHub Copilot カスタマイズ用途の Markdown ファイル(`.github/skills/` 配下の `SKILL.md`、`.github/copilot-instructions.md`)は、既存ファイルの改訂または不足分の追加として作成して構いません。既存 customization と重複する新規ファイルは作らないでください。
 3. 計画書の具体性: 曖昧な表現を避け、次フェーズで開発者が迷わず実装に着手できる粒度で、何を・どの順序で・なぜそうするのかを具体的に記述してください。
 4. 受け入れ基準の明確化: 「高精度」「高性能」「適切」などの表現で終わらせず、性能目標、誤差評価、対象端末、保存対象、UI状態遷移を定量または判定可能な形で定義してください。
 5. 文書言語: 計画書および `.github` 配下の説明文は日本語で記述してください。ただし、アプリ UI 表示文言の想定、ボタン名、ラベル名、状態名は英語前提で整理してください。

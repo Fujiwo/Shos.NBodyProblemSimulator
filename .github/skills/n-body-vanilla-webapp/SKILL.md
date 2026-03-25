@@ -1,6 +1,6 @@
 ---
 name: n-body-vanilla-webapp
-description: Use when implementing, refactoring, or reviewing the browser-based 3D N-body simulator in this repository. Guides a Vanilla JavaScript plus Three.js architecture with separated physics and rendering, worker-friendly simulation loops, localStorage persistence, and responsive controls for 2 to 10 bodies.
+description: Use when implementing, refactoring, or reviewing the browser-based 3D N-body simulator in this repository. Japanese triggers: 実装, 改修, リファクタリング, 描画, localStorage, バリデーション. Guides a Vanilla JavaScript plus Three.js architecture with separated physics and rendering, worker-friendly simulation loops, localStorage persistence, and responsive controls for 2 to 10 bodies.
 argument-hint: Describe the feature, bug, or files to work on
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: n-body-plan-authoring
-description: Use when creating, revising, or reviewing prompts, specifications, plans, or WBS documents for this repository's 3D N-body simulator. Ensures physics requirements are complete, acceptance criteria are measurable, UI and persistence rules are explicit, and implementation ambiguity is removed.
+description: Use when creating, revising, or reviewing prompts, specifications, plans, or WBS documents for this repository's 3D N-body simulator. Japanese triggers: 計画書, 仕様書, プロンプト, WBS, レビュー. Ensures physics requirements are complete, acceptance criteria are measurable, UI and persistence rules are explicit, and implementation ambiguity is removed.
 argument-hint: Describe the target document and whether you want drafting, review, or revision
 ---
 
@@ -10,8 +10,8 @@ argument-hint: Describe the target document and whether you want drafting, revie
 
 ## 使う場面
 
-- Prompts 配下のプロンプトを設計・修正する時
-- Works/Plans 配下の開発計画書を作る時
+- `.github/prompts/` 配下の prompt file を設計・修正する時
+- `Plans/` 配下の開発計画書を作る時
 - Specifications 配下の仕様書を具体化する時
 - 計画や仕様のレビューで、実装上の曖昧さを洗い出す時
 

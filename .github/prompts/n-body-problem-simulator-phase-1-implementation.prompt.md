@@ -1,6 +1,6 @@
 ---
 name: n-body-problem-simulator-phase-1-implementation
-description: Start Phase 1 implementation for the 3D N-body problem simulator by scaffolding the browser app structure, responsive layout foundation, and module boundaries without implementing later-phase simulation features.
+description: Start Phase 1 implementation for the 3D N-body problem simulator by scaffolding the browser app structure, responsive layout foundation, and module boundaries without implementing later-phase simulation features. Japanese triggers: Phase 1 実装, 基盤実装, scaffold, app shell.
 argument-hint: Add any constraints for file naming, UI tone, or scaffolding depth
 agent: agent
 ---
