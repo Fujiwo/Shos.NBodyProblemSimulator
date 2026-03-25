@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { AppStore } from "../Sources/app/app-store.js";
 import { createInitialModel } from "../Sources/app/defaults.js";
 import { SimulationLoop } from "../Sources/app/simulation-loop.js";
+import { computeTotalEnergy } from "../Sources/app/physics-engine.js";
 
 function installAnimationFrameStub() {
   let nextId = 1;
@@ -58,7 +59,48 @@ function testPausedStateDoesNotAdvanceBodiesOrTime() {
   assert.equal(loop.accumulator, 0.07);
 }
 
+function testFpsWindowUpdatesAfterThreshold() {
+  const { store, loop } = createLoopHarness();
+
+  setPlaybackState(store, "running");
+  loop.updateFps(100);
+
+  assert.equal(store.getState().runtime.metrics.fps, "--");
+
+  loop.updateFps(650);
+
+  assert.equal(store.getState().runtime.metrics.fps, "3.6");
+  assert.equal(loop.framesInWindow, 0);
+  assert.equal(loop.fpsWindowStart, 650);
+}
+
+function testEnergyReferenceResetsAndReinitializes() {
+  const { store, loop } = createLoopHarness();
+
+  const initialEnergy = computeTotalEnergy(
+    store.getState().appState.bodies,
+    store.getState().appState.simulationConfig
+  );
+
+  loop.prepareForStart();
+  assert.ok(Number.isFinite(loop.referenceEnergy));
+  assert.ok(Math.abs(loop.referenceEnergy - initialEnergy) < 1e-12);
+
+  loop.reset();
+  assert.equal(loop.referenceEnergy, null);
+
+  setPlaybackState(store, "running");
+  loop.lastFrameTime = 0;
+  loop.handleFrame(1000);
+
+  const state = store.getState();
+  assert.ok(Number.isFinite(loop.referenceEnergy));
+  assert.notEqual(state.runtime.metrics.energyError, "--");
+}
+
 testAccumulatorCapLimitsStepsPerFrame();
 testPausedStateDoesNotAdvanceBodiesOrTime();
+testFpsWindowUpdatesAfterThreshold();
+testEnergyReferenceResetsAndReinitializes();
 
 console.log("simulation-loop.test.mjs ok");
