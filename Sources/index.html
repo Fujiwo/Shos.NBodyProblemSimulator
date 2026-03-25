@@ -10,13 +10,13 @@
   <div class="app-shell" data-role="app-root">
     <header class="app-header panel">
       <div>
-        <p class="eyebrow">Phase 1 Scaffold</p>
+        <p class="eyebrow">Phase 3 Simulation</p>
         <h1>3D N-body problem simulator</h1>
-        <p class="header-copy">Responsive app shell, state boundaries, and module wiring for later simulation phases.</p>
+        <p class="header-copy">Interactive browser simulation with reproducible presets, persistence, runtime metrics, textures, and playback controls.</p>
       </div>
       <div class="header-status" aria-live="polite">
         <span class="status-pill" data-role="playback-state">Idle</span>
-        <p class="status-copy" data-role="status-message">Initializing scaffold...</p>
+        <p class="status-copy" data-role="status-message">Initializing simulation...</p>
       </div>
     </header>
 
@@ -61,6 +61,11 @@
             <span class="field-error" data-field-error="softening"></span>
           </label>
 
+          <label class="field">
+            <span>Camera Target</span>
+            <select data-role="camera-target"></select>
+          </label>
+
           <label class="field toggle-field">
             <span>Trails</span>
             <input data-role="show-trails" type="checkbox">
@@ -95,7 +100,7 @@
             <p class="eyebrow">Visualization</p>
             <h2 id="viewport-heading">Viewport</h2>
           </div>
-          <p class="viewport-note">Canvas placeholder for the future Three.js scene.</p>
+          <p class="viewport-note">Three.js view with texture-backed bodies, runtime camera targeting, and fallback 2D rendering.</p>
         </div>
 
         <div class="viewport-stage">

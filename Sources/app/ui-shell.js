@@ -36,7 +36,17 @@ function formatReproducibilityKey(appState) {
   return presetId;
 }
 
-function bodyCardTemplate(body, isExpanded, disabled, runtime) {
+function renderCameraTargetOptions(appState) {
+  const selectedValue = appState.uiState.cameraTarget;
+  const systemCenterOption = `<option value="system-center"${selectedValue === "system-center" ? " selected" : ""}>System Center</option>`;
+  const bodyOptions = appState.bodies
+    .map((body) => `<option value="${escapeHtml(body.id)}"${selectedValue === body.id ? " selected" : ""}>${escapeHtml(body.name)} (${escapeHtml(body.id)})</option>`)
+    .join("");
+
+  return `${systemCenterOption}${bodyOptions}`;
+}
+
+function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
   const disabledAttribute = disabled ? " disabled" : "";
   const openAttribute = isExpanded ? " open" : "";
   const fieldErrors = runtime.fieldErrors;
@@ -47,7 +57,7 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime) {
         <span class="body-card-badge" style="background:${escapeHtml(body.color)}"></span>
         <span>
           <strong>${escapeHtml(body.name)}</strong>
-          <span class="body-card-meta">${escapeHtml(body.id)} · Mass ${Number(body.mass).toFixed(2)}</span>
+          <span class="body-card-meta">${escapeHtml(body.id)} · Mass ${Number(body.mass).toFixed(2)}${isSelected ? " · Selected" : ""}</span>
         </span>
         <span class="body-card-meta">${isExpanded ? "Open" : "Closed"}</span>
       </summary>
@@ -116,6 +126,7 @@ export class UiShell {
       seed: rootElement.querySelector('[data-role="seed"]'),
       timeStep: rootElement.querySelector('[data-role="time-step"]'),
       softening: rootElement.querySelector('[data-role="softening"]'),
+      cameraTarget: rootElement.querySelector('[data-role="camera-target"]'),
       showTrails: rootElement.querySelector('[data-role="show-trails"]'),
       bodyCardList: rootElement.querySelector('[data-role="body-card-list"]'),
       validationList: rootElement.querySelector('[data-role="validation-list"]'),
@@ -180,6 +191,11 @@ export class UiShell {
         return;
       }
 
+      if (target.matches('[data-role="camera-target"]')) {
+        this.controller.updateCameraTarget(target.value);
+        return;
+      }
+
       if (target.matches('[data-role="show-trails"]')) {
         this.controller.updateShowTrails(target.checked);
         return;
@@ -217,6 +233,7 @@ export class UiShell {
     this.elements.seed.value = runtime.fieldDrafts.seed ?? (appState.simulationConfig.seed ?? "");
     this.elements.timeStep.value = runtime.fieldDrafts.timeStep ?? String(appState.simulationConfig.timeStep);
     this.elements.softening.value = runtime.fieldDrafts.softening ?? String(appState.simulationConfig.softening);
+    this.elements.cameraTarget.innerHTML = renderCameraTargetOptions(appState);
     this.elements.showTrails.checked = appState.uiState.showTrails;
     this.elements.bodyCount.disabled = bodyInputsDisabled;
     this.elements.presetId.disabled = bodyInputsDisabled;
@@ -241,7 +258,13 @@ export class UiShell {
     }
 
     this.elements.bodyCardList.innerHTML = appState.bodies
-      .map((body) => bodyCardTemplate(body, appState.uiState.expandedBodyPanels.includes(body.id), bodyInputsDisabled, runtime))
+      .map((body) => bodyCardTemplate(
+        body,
+        appState.uiState.expandedBodyPanels.includes(body.id),
+        bodyInputsDisabled,
+        runtime,
+        appState.uiState.selectedBodyId === body.id
+      ))
       .join("");
 
     this.elements.metricFps.textContent = runtime.metrics.fps;

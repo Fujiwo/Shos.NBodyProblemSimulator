@@ -149,7 +149,7 @@ export function createInitialRuntimeState() {
       fps: "--",
       energyError: "--"
     },
-    statusMessage: "Phase 3 runtime ready. Generate, playback controls, and persistence are wired.",
+    statusMessage: "Phase 3 runtime ready. Generate a preset or start the current committed initial state.",
     validationErrors: [],
     fieldErrors: {},
     fieldDrafts: {}

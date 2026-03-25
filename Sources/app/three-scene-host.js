@@ -7,12 +7,18 @@ function normalizeTextureKey(name) {
     .trim();
 }
 
+function createVector(x = 0, y = 0, z = 0) {
+  return { x, y, z };
+}
+
 export class ThreeSceneHost {
   constructor(canvasElement, options = {}) {
     this.canvasElement = canvasElement;
     this.onInvalidate = typeof options.onInvalidate === "function" ? options.onInvalidate : null;
     this.three = globalThis.THREE;
     this.meshes = new Map();
+    this.trailLines = new Map();
+    this.trailHistory = new Map();
     this.textureCache = new Map();
     this.ready = false;
     this.initError = null;
@@ -64,7 +70,7 @@ export class ThreeSceneHost {
   }
 
   getModeLabel() {
-    return this.ready ? "Three.js scaffold mode" : "2D fallback mode";
+    return this.ready ? "Three.js textured mode" : "2D fallback mode";
   }
 
   resize() {
@@ -91,6 +97,7 @@ export class ThreeSceneHost {
         mesh.geometry.dispose();
         mesh.material.dispose();
         this.meshes.delete(bodyId);
+        this.removeTrail(bodyId);
       }
     }
 
@@ -108,6 +115,25 @@ export class ThreeSceneHost {
       mesh.position.set(body.position.x, body.position.y, body.position.z);
       mesh.scale.setScalar(scale);
       this.updateBodyMaterial(mesh.material, body);
+    }
+  }
+
+  removeTrail(bodyId) {
+    const trailLine = this.trailLines.get(bodyId);
+
+    if (trailLine) {
+      this.scene.remove(trailLine);
+      trailLine.geometry.dispose();
+      trailLine.material.dispose();
+      this.trailLines.delete(bodyId);
+    }
+
+    this.trailHistory.delete(bodyId);
+  }
+
+  resetTrails() {
+    for (const bodyId of [...this.trailLines.keys()]) {
+      this.removeTrail(bodyId);
     }
   }
 
@@ -187,17 +213,109 @@ export class ThreeSceneHost {
     }
   }
 
+  resolveCameraTarget(appState) {
+    const cameraTarget = appState.uiState.cameraTarget;
+
+    if (cameraTarget && cameraTarget !== "system-center") {
+      const targetBody = appState.bodies.find((body) => body.id === cameraTarget);
+
+      if (targetBody) {
+        return createVector(targetBody.position.x, targetBody.position.y, targetBody.position.z);
+      }
+    }
+
+    if (appState.bodies.length === 0) {
+      return createVector();
+    }
+
+    const center = appState.bodies.reduce((accumulator, body) => ({
+      x: accumulator.x + body.position.x,
+      y: accumulator.y + body.position.y,
+      z: accumulator.z + body.position.z
+    }), createVector());
+
+    return createVector(
+      center.x / appState.bodies.length,
+      center.y / appState.bodies.length,
+      center.z / appState.bodies.length
+    );
+  }
+
+  syncTrails(model) {
+    const { appState, runtime } = model;
+
+    if (!appState.uiState.showTrails) {
+      this.resetTrails();
+      return;
+    }
+
+    if (runtime.simulationTime === 0) {
+      this.resetTrails();
+    }
+
+    const activeIds = new Set(appState.bodies.map((body) => body.id));
+
+    for (const bodyId of [...this.trailHistory.keys()]) {
+      if (!activeIds.has(bodyId)) {
+        this.removeTrail(bodyId);
+      }
+    }
+
+    const maxPoints = Math.max(2, Number(appState.simulationConfig.maxTrailPoints) || 300);
+
+    for (const body of appState.bodies) {
+      let history = this.trailHistory.get(body.id);
+
+      if (!history) {
+        history = [];
+        this.trailHistory.set(body.id, history);
+      }
+
+      const lastPoint = history.at(-1);
+      const nextPoint = new this.three.Vector3(body.position.x, body.position.y, body.position.z);
+
+      if (!lastPoint || !lastPoint.equals(nextPoint)) {
+        history.push(nextPoint);
+      }
+
+      while (history.length > maxPoints) {
+        history.shift();
+      }
+
+      let trailLine = this.trailLines.get(body.id);
+
+      if (!trailLine) {
+        trailLine = new this.three.Line(
+          new this.three.BufferGeometry(),
+          new this.three.LineBasicMaterial({
+            color: body.color,
+            transparent: true,
+            opacity: 0.45
+          })
+        );
+        this.trailLines.set(body.id, trailLine);
+        this.scene.add(trailLine);
+      }
+
+      trailLine.material.color.set(body.color);
+      trailLine.geometry.setFromPoints(history);
+    }
+  }
+
   render(model) {
     if (!this.ready) {
       return false;
     }
 
     this.syncMeshes(model.appState.bodies);
+    this.syncTrails(model);
 
     const elapsed = model.runtime.simulationTime;
-    this.camera.position.x = Math.sin(elapsed * 0.18) * 0.2;
-    this.camera.position.z = 8.2 + Math.cos(elapsed * 0.14) * 0.15;
-    this.camera.lookAt(0, 0, 0);
+    const target = this.resolveCameraTarget(model.appState);
+    this.camera.position.x = target.x + Math.sin(elapsed * 0.18) * 0.2;
+    this.camera.position.y = target.y + 3.2;
+    this.camera.position.z = target.z + 8.2 + Math.cos(elapsed * 0.14) * 0.15;
+    this.camera.lookAt(target.x, target.y, target.z);
 
     this.renderer.render(this.scene, this.camera);
     return true;

@@ -5,6 +5,7 @@ export class RendererFacade {
     this.canvasElement = canvasElement;
     this.pixelRatio = Math.max(1, window.devicePixelRatio || 1);
     this.latestModel = null;
+    this.trailHistory = new Map();
     this.threeSceneHost = new ThreeSceneHost(canvasElement, {
       onInvalidate: () => {
         if (this.latestModel) {
@@ -30,6 +31,49 @@ export class RendererFacade {
     }
 
     this.threeSceneHost.resize();
+  }
+
+  resetTrailHistory() {
+    this.trailHistory.clear();
+  }
+
+  syncTrailHistory(model) {
+    const { appState, runtime } = model;
+
+    if (!appState.uiState.showTrails) {
+      this.resetTrailHistory();
+      return;
+    }
+
+    if (runtime.simulationTime === 0) {
+      this.resetTrailHistory();
+    }
+
+    const activeIds = new Set(appState.bodies.map((body) => body.id));
+
+    for (const bodyId of this.trailHistory.keys()) {
+      if (!activeIds.has(bodyId)) {
+        this.trailHistory.delete(bodyId);
+      }
+    }
+
+    for (const body of appState.bodies) {
+      const history = this.trailHistory.get(body.id) ?? [];
+      const lastPoint = history.at(-1);
+      const nextPoint = { x: body.position.x, y: body.position.y };
+
+      if (!lastPoint || lastPoint.x !== nextPoint.x || lastPoint.y !== nextPoint.y) {
+        history.push(nextPoint);
+      }
+
+      const maxPoints = Math.max(2, Number(appState.simulationConfig.maxTrailPoints) || 300);
+
+      while (history.length > maxPoints) {
+        history.shift();
+      }
+
+      this.trailHistory.set(body.id, history);
+    }
   }
 
   render(model) {
@@ -68,6 +112,37 @@ export class RendererFacade {
     }
 
     context.restore();
+
+    this.syncTrailHistory(model);
+
+    if (model.appState.uiState.showTrails) {
+      for (const body of model.appState.bodies) {
+        const history = this.trailHistory.get(body.id);
+
+        if (!history || history.length < 2) {
+          continue;
+        }
+
+        context.save();
+        context.strokeStyle = `${body.color}88`;
+        context.lineWidth = Math.max(1.25, this.pixelRatio * 1.2);
+        context.beginPath();
+
+        history.forEach((point, index) => {
+          const x = centerX + point.x * scale;
+          const y = centerY - point.y * scale;
+
+          if (index === 0) {
+            context.moveTo(x, y);
+          } else {
+            context.lineTo(x, y);
+          }
+        });
+
+        context.stroke();
+        context.restore();
+      }
+    }
 
     for (const body of model.appState.bodies) {
       const x = centerX + body.position.x * scale;

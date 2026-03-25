@@ -314,6 +314,28 @@ export class SimulationController {
     });
   }
 
+  updateCameraTarget(cameraTarget) {
+    this.mutateAppState((appState) => {
+      const isValidTarget = cameraTarget === "system-center"
+        || appState.bodies.some((body) => body.id === cameraTarget);
+
+      appState.uiState.cameraTarget = isValidTarget ? cameraTarget : "system-center";
+    }, {
+      commitWhenIdle: true
+    });
+  }
+
+  updateSelectedBody(bodyId) {
+    this.mutateAppState((appState) => {
+      appState.uiState.selectedBodyId = appState.bodies.some((body) => body.id === bodyId)
+        ? bodyId
+        : null;
+    }, {
+      commitWhenIdle: true,
+      shouldPersist: true
+    });
+  }
+
   updateBodyField(bodyId, fieldPath, rawValue) {
     const fieldKey = getBodyFieldKey(bodyId, fieldPath);
     this.mutateAppState((appState) => {
@@ -397,6 +419,9 @@ export class SimulationController {
 
       if (isOpen) {
         expandedPanels.unshift(bodyId);
+        appState.uiState.selectedBodyId = appState.bodies.some((body) => body.id === bodyId)
+          ? bodyId
+          : appState.uiState.selectedBodyId;
       }
 
       appState.uiState.expandedBodyPanels = normalizeExpandedPanels(expandedPanels, appState.bodies);
@@ -407,8 +432,17 @@ export class SimulationController {
     const { appState, runtime } = this.store.getState();
     const validationErrors = this.computeValidation(appState, runtime.fieldDrafts).validationErrors;
 
+    if (appState.uiState.playbackState !== "idle") {
+      this.setStatus(
+        appState.uiState.playbackState === "paused"
+          ? "Use Resume to continue or Reset to restart from the committed initial state."
+          : "Simulation is already running. Pause or Reset before starting again."
+      );
+      return;
+    }
+
     if (validationErrors.length > 0) {
-      this.setStatus("Resolve validation issues before starting the simulation scaffold.");
+      this.setStatus("Resolve validation issues before starting the simulation.");
       return;
     }
 
@@ -439,7 +473,7 @@ export class SimulationController {
     });
 
     if (!didStart) {
-      this.setStatus("Committed initial state is missing.");
+      this.setStatus("Committed initial state is unavailable. Generate or edit a valid idle state first.");
       return;
     }
 
@@ -483,6 +517,13 @@ export class SimulationController {
   }
 
   reset() {
+    const { appState } = this.store.getState();
+
+    if (!appState.committedInitialState) {
+      this.setStatus("No committed initial state is available for reset.");
+      return;
+    }
+
     this.mutateAppState((appState, runtime) => {
       const snapshot = appState.committedInitialState;
 
@@ -503,7 +544,7 @@ export class SimulationController {
       runtime.metrics.energyError = "--";
       runtime.fieldDrafts = {};
     }, {
-      statusMessage: "Reset restored the committed initial scaffold state."
+      statusMessage: "Reset restored the committed initial state."
     });
 
     this.loop?.reset();

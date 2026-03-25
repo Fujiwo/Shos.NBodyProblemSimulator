@@ -242,7 +242,7 @@ button:disabled {
 }
 
 .validation-list:empty::before {
-  content: "Inputs are valid for scaffolded playback state changes.";
+  content: "Inputs are valid and ready for playback.";
   color: var(--accent-strong);
   display: block;
   font-size: 0.94rem;
