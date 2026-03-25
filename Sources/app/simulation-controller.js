@@ -43,6 +43,11 @@ export class SimulationController {
   constructor(store, persistence) {
     this.store = store;
     this.persistence = persistence;
+    this.loop = null;
+  }
+
+  attachLoop(loop) {
+    this.loop = loop;
   }
 
   computeValidation(appState, fieldDrafts = {}) {
@@ -407,31 +412,74 @@ export class SimulationController {
       return;
     }
 
-    this.mutateAppState((nextAppState) => {
+    let didStart = false;
+
+    this.mutateAppState((nextAppState, nextRuntime) => {
+      const snapshot = nextAppState.committedInitialState;
+
+      if (!snapshot) {
+        return;
+      }
+
+      didStart = true;
+      nextAppState.bodyCount = snapshot.bodyCount;
+      nextAppState.bodies = clone(snapshot.bodies);
+      nextAppState.simulationConfig = clone(snapshot.simulationConfig);
       nextAppState.uiState.playbackState = "running";
+      nextAppState.uiState.selectedBodyId = snapshot.uiState.selectedBodyId;
+      nextAppState.uiState.cameraTarget = snapshot.uiState.cameraTarget;
+      nextAppState.uiState.showTrails = snapshot.uiState.showTrails;
+      nextAppState.uiState.expandedBodyPanels = normalizeExpandedPanels(nextAppState.uiState.expandedBodyPanels, nextAppState.bodies);
+      nextRuntime.simulationTime = 0;
+      nextRuntime.metrics.fps = "--";
+      nextRuntime.metrics.energyError = "0.00e+0";
     }, {
-      statusMessage: "Playback entered the running scaffold state. Physics integration arrives in Phase 3."
+      shouldPersist: false,
+      statusMessage: "Simulation running."
     });
+
+    if (!didStart) {
+      this.setStatus("Committed initial state is missing.");
+      return;
+    }
+
+    this.loop?.prepareForStart();
   }
 
   pause() {
+    let didPause = false;
+
     this.mutateAppState((appState) => {
       if (appState.uiState.playbackState === "running") {
         appState.uiState.playbackState = "paused";
+        didPause = true;
       }
     }, {
-      statusMessage: "Playback paused. Resume wiring is active even before the physics loop exists."
+      shouldPersist: false,
+      statusMessage: "Simulation paused."
     });
+
+    if (didPause) {
+      this.loop?.prepareForPause();
+    }
   }
 
   resume() {
+    let didResume = false;
+
     this.mutateAppState((appState) => {
       if (appState.uiState.playbackState === "paused") {
         appState.uiState.playbackState = "running";
+        didResume = true;
       }
     }, {
-      statusMessage: "Playback returned to the running scaffold state."
+      shouldPersist: false,
+      statusMessage: "Simulation resumed from the paused state."
     });
+
+    if (didResume) {
+      this.loop?.prepareForResume();
+    }
   }
 
   reset() {
@@ -449,11 +497,16 @@ export class SimulationController {
       appState.uiState.selectedBodyId = snapshot.uiState.selectedBodyId;
       appState.uiState.cameraTarget = snapshot.uiState.cameraTarget;
       appState.uiState.showTrails = snapshot.uiState.showTrails;
-      appState.uiState.expandedBodyPanels = normalizeExpandedPanels(appState.uiState.expandedBodyPanels, appState.bodies);
+      appState.uiState.expandedBodyPanels = normalizeExpandedPanels([], appState.bodies);
       runtime.simulationTime = 0;
+      runtime.metrics.fps = "--";
+      runtime.metrics.energyError = "--";
+      runtime.fieldDrafts = {};
     }, {
       statusMessage: "Reset restored the committed initial scaffold state."
     });
+
+    this.loop?.reset();
   }
 
   generate() {
@@ -484,5 +537,7 @@ export class SimulationController {
         appState.committedInitialState = createCommittedInitialState(appState);
       }
     });
+
+    this.loop?.reset();
   }
 }

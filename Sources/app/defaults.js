@@ -1,4 +1,4 @@
-export const APP_VERSION = "0.2.0-phase2";
+export const APP_VERSION = "0.3.0-phase3";
 export const STORAGE_KEY = "nbody-simulator.state";
 
 const BODY_COLORS = [
@@ -137,7 +137,7 @@ export function createInitialRuntimeState() {
       fps: "--",
       energyError: "--"
     },
-    statusMessage: "Phase 1 scaffold ready. Physics, Generate, and persisted restore land in later phases.",
+    statusMessage: "Phase 3 runtime ready. Generate, playback controls, and persistence are wired.",
     validationErrors: [],
     fieldErrors: {},
     fieldDrafts: {}
