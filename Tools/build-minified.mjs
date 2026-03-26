@@ -86,10 +86,11 @@ async function copyStaticAssets() {
 
 async function cleanOutputs() {
   await Promise.all([
-    rm(distDir, { force: true, recursive: true }),
     rm(outputMainPath, { force: true }),
     rm(outputWorkerPath, { force: true }),
     rm(outputHtmlPath, { force: true }),
+    rm(outputStylePath, { force: true }),
+    rm(outputImagesPath, { force: true, recursive: true }),
     ...legacyOutputPaths.map((outputPath) => rm(outputPath, { force: true }))
   ]);
 }
