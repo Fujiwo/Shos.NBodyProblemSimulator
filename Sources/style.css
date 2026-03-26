@@ -140,6 +140,11 @@ h2 {
   padding: 20px;
 }
 
+.body-panel {
+  display: grid;
+  gap: 12px;
+}
+
 .panel-heading {
   display: grid;
   gap: 4px;
@@ -258,7 +263,7 @@ button:disabled {
 
 .body-card-list {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .body-card {
@@ -272,11 +277,11 @@ button:disabled {
   align-items: center;
   cursor: pointer;
   display: grid;
-  gap: 6px;
+  gap: 4px;
   grid-template-columns: auto 1fr auto;
   list-style: none;
-  min-height: 52px;
-  padding: 16px;
+  min-height: 44px;
+  padding: 12px 14px;
 }
 
 .body-card summary::-webkit-details-marker {
@@ -293,21 +298,35 @@ button:disabled {
 
 .body-card-meta {
   color: var(--text-muted);
-  font-size: 0.84rem;
+  font-size: 0.78rem;
 }
 
 .body-card-body {
   display: grid;
-  gap: 12px;
-  padding: 0 16px 16px;
+  gap: 10px;
+  padding: 0 14px 14px;
 }
 
 .body-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .body-grid .field--full {
   grid-column: 1 / -1;
+}
+
+.body-grid .field {
+  gap: 6px;
+}
+
+.body-grid .field span {
+  font-size: 0.75rem;
+}
+
+.body-grid input {
+  min-height: 38px;
+  padding: 0 10px;
 }
 
 .viewport-panel {
@@ -406,7 +425,7 @@ dd {
 @media (min-width: 1024px) {
   .app-layout {
     align-items: start;
-    grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
     grid-template-areas:
       "controls viewport"
       "bodies viewport";
@@ -418,6 +437,16 @@ dd {
 
   .body-panel {
     grid-area: bodies;
+    max-height: min(46vh, 560px);
+  }
+
+  .body-card-list {
+    overflow: auto;
+    padding-right: 4px;
+  }
+
+  .body-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .viewport-panel {

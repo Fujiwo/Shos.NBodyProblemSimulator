@@ -1,0 +1,160 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: Phase 3 Simulation
+      - heading "3D N-body problem simulator" [level=1] [ref=e6]
+      - paragraph [ref=e7]: Interactive browser simulation with reproducible presets, persistence, runtime metrics, textures, and playback controls.
+    - generic [ref=e8]:
+      - generic [ref=e9]: Idle
+      - paragraph [ref=e10]: Saved state restored. Renderer initialized in Three.js textured mode. Texture-backed bodies will load from local Sources/images assets when names match.
+  - main [ref=e11]:
+    - region "Simulation controls" [ref=e12]:
+      - generic [ref=e13]:
+        - paragraph [ref=e14]: Controls
+        - heading "Simulation controls" [level=2] [ref=e15]
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - generic [ref=e18]: Body Count
+          - spinbutton "Body Count" [ref=e19]: "3"
+        - generic [ref=e21]:
+          - generic [ref=e22]: Preset
+          - combobox "Preset" [ref=e23]:
+            - option "binary-orbit"
+            - option "three-body-figure-eight" [selected]
+            - option "random-cluster"
+        - generic [ref=e24]:
+          - generic [ref=e25]: Seed
+          - spinbutton "Seed" [ref=e26]
+        - generic [ref=e28]:
+          - generic [ref=e29]: Time Step
+          - spinbutton "Time Step" [ref=e30]: "0.005"
+        - generic [ref=e32]:
+          - generic [ref=e33]: Softening
+          - spinbutton "Softening" [ref=e34]: "0.01"
+        - generic [ref=e36]:
+          - generic [ref=e37]: Camera Target
+          - combobox "Camera Target" [ref=e38]:
+            - option "System Center" [selected]
+            - option "sun (body-1)"
+            - option "mercury (body-2)"
+            - option "venus (body-3)"
+        - generic [ref=e39]:
+          - generic [ref=e40]: Trails
+          - checkbox "Trails" [checked] [ref=e41]
+      - generic "Playback controls" [ref=e42]:
+        - button "Generate" [ref=e43] [cursor=pointer]
+        - button "Start" [ref=e44] [cursor=pointer]
+        - button "Pause" [disabled] [ref=e45]
+        - button "Resume" [disabled] [ref=e46]
+        - button "Reset" [ref=e47] [cursor=pointer]
+      - generic [ref=e48]:
+        - paragraph [ref=e49]: Validation
+        - list [ref=e50]: Inputs are valid and ready for playback.
+    - region "Body settings" [ref=e51]:
+      - generic [ref=e52]:
+        - paragraph [ref=e53]: Bodies
+        - heading "Body settings" [level=2] [ref=e54]
+      - generic [ref=e55]:
+        - group [ref=e275]:
+          - generic "sun body-1 · Mass 1.00 · Selected Open" [ref=e276] [cursor=pointer]:
+            - generic [ref=e278]:
+              - strong [ref=e279]: sun
+              - text: body-1 · Mass 1.00 · Selected
+            - generic [ref=e280]: Open
+          - generic [ref=e282]:
+            - generic [ref=e283]:
+              - generic [ref=e284]: Name
+              - textbox "Name" [ref=e285]: sun
+            - generic [ref=e287]:
+              - generic [ref=e288]: Mass
+              - spinbutton "Mass" [ref=e289]: "1"
+            - generic [ref=e291]:
+              - generic [ref=e292]: Color
+              - textbox "Color" [ref=e293]: "#52b7ff"
+            - generic [ref=e295]:
+              - generic [ref=e296]: Position X
+              - spinbutton "Position X" [ref=e297]: "-0.7751661608547237"
+            - generic [ref=e299]:
+              - generic [ref=e300]: Position Y
+              - spinbutton "Position Y" [ref=e301]: "0.3451402350532037"
+            - generic [ref=e303]:
+              - generic [ref=e304]: Position Z
+              - spinbutton "Position Z" [ref=e305]: "0"
+            - generic [ref=e307]:
+              - generic [ref=e308]: Velocity X
+              - spinbutton "Velocity X" [ref=e309]: "0.871554798829571"
+            - generic [ref=e311]:
+              - generic [ref=e312]: Velocity Y
+              - spinbutton "Velocity Y" [ref=e313]: "0.20569609102749148"
+            - generic [ref=e315]:
+              - generic [ref=e316]: Velocity Z
+              - spinbutton "Velocity Z" [ref=e317]: "0"
+        - group [ref=e319]:
+          - generic "mercury body-2 · Mass 1.00 Open" [ref=e320] [cursor=pointer]:
+            - generic [ref=e322]:
+              - strong [ref=e323]: mercury
+              - text: body-2 · Mass 1.00
+            - generic [ref=e324]: Open
+          - generic [ref=e326]:
+            - generic [ref=e327]:
+              - generic [ref=e328]: Name
+              - textbox "Name" [ref=e329]: mercury
+            - generic [ref=e331]:
+              - generic [ref=e332]: Mass
+              - spinbutton "Mass" [ref=e333]: "1"
+            - generic [ref=e335]:
+              - generic [ref=e336]: Color
+              - textbox "Color" [ref=e337]: "#ff9f68"
+            - generic [ref=e339]:
+              - generic [ref=e340]: Position X
+              - spinbutton "Position X" [ref=e341]: "1.0615157433129898"
+            - generic [ref=e343]:
+              - generic [ref=e344]: Position Y
+              - spinbutton "Position Y" [ref=e345]: "-0.10929319727269474"
+            - generic [ref=e347]:
+              - generic [ref=e348]: Position Z
+              - spinbutton "Position Z" [ref=e349]: "0"
+            - generic [ref=e351]:
+              - generic [ref=e352]: Velocity X
+              - spinbutton "Velocity X" [ref=e353]: "0.17362863152705632"
+            - generic [ref=e355]:
+              - generic [ref=e356]: Velocity Y
+              - spinbutton "Velocity Y" [ref=e357]: "0.46657723380839844"
+            - generic [ref=e359]:
+              - generic [ref=e360]: Velocity Z
+              - spinbutton "Velocity Z" [ref=e361]: "0"
+        - group [ref=e363]:
+          - generic "venus body-3 · Mass 1.00 Closed" [ref=e364] [cursor=pointer]:
+            - generic [ref=e366]:
+              - strong [ref=e367]: venus
+              - text: body-3 · Mass 1.00
+            - generic [ref=e368]: Closed
+    - region "Viewport" [ref=e150]:
+      - generic [ref=e151]:
+        - generic [ref=e152]:
+          - paragraph [ref=e153]: Visualization
+          - heading "Viewport" [level=2] [ref=e154]
+        - paragraph [ref=e155]: Local Three.js textured view when available, with color-only 2D fallback if renderer initialization fails.
+      - complementary "Simulation metrics" [ref=e158]:
+        - generic [ref=e159]:
+          - generic [ref=e160]:
+            - term [ref=e161]: FPS
+            - definition [ref=e162]: "--"
+          - generic [ref=e163]:
+            - term [ref=e164]: Simulation Time
+            - definition [ref=e165]: "0.000"
+          - generic [ref=e166]:
+            - term [ref=e167]: Energy Error
+            - definition [ref=e168]: "--"
+          - generic [ref=e169]:
+            - term [ref=e170]: Active Preset
+            - definition [ref=e171]: three-body-figure-eight
+          - generic [ref=e172]:
+            - term [ref=e173]: Current Seed
+            - definition [ref=e174]: Preset fixed
+          - generic [ref=e175]:
+            - term [ref=e176]: Body Count
+            - definition [ref=e177]: "3"
+          - generic [ref=e178]:
+            - term [ref=e179]: Reproducibility Key
+            - definition [ref=e180]: three-body-figure-eight
