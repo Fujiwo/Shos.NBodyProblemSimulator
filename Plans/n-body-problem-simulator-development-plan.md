@@ -198,7 +198,8 @@ $$
 
 - モバイルファーストで設計する
 - 縦長画面ではコントロールパネルを上部、3D キャンバスを下部に配置する
-- タブレット以上では左右 2 カラムに切り替える
+- Medium まではコントロールパネルを Header 直下に配置する
+- Large では Control panel を Header 直下の全幅ストリップとして配置し、その下段を Body settings と 3D canvas の 2 カラムに分割する
 - 10 体分の入力をスマートフォンでも扱えるよう、Body 設定は折りたたみカード方式を採用する
 
 ### 3.2 UI 領域構成
@@ -220,6 +221,7 @@ $$
   - Time step control
   - Softening control
   - Trail toggle
+  - Large では Header 直下に横長 1 段または 2 段の compact strip として配置する
 - Body settings list
   - 各 Body カードに mass, position, velocity を配置
 - Visualization area
@@ -229,6 +231,7 @@ $$
     - Simulation time
     - Energy error
     - Active preset
+    - Large では右下に固定した compact overlay とし、視認性を維持したまま占有面積を抑える
 
 ### 3.3 モバイル操作性要件
 
@@ -238,6 +241,13 @@ $$
 - 各 Body カードは独立して開閉でき、同時に複数件を展開してよい
 - 初期状態は 1 番目の Body のみ Open とし、その後はユーザーが各カードを独立して切り替えられること
 - 数値入力はモバイルキーボード最適化のため decimal 入力を前提にする
+
+Large レイアウトの受け入れ基準は以下とする。
+
+- 1440px 幅では Control panel が Header の直下に全幅で配置され、Body settings より上段にあること
+- 1440px x 1024px の表示で Control panel 高さが 220px 以下に収まること
+- 1440px 幅では Simulation metrics overlay の最大幅を 240px 以下とし、canvas の可視面積を優先すること
+- Simulation metrics overlay は padding と文字サイズを縮小しても、全項目名と値が視認できること
 
 現行 UI の compact controls は、表示文言を短縮した上で `title` または `aria-label` に正式名称を保持する。
 

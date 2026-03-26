@@ -90,17 +90,27 @@ test.describe("responsive layout thresholds", () => {
   test.describe("wide desktop", () => {
     test.use({ viewport: { width: 1440, height: 1024 } });
 
-    test("restores header helper copy and expands viewport further", async ({ page }) => {
+    test("restores header helper copy, keeps controls below header, and compacts metrics", async ({ page }) => {
       await expect(page.locator('.app-header')).toBeVisible();
+      await expect(page.locator('.control-panel')).toBeVisible();
       await expect(page.locator('.viewport-stage')).toBeVisible();
+      await expect(page.locator('.metrics-overlay')).toBeVisible();
 
       const headerBox = await page.locator('.app-header').boundingBox();
+      const controlsBox = await page.locator('.control-panel').boundingBox();
       const viewportBox = await page.locator('.viewport-stage').boundingBox();
+      const metricsBox = await page.locator('.metrics-overlay').boundingBox();
 
       expect(headerBox).not.toBeNull();
+      expect(controlsBox).not.toBeNull();
       expect(viewportBox).not.toBeNull();
+      expect(metricsBox).not.toBeNull();
       await expect(page.locator('.header-copy')).toBeVisible();
       expect(headerBox.height).toBeLessThanOrEqual(104);
+      expect(controlsBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height);
+      expect(controlsBox.height).toBeLessThanOrEqual(220);
+      expect(controlsBox.width).toBeGreaterThanOrEqual(1100);
+      expect(metricsBox.width).toBeLessThanOrEqual(240);
       expect(viewportBox.height).toBeGreaterThanOrEqual(820);
     });
   });

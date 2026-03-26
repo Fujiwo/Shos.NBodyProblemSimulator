@@ -355,9 +355,11 @@ $$
   - Control panel を上段、Canvas を下段に配置する。
   - Canvas 高さは画面高の 40 から 50 パーセントを確保する。
 - Medium
-  - 設定パネル上段、Canvas 下段とする。
+  - Control panel を Header 直下、Canvas をその下段に配置する。
 - Large
-  - 左側に 240px から 300px の設定パネル、右側に Canvas を配置する。
+  - Control panel を Header 直下の全幅ストリップとして配置する。
+  - Control panel の下段を、左側 240px から 300px の Body settings、右側 Canvas の 2 カラムに分割する。
+  - 1440px x 1024px の表示で Control panel 高さは 220px 以下とする。
 
 ### 7.1.3 モバイル操作要件
 
@@ -368,6 +370,13 @@ $$
 - Body カードは折りたたみ可能とし、各カードに Open / Closed の切替トグルを持たせる。
 - Body カードは独立して開閉でき、同時に複数件を展開してよい。
 - 初期表示は 1 番目の Body のみ Open とし、以後はユーザー操作を優先する。
+
+### 7.1.4 Visualization overlay 要件
+
+- Simulation metrics overlay は Viewport 右下に固定配置する。
+- overlay の情報量は維持するが、Large では最大幅 240px 以下の compact 表示とする。
+- overlay の内側余白は 12px 以下、主要値フォントは 1rem 以下を目安とする。
+- Reproducibility Key を含む長い値は折り返して表示し、Canvas 外にはみ出さないこと。
 
 ## 7.2 UI 文言
 

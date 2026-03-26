@@ -69,11 +69,15 @@ function testCompactControlsCssContract() {
   assert.match(styleCss, /\.status-notice\[hidden\] \{[\s\S]*?display: none;/);
   assert.match(styleCss, /\.viewport-stage \{[\s\S]*?min-height: clamp\(420px, 56vh, 540px\);/);
   assert.match(styleCss, /grid-template-columns: minmax\(240px, 300px\) minmax\(0, 1fr\);/);
+  assert.match(styleCss, /grid-template-areas:[\s\S]*?"controls controls"[\s\S]*?"bodies viewport"/);
   assert.match(styleCss, /@media \(min-width: 600px\) \{[\s\S]*?\.viewport-stage \{[\s\S]*?min-height: clamp\(520px, 66vh, 700px\);/);
+  assert.match(styleCss, /\.metrics-overlay \{[\s\S]*?width: min\(calc\(100% - 20px\), 228px\);[\s\S]*?padding: 10px 12px;/);
   assert.match(styleCss, /@media \(min-width: 1024px\) \{[\s\S]*?\.viewport-panel \{[\s\S]*?min-height: calc\(var\(--app-height\) \* 1\.08 - 88px\);/);
+  assert.match(styleCss, /@media \(min-width: 1024px\) \{[\s\S]*?\.control-panel \{[\s\S]*?grid-template-columns: minmax\(140px, 170px\) minmax\(0, 1fr\) minmax\(280px, 340px\);/);
   assert.match(styleCss, /@media \(min-width: 1024px\) \{[\s\S]*?\.viewport-stage \{[\s\S]*?min-height: clamp\(680px, 78vh, 900px\);/);
   assert.match(styleCss, /@media \(min-width: 1280px\) \{[\s\S]*?\.app-header \{[\s\S]*?grid-template-columns: minmax\(0, 1fr\) minmax\(360px, 1\.2fr\);/);
   assert.match(styleCss, /@media \(min-width: 1440px\) \{[\s\S]*?\.header-copy \{[\s\S]*?display: block;/);
+  assert.match(styleCss, /@media \(min-width: 1440px\) \{[\s\S]*?\.control-panel \.control-grid \{[\s\S]*?grid-template-columns: repeat\(8, minmax\(0, 1fr\)\);/);
   assert.match(styleCss, /@media \(min-width: 1440px\) \{[\s\S]*?\.viewport-stage \{[\s\S]*?min-height: clamp\(760px, 86vh, 1020px\);/);
   assert.match(styleCss, /\.control-panel \.button-grid \{[\s\S]*?grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/);
   assert.match(styleCss, /\.body-card-toggle \{[\s\S]*?min-height: 24px;/);

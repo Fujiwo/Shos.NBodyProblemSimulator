@@ -16,12 +16,14 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 - The header shows the app title, playback state, and a runtime status message.
 - The header stays compact so the viewport keeps most of the vertical space.
 - The helper copy in the header is hidden on small and medium layouts and reappears only on wide desktop layouts.
+- The controls panel sits directly below the header at every breakpoint, and on large layouts it becomes a compact full-width strip above the body editor and viewport row.
 - The controls panel uses compact visible labels such as Count, dt, Soft, Target, and Trail while keeping full accessible names via title or aria-label.
 - The playback buttons use compact visible text such as Gen, Run, Hold, Go, and Reset.
 - Validation is hidden when there are no errors and is emphasized only when invalid input exists.
 - Body settings provide an Open or Closed toggle for every body card and allow multiple body editors to stay open at the same time.
 - The visualization stage is intentionally tall to prioritize the canvas area over non-interactive chrome.
 - The visualization height scales in stages across mobile, tablet, desktop, and wide desktop breakpoints.
+- The simulation metrics overlay is intentionally compact so it does not dominate the viewport on desktop and wide desktop layouts.
 
 ## Local setup
 
