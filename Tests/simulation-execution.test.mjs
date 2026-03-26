@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 
 import { computeTotalEnergy } from "../Sources/app/physics-engine.js";
 import {
+  createWorkerSimulationConfig,
+  createWorkerSimulationConfigKey,
   decodeBodyStateBuffer,
   encodeBodyStateBuffer,
   MainThreadSimulationExecutor,
@@ -50,6 +52,8 @@ class FakeWorker {
       message: new Set(),
       error: new Set()
     };
+    this.syncedSimulationConfig = null;
+    this.messages = [];
   }
 
   addEventListener(type, listener) {
@@ -61,10 +65,17 @@ class FakeWorker {
   }
 
   postMessage(message) {
+    this.messages.push(message);
+
+    if (message.type === "sync-simulation-config") {
+      this.syncedSimulationConfig = message.payload.simulationConfig;
+      return;
+    }
+
     import("../Sources/app/physics-engine.js").then(({ simulateBatch }) => {
       const result = simulateBatch({
         bodies: decodeBodyStateBuffer(message.payload.bodyStateBuffer),
-        simulationConfig: message.payload.simulationConfig,
+        simulationConfig: this.syncedSimulationConfig,
         stepCount: message.payload.stepCount,
         referenceEnergy: message.payload.referenceEnergy,
         initialStepCount: message.payload.initialStepCount
@@ -182,6 +193,71 @@ async function testMainThreadAndWorkerExecutorsProduceEquivalentResults() {
   workerExecutor.dispose();
 }
 
+async function testWorkerExecutorSyncsSimulationConfigOnlyWhenChanged() {
+  const fakeWorker = new FakeWorker();
+  const workerExecutor = new WorkerSimulationExecutor({
+    workerFactory: () => fakeWorker,
+    now: (() => {
+      let value = 0;
+      return () => (value += 1);
+    })()
+  });
+
+  const configA = createConfig("velocity-verlet");
+  const configB = createConfig("rk4");
+  const bodies = createBodies();
+  const referenceEnergyA = computeTotalEnergy(bodies, configA);
+  const referenceEnergyB = computeTotalEnergy(bodies, configB);
+
+  const jobA = createSimulationJob({
+    appState: { bodies, simulationConfig: configA },
+    stepCount: 1,
+    referenceEnergy: referenceEnergyA,
+    initialStepCount: 0,
+    runId: 1,
+    sequence: 1
+  });
+  const jobB = createSimulationJob({
+    appState: { bodies, simulationConfig: configA },
+    stepCount: 1,
+    referenceEnergy: referenceEnergyA,
+    initialStepCount: 1,
+    runId: 1,
+    sequence: 2
+  });
+  const jobC = createSimulationJob({
+    appState: { bodies, simulationConfig: configB },
+    stepCount: 1,
+    referenceEnergy: referenceEnergyB,
+    initialStepCount: 2,
+    runId: 1,
+    sequence: 3
+  });
+
+  const resultA = workerExecutor.submit(jobA);
+  await flushPromises();
+  await resultA;
+
+  const resultB = workerExecutor.submit(jobB);
+  await flushPromises();
+  await resultB;
+
+  const resultC = workerExecutor.submit(jobC);
+  await flushPromises();
+  await resultC;
+
+  assert.equal(fakeWorker.messages[0].type, "sync-simulation-config");
+  assert.equal(fakeWorker.messages[1].type, "simulate-batch");
+  assert.equal(fakeWorker.messages[2].type, "simulate-batch");
+  assert.equal(fakeWorker.messages[3].type, "sync-simulation-config");
+  assert.equal(fakeWorker.messages[4].type, "simulate-batch");
+  assert.deepEqual(fakeWorker.messages[0].payload.simulationConfig, createWorkerSimulationConfig(configA));
+  assert.deepEqual(fakeWorker.messages[3].payload.simulationConfig, createWorkerSimulationConfig(configB));
+  assert.equal(createWorkerSimulationConfigKey(configA), "gravitationalConstant:1|timeStep:0.005|softening:0.01|integrator:velocity-verlet");
+
+  workerExecutor.dispose();
+}
+
 async function testCreateExecutorFallsBackToMainThreadAfterWorkerRuntimeError() {
   globalThis.Worker = class {};
   const { createSimulationExecutor } = await import("../Sources/app/simulation-execution.js");
@@ -217,6 +293,7 @@ async function testCreateExecutorFallsBackToMainThreadAfterWorkerRuntimeError() 
 }
 
 await testMainThreadAndWorkerExecutorsProduceEquivalentResults();
+await testWorkerExecutorSyncsSimulationConfigOnlyWhenChanged();
 await testCreateExecutorFallsBackToMainThreadAfterWorkerRuntimeError();
 
 console.log("simulation-execution.test.mjs ok");

@@ -2,6 +2,13 @@ import { simulateBatch } from "./physics-engine.js";
 
 export const BODY_STATE_STRIDE = 7;
 
+const WORKER_SIMULATION_CONFIG_KEYS = [
+  "gravitationalConstant",
+  "timeStep",
+  "softening",
+  "integrator"
+];
+
 function defaultNow() {
   return typeof performance !== "undefined" && typeof performance.now === "function"
     ? performance.now()
@@ -68,15 +75,25 @@ export function decodeBodyStateBuffer(bodyStateBuffer, templateBodies = null) {
   return bodies;
 }
 
+export function createWorkerSimulationConfig(simulationConfig) {
+  const config = {};
+
+  for (const key of WORKER_SIMULATION_CONFIG_KEYS) {
+    config[key] = simulationConfig[key];
+  }
+
+  return config;
+}
+
+export function createWorkerSimulationConfigKey(simulationConfig) {
+  return WORKER_SIMULATION_CONFIG_KEYS
+    .map((key) => `${key}:${simulationConfig[key]}`)
+    .join("|");
+}
+
 function createWorkerPayload(job) {
   return {
     bodyStateBuffer: encodeBodyStateBuffer(job.bodies).buffer,
-    simulationConfig: {
-      gravitationalConstant: job.simulationConfig.gravitationalConstant,
-      timeStep: job.simulationConfig.timeStep,
-      softening: job.simulationConfig.softening,
-      integrator: job.simulationConfig.integrator
-    },
     stepCount: job.stepCount,
     referenceEnergy: job.referenceEnergy,
     initialStepCount: job.initialStepCount,
@@ -160,6 +177,7 @@ export class WorkerSimulationExecutor {
     this.now = now;
     this.worker = workerFactory();
     this.pending = new Map();
+    this.lastSimulationConfigKey = null;
     this.handleMessage = this.handleMessage.bind(this);
     this.handleError = this.handleError.bind(this);
     this.worker.addEventListener("message", this.handleMessage);
@@ -177,21 +195,33 @@ export class WorkerSimulationExecutor {
     const requestKey = createSimulationRequestKey(job.runId, job.sequence);
     const startedAt = this.now();
     const payload = createWorkerPayload(job);
+    const simulationConfigKey = createWorkerSimulationConfigKey(job.simulationConfig);
 
     return new Promise((resolve, reject) => {
-      this.pending.set(requestKey, {
-        resolve,
-        reject,
-        startedAt,
-        templateBodies: job.bodies
-      });
       try {
+        if (this.lastSimulationConfigKey !== simulationConfigKey) {
+          this.worker.postMessage({
+            type: "sync-simulation-config",
+            payload: {
+              simulationConfig: createWorkerSimulationConfig(job.simulationConfig)
+            }
+          });
+          this.lastSimulationConfigKey = simulationConfigKey;
+        }
+
+        this.pending.set(requestKey, {
+          resolve,
+          reject,
+          startedAt,
+          templateBodies: job.bodies
+        });
         this.worker.postMessage({
           type: "simulate-batch",
           payload
         }, [payload.bodyStateBuffer]);
       } catch (error) {
         this.pending.delete(requestKey);
+        this.lastSimulationConfigKey = null;
         reject(error);
       }
     });
@@ -221,6 +251,8 @@ export class WorkerSimulationExecutor {
   }
 
   handleError(error) {
+    this.lastSimulationConfigKey = null;
+
     for (const pending of this.pending.values()) {
       pending.reject(error);
     }
@@ -233,6 +265,7 @@ export class WorkerSimulationExecutor {
     this.worker.removeEventListener("error", this.handleError);
     this.worker.terminate();
     this.pending.clear();
+    this.lastSimulationConfigKey = null;
   }
 }
 

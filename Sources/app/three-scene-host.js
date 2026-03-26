@@ -138,13 +138,15 @@ export class ThreeSceneHost {
 
   createTrailState(maxPoints) {
     const normalizedMaxPoints = Math.max(2, Number(maxPoints) || 300);
+    const displayCapacity = normalizedMaxPoints * 2;
 
     return {
       maxPoints: normalizedMaxPoints,
       ringBuffer: new Float32Array(normalizedMaxPoints * 3),
-      displayBuffer: new Float32Array(normalizedMaxPoints * 3),
+      displayBuffer: new Float32Array(displayCapacity * 3),
       nextIndex: 0,
       count: 0,
+      displayCapacity,
       lastPoint: null
     };
   }
@@ -176,26 +178,23 @@ export class ThreeSceneHost {
     trailState.ringBuffer[offset] = point.x;
     trailState.ringBuffer[offset + 1] = point.y;
     trailState.ringBuffer[offset + 2] = point.z;
+    trailState.displayBuffer[offset] = point.x;
+    trailState.displayBuffer[offset + 1] = point.y;
+    trailState.displayBuffer[offset + 2] = point.z;
+
+    const duplicateOffset = (trailState.nextIndex + trailState.maxPoints) * 3;
+    trailState.displayBuffer[duplicateOffset] = point.x;
+    trailState.displayBuffer[duplicateOffset + 1] = point.y;
+    trailState.displayBuffer[duplicateOffset + 2] = point.z;
+
     trailState.lastPoint = point;
     trailState.nextIndex = (trailState.nextIndex + 1) % trailState.maxPoints;
     trailState.count = Math.min(trailState.count + 1, trailState.maxPoints);
     return true;
   }
 
-  copyTrailStateToDisplayBuffer(trailState) {
-    if (trailState.count === 0) {
-      return;
-    }
-
-    const logicalStart = trailState.count === trailState.maxPoints ? trailState.nextIndex : 0;
-
-    for (let index = 0; index < trailState.count; index += 1) {
-      const ringIndex = ((logicalStart + index) % trailState.maxPoints) * 3;
-      const displayIndex = index * 3;
-      trailState.displayBuffer[displayIndex] = trailState.ringBuffer[ringIndex];
-      trailState.displayBuffer[displayIndex + 1] = trailState.ringBuffer[ringIndex + 1];
-      trailState.displayBuffer[displayIndex + 2] = trailState.ringBuffer[ringIndex + 2];
-    }
+  getTrailDisplayStart(trailState) {
+    return trailState.count === trailState.maxPoints ? trailState.nextIndex : 0;
   }
 
   ensureTrailGeometry(trailLine, trailState) {
@@ -341,10 +340,9 @@ export class ThreeSceneHost {
         continue;
       }
 
-      this.copyTrailStateToDisplayBuffer(trailState);
       const attribute = this.ensureTrailGeometry(trailLine, trailState);
       attribute.needsUpdate = true;
-      trailLine.geometry.setDrawRange(0, trailState.count);
+      trailLine.geometry.setDrawRange(this.getTrailDisplayStart(trailState), trailState.count);
     }
   }
 

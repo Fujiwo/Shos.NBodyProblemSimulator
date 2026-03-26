@@ -1,6 +1,8 @@
 import { simulateBatch } from "../app/physics-engine.js";
 import { decodeBodyStateBuffer, encodeBodyStateBuffer } from "../app/simulation-execution.js";
 
+let activeSimulationConfig = null;
+
 function now() {
   return typeof performance !== "undefined" && typeof performance.now === "function"
     ? performance.now()
@@ -10,15 +12,21 @@ function now() {
 self.addEventListener("message", (event) => {
   const message = event.data;
 
+  if (message?.type === "sync-simulation-config") {
+    activeSimulationConfig = message.payload?.simulationConfig ?? null;
+    return;
+  }
+
   if (!message || message.type !== "simulate-batch") {
     return;
   }
 
   const startedAt = now();
   const payload = message.payload;
+  const simulationConfig = activeSimulationConfig ?? payload.simulationConfig;
   const result = simulateBatch({
     bodies: decodeBodyStateBuffer(payload.bodyStateBuffer),
-    simulationConfig: payload.simulationConfig,
+    simulationConfig,
     stepCount: payload.stepCount,
     referenceEnergy: payload.referenceEnergy,
     initialStepCount: payload.initialStepCount

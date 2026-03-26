@@ -344,6 +344,7 @@ function testTrailResetAndCameraTarget() {
 
   assert.equal(host.trailLines.size, 1);
   assert.equal(host.trailHistory.get("body-1").count, 2);
+  assert.equal(host.trailLines.get("body-1").geometry.drawRange.start, 0);
   assert.deepEqual(host.camera.lookAtTarget, { x: 1, y: 0, z: 0 });
   assert.equal(host.trailLines.get("body-1").geometry.setFromPointsCalls, 0);
 
@@ -351,6 +352,39 @@ function testTrailResetAndCameraTarget() {
 
   assert.equal(host.trailLines.size, 0);
   assert.equal(host.trailHistory.size, 0);
+}
+
+function testTrailDisplayBufferUsesPartialAppendAfterWrap() {
+  delete globalThis.THREE;
+  globalThis.window = { devicePixelRatio: 1 };
+
+  const host = new ThreeSceneHost(createCanvasStub(), { three: createThreeStub() });
+  const positions = [0, 1, 2, 3, 4].map((x) => ({
+    id: "body-1",
+    name: "earth",
+    mass: 1,
+    position: { x, y: 0, z: 0 },
+    color: "#3366ff"
+  }));
+
+  for (let index = 0; index < positions.length; index += 1) {
+    host.render(createModel({
+      bodies: [positions[index]],
+      simulationTime: index + 1,
+      showTrails: true,
+      cameraTarget: "body-1"
+    }));
+  }
+
+  const trailState = host.trailHistory.get("body-1");
+  const geometry = host.trailLines.get("body-1").geometry;
+  const attribute = geometry.getAttribute("position");
+
+  assert.equal(trailState.count, 4);
+  assert.equal(geometry.drawRange.start, 1);
+  assert.equal(geometry.drawRange.count, 4);
+  assert.equal(attribute.array.length, 24);
+  assert.deepEqual(Array.from(attribute.array.slice(3, 15)), [1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 0]);
 }
 
 function testResizeUpdatesRendererAndCamera() {
@@ -476,6 +510,7 @@ testTextureFallbackAndLoadedTexture();
 testInitializationStatusReportsFallbackReason();
 testInitializationStatusReportsRendererConstructionFailure();
 testTrailResetAndCameraTarget();
+testTrailDisplayBufferUsesPartialAppendAfterWrap();
 testResizeUpdatesRendererAndCamera();
 testSystemCenterCameraTracksCenterOfMass();
 testSystemCenterFallsBackToPositionAverageWhenTotalMassIsZero();
