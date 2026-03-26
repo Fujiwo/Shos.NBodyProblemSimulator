@@ -308,8 +308,9 @@ Reset 実行時の復元内容は以下で固定する。
 
 ### 6.2.1 採用アルゴリズム
 
-- 初回実装は Velocity Verlet を採用する。
-- 比較対象として RK4 を評価するが、初回リリースには含めない。
+- 現行既定積分法は Velocity Verlet とする。
+- Phase 4 では比較対象として RK4 を追加する。
+- 既定値は Phase 4 実装後も `velocity-verlet` のままとする。
 - 時間刻みは固定時間刻みとする。
 - 重力定数は `G = 1.0` とする。
 - 既定値は `dt = 0.005` とする。
@@ -386,6 +387,7 @@ UI 文言は英語とし、accessible name は正式名称を保持する。visi
   - accessible name: `Seed`, visible text: `Seed`
   - accessible name: `Time Step`, visible text: `dt`
   - accessible name: `Softening`, visible text: `Soft`
+  - accessible name: `Integrator`, visible text: `Int`
   - accessible name: `Camera Target`, visible text: `Target`
   - accessible name: `Trails`, visible text: `Trail`
   - Body card fields: `Name`, `Mass`, `Position`, `Velocity`, `Color`
@@ -420,7 +422,7 @@ SimulationConfig {
   gravitationalConstant: number
   timeStep: number
   softening: number
-  integrator: 'velocity-verlet'
+  integrator: 'velocity-verlet' | 'rk4'
   maxTrailPoints: number
   presetId: string | null
   seed: number | null
@@ -528,18 +530,21 @@ AppState {
 
 ## 11. Worker 対応仕様
 
-- 初回リリースではメインスレッド版を基本実装とする。
+- 現行 baseline ではメインスレッド版を既定実行経路とする。
+- Phase 4 では main thread と Worker の両実行経路を持つ。
 - 物理演算モジュールは Worker 移行可能な API を前提に設計する。
 - Worker 有効化条件は以下とする。
   - Desktop Chrome 最新安定版で、Body 数 10、Trail on、60 秒計測時に FPS または simulation pipeline time の目標を満たせない場合
 - Worker 導入時の責務は以下とする。
   - Main thread: UI、Three.js、localStorage
   - Worker: PhysicsEngine、energy 計算、snapshot 生成
+- request / response には `runId` と `stepSequence` 相当の世代識別子を含め、現行実行状態と一致しない response は破棄する。
 
 Worker 導入後の受け入れ条件は以下とする。
 
 - round-trip を含む simulation pipeline time が通常時 4ms 以内、ピーク 8ms 以内
 - FPS 指標が同一条件で目標を満たすこと
+- main thread 実行と Worker 実行で、同一 integrator・同一初期条件・同一 step 数における position / velocity 各成分の絶対差および energy error の絶対差が `1e-8` 以下であること
 
 Worker 導入有無の最終判断は以下で行う。
 

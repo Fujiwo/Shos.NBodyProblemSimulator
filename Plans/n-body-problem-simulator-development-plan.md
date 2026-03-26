@@ -579,32 +579,27 @@ UiState {
 - エネルギー計算を実装する
 - softening を実装する
 
-### Phase 4: 3D 描画
+### Phase 4: 積分法比較と Worker 対応
 
-- Three.js scene, camera, renderer を実装する
-- Body mesh と color 管理を実装する
-- `Sources/images/` 配下の画像を使った texture material を実装する
-- trail 描画を実装する
-- overlay metrics を実装する
+- `simulationConfig.integrator` を `velocity-verlet` / `rk4` の切替前提で整理する
+- RK4 を本実装し、Velocity Verlet との比較可能な検証経路を追加する
+- physics 実行を Worker 互換 API に再構成する
+- `Sources/workers/physics-worker.js` を追加し、main thread と Worker の両実行経路を持たせる
+- simulation pipeline time を計測し、main thread 実行との比較ができるようにする
 
-### Phase 5: シミュレーション制御
+### Phase 5: 性能最適化と採用判断
 
-- Start, Pause, Resume, Reset を実装する
-- Generate を実装する
-- preset / seed の復元を実装する
-- `committedInitialState` の更新と復元を実装する
-- 状態遷移制御を実装する
-
-### Phase 6: 性能最適化
-
-- FPS と演算時間を計測する
+- FPS、main thread 物理演算時間、simulation pipeline time を計測する
 - hotspot を特定する
-- 必要時に Worker 化する
+- Body 数 10、trail 有効、60 秒実行条件で Worker 採用可否を判定する
+- Worker fallback と stale response 防止を含む運用条件を固める
 
-### Phase 7: テストと仕上げ
+### Phase 6: テストと仕上げ
 
 - preset ごとの再現性検証
 - エネルギー誤差検証
+- RK4 と Velocity Verlet の比較検証
+- main thread と Worker の結果差検証
 - モバイル UI 検証
 - README と仕様の整備
 
