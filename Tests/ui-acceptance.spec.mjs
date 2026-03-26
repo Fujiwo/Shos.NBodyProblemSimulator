@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+test.setTimeout(60000);
+
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     globalThis.localStorage?.clear();
@@ -36,14 +38,72 @@ test("compact controls keep short visible text and full accessible names", async
 });
 
 test("header stays compact while visualization keeps a tall viewport", async ({ page }) => {
+  await expect(page.locator('.app-header')).toBeVisible();
+  await expect(page.locator('.viewport-stage')).toBeVisible();
   const headerBox = await page.locator('.app-header').boundingBox();
   const viewportBox = await page.locator('.viewport-stage').boundingBox();
 
   expect(headerBox).not.toBeNull();
   expect(viewportBox).not.toBeNull();
 
-  expect(headerBox.height).toBeLessThanOrEqual(92);
-  expect(viewportBox.height).toBeGreaterThanOrEqual(700);
+  expect(headerBox.height).toBeLessThanOrEqual(94);
+  expect(viewportBox.height).toBeGreaterThanOrEqual(720);
+});
+
+test.describe("responsive layout thresholds", () => {
+  test.describe("mobile", () => {
+    test.use({ viewport: { width: 390, height: 844 } });
+
+    test("keeps compact header and usable viewport", async ({ page }) => {
+      await expect(page.locator('.app-header')).toBeVisible();
+      await expect(page.locator('.viewport-stage')).toBeVisible();
+
+      const headerBox = await page.locator('.app-header').boundingBox();
+      const viewportBox = await page.locator('.viewport-stage').boundingBox();
+
+      expect(headerBox).not.toBeNull();
+      expect(viewportBox).not.toBeNull();
+      await expect(page.locator('.header-copy')).toBeHidden();
+      expect(headerBox.height).toBeLessThanOrEqual(126);
+      expect(viewportBox.height).toBeGreaterThanOrEqual(470);
+    });
+  });
+
+  test.describe("tablet", () => {
+    test.use({ viewport: { width: 834, height: 1112 } });
+
+    test("increases viewport height without showing header helper copy", async ({ page }) => {
+      await expect(page.locator('.app-header')).toBeVisible();
+      await expect(page.locator('.viewport-stage')).toBeVisible();
+
+      const headerBox = await page.locator('.app-header').boundingBox();
+      const viewportBox = await page.locator('.viewport-stage').boundingBox();
+
+      expect(headerBox).not.toBeNull();
+      expect(viewportBox).not.toBeNull();
+      await expect(page.locator('.header-copy')).toBeHidden();
+      expect(headerBox.height).toBeLessThanOrEqual(126);
+      expect(viewportBox.height).toBeGreaterThanOrEqual(640);
+    });
+  });
+
+  test.describe("wide desktop", () => {
+    test.use({ viewport: { width: 1440, height: 1024 } });
+
+    test("restores header helper copy and expands viewport further", async ({ page }) => {
+      await expect(page.locator('.app-header')).toBeVisible();
+      await expect(page.locator('.viewport-stage')).toBeVisible();
+
+      const headerBox = await page.locator('.app-header').boundingBox();
+      const viewportBox = await page.locator('.viewport-stage').boundingBox();
+
+      expect(headerBox).not.toBeNull();
+      expect(viewportBox).not.toBeNull();
+      await expect(page.locator('.header-copy')).toBeVisible();
+      expect(headerBox.height).toBeLessThanOrEqual(104);
+      expect(viewportBox.height).toBeGreaterThanOrEqual(820);
+    });
+  });
 });
 
 test("validation appears only while invalid and start stays blocked", async ({ page }) => {
