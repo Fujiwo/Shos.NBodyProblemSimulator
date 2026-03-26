@@ -284,12 +284,22 @@ function testBootstrapOverwritesCorruptedStorageWithFallbackState() {
   assert.equal(canvasElement.width, 640);
   assert.equal(canvasElement.height, 360);
   assert.equal(typeof app.dispose, "function");
-  assert.deepEqual(app.destroyables.map((entry) => entry.label), [
-    "store-subscription",
-    "ui-shell",
-    "layout-service",
-    "simulation-loop",
-    "renderer"
+  assert.deepEqual(app.destroyables.map((entry) => ({
+    category: entry.category,
+    labels: entry.destroyables.map((destroyable) => destroyable.label)
+  })), [
+    {
+      category: "bindings",
+      labels: ["store-subscription", "ui-shell"]
+    },
+    {
+      category: "runtime-services",
+      labels: ["layout-service", "simulation-loop"]
+    },
+    {
+      category: "rendering",
+      labels: ["renderer"]
+    }
   ]);
 }
 
@@ -369,10 +379,35 @@ function testBootstrapDisposeStopsResizeBindingAndLoop() {
   assert.deepEqual(cancelledFrames, [1]);
 }
 
+function testBootstrapDisposeUsesDeclaredCategoryOrder() {
+  const { documentRef } = createBootstrapHarness(undefined);
+  const app = bootstrapApp(documentRef);
+  const disposeOrder = [];
+
+  for (const category of app.destroyables) {
+    for (const destroyable of category.destroyables) {
+      destroyable.dispose = () => {
+        disposeOrder.push(`${category.category}:${destroyable.label}`);
+      };
+    }
+  }
+
+  app.dispose();
+
+  assert.deepEqual(disposeOrder, [
+    "bindings:store-subscription",
+    "bindings:ui-shell",
+    "runtime-services:layout-service",
+    "runtime-services:simulation-loop",
+    "rendering:renderer"
+  ]);
+}
+
 testBootstrapOverwritesCorruptedStorageWithFallbackState();
 testBootstrapComposesMigrationStatusAndStagesNormalizedState();
 testBootstrapComposesNoSavedStateStatusWithoutRestorePrefix();
 testBootstrapComposesWorkerUnavailableFallbackStatus();
 testBootstrapDisposeStopsResizeBindingAndLoop();
+testBootstrapDisposeUsesDeclaredCategoryOrder();
 
 console.log("bootstrap.test.mjs ok");

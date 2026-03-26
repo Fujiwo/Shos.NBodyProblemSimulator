@@ -25,9 +25,15 @@ function createDestroyable(label, dispose) {
   return { label, dispose };
 }
 
-function disposeDestroyables(destroyables) {
-  for (const destroyable of destroyables) {
-    destroyable.dispose();
+function createDestroyableCategory(category, destroyables) {
+  return { category, destroyables };
+}
+
+function disposeDestroyables(destroyableCategories) {
+  for (const destroyableCategory of destroyableCategories) {
+    for (const destroyable of destroyableCategory.destroyables) {
+      destroyable.dispose();
+    }
   }
 }
 
@@ -79,11 +85,17 @@ export function bootstrapApp(documentRef, options = {}) {
   renderer.render(initialModel);
 
   const destroyables = [
-    createDestroyable("store-subscription", unsubscribe),
-    createDestroyable("ui-shell", () => uiShell.dispose()),
-    createDestroyable("layout-service", () => layoutService.stop()),
-    createDestroyable("simulation-loop", () => simulationLoop.dispose()),
-    createDestroyable("renderer", () => renderer.dispose())
+    createDestroyableCategory("bindings", [
+      createDestroyable("store-subscription", unsubscribe),
+      createDestroyable("ui-shell", () => uiShell.dispose())
+    ]),
+    createDestroyableCategory("runtime-services", [
+      createDestroyable("layout-service", () => layoutService.stop()),
+      createDestroyable("simulation-loop", () => simulationLoop.dispose())
+    ]),
+    createDestroyableCategory("rendering", [
+      createDestroyable("renderer", () => renderer.dispose())
+    ])
   ];
 
   let disposed = false;

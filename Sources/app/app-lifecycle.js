@@ -15,9 +15,9 @@ export function clearActiveApp(globalRef = globalThis) {
 
 export function replaceActiveApp(createApp, globalRef = globalThis) {
   const previousApp = getActiveApp(globalRef);
-  previousApp?.dispose?.();
 
   const nextApp = createApp();
+  previousApp?.dispose?.();
   return setActiveApp(nextApp, globalRef);
 }
 
