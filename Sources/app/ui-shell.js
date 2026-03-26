@@ -59,7 +59,7 @@ function formatCompactNumber(value) {
 }
 
 function formatVectorSummary(vector) {
-  return `${formatCompactNumber(vector.x)}, ${formatCompactNumber(vector.y)}, ${formatCompactNumber(vector.z)}`;
+  return `${formatCompactNumber(vector.x)}/${formatCompactNumber(vector.y)}`;
 }
 
 function formatColorSummary(value) {

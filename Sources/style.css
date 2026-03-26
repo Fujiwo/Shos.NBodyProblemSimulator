@@ -272,17 +272,18 @@ button:disabled {
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.68);
   overflow: clip;
+  position: relative;
 }
 
-  grid-template-columns: auto 1fr;
+.body-card summary {
   align-items: start;
   cursor: pointer;
+  display: grid;
   padding: 12px 108px 12px 14px;
   gap: 4px;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   list-style: none;
   min-height: 44px;
-  padding: 12px 14px;
 }
 
 .body-card summary::-webkit-details-marker {
@@ -514,6 +515,31 @@ dd {
   margin: 4px 0 0;
   font-size: 1.1rem;
   font-weight: 700;
+}
+
+@media (max-width: 599px) {
+  .body-card summary {
+    padding-right: 48px;
+  }
+
+  .body-card-chip {
+    font-size: 0.62rem;
+    padding: 2px 6px;
+  }
+
+  .body-card-inline-tools {
+    right: 10px;
+    top: 12px;
+  }
+
+  .body-card-color-control {
+    gap: 0;
+    padding: 2px;
+  }
+
+  .body-card-color-code {
+    display: none;
+  }
 }
 
 @media (min-width: 600px) {
