@@ -1,5 +1,7 @@
 import { simulateBatch } from "./physics-engine.js";
 
+export const BODY_STATE_STRIDE = 7;
+
 function defaultNow() {
   return typeof performance !== "undefined" && typeof performance.now === "function"
     ? performance.now()
@@ -8,6 +10,79 @@ function defaultNow() {
 
 export function createSimulationRequestKey(runId, sequence) {
   return `${runId}:${sequence}`;
+}
+
+export function encodeBodyStateBuffer(bodies) {
+  const buffer = new Float64Array(bodies.length * BODY_STATE_STRIDE);
+
+  for (let index = 0; index < bodies.length; index += 1) {
+    const body = bodies[index];
+    const offset = index * BODY_STATE_STRIDE;
+
+    buffer[offset] = body.mass;
+    buffer[offset + 1] = body.position.x;
+    buffer[offset + 2] = body.position.y;
+    buffer[offset + 3] = body.position.z;
+    buffer[offset + 4] = body.velocity.x;
+    buffer[offset + 5] = body.velocity.y;
+    buffer[offset + 6] = body.velocity.z;
+  }
+
+  return buffer;
+}
+
+export function decodeBodyStateBuffer(bodyStateBuffer, templateBodies = null) {
+  const numericBuffer = bodyStateBuffer instanceof Float64Array
+    ? bodyStateBuffer
+    : new Float64Array(bodyStateBuffer);
+  const bodyCount = Math.floor(numericBuffer.length / BODY_STATE_STRIDE);
+  const bodies = [];
+
+  for (let index = 0; index < bodyCount; index += 1) {
+    const offset = index * BODY_STATE_STRIDE;
+    const dynamicState = {
+      mass: numericBuffer[offset],
+      position: {
+        x: numericBuffer[offset + 1],
+        y: numericBuffer[offset + 2],
+        z: numericBuffer[offset + 3]
+      },
+      velocity: {
+        x: numericBuffer[offset + 4],
+        y: numericBuffer[offset + 5],
+        z: numericBuffer[offset + 6]
+      }
+    };
+
+    if (templateBodies && templateBodies[index]) {
+      bodies.push({
+        ...templateBodies[index],
+        ...dynamicState
+      });
+      continue;
+    }
+
+    bodies.push(dynamicState);
+  }
+
+  return bodies;
+}
+
+function createWorkerPayload(job) {
+  return {
+    bodyStateBuffer: encodeBodyStateBuffer(job.bodies).buffer,
+    simulationConfig: {
+      gravitationalConstant: job.simulationConfig.gravitationalConstant,
+      timeStep: job.simulationConfig.timeStep,
+      softening: job.simulationConfig.softening,
+      integrator: job.simulationConfig.integrator
+    },
+    stepCount: job.stepCount,
+    referenceEnergy: job.referenceEnergy,
+    initialStepCount: job.initialStepCount,
+    runId: job.runId,
+    sequence: job.sequence
+  };
 }
 
 export function createSimulationJob({
@@ -101,14 +176,20 @@ export class WorkerSimulationExecutor {
   submit(job) {
     const requestKey = createSimulationRequestKey(job.runId, job.sequence);
     const startedAt = this.now();
+    const payload = createWorkerPayload(job);
 
     return new Promise((resolve, reject) => {
-      this.pending.set(requestKey, { resolve, reject, startedAt });
+      this.pending.set(requestKey, {
+        resolve,
+        reject,
+        startedAt,
+        templateBodies: job.bodies
+      });
       try {
         this.worker.postMessage({
           type: "simulate-batch",
-          payload: job
-        });
+          payload
+        }, [payload.bodyStateBuffer]);
       } catch (error) {
         this.pending.delete(requestKey);
         reject(error);
@@ -133,6 +214,7 @@ export class WorkerSimulationExecutor {
     this.pending.delete(requestKey);
     pending.resolve({
       ...message.payload,
+      bodies: decodeBodyStateBuffer(message.payload.bodyStateBuffer, pending.templateBodies),
       mode: this.mode,
       pipelineTimeMs: this.now() - pending.startedAt
     });

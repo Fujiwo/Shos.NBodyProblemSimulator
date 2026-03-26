@@ -1,5 +1,3 @@
-import { syncTrailHistoryEntries } from "./renderer-helpers.js";
-
 function createVector(x = 0, y = 0, z = 0) {
   return { x, y, z };
 }
@@ -70,19 +68,20 @@ export function resolveSceneCameraFrame(appState, simulationTime) {
 }
 
 export function buildSceneTrailPlan({ trailHistory, appState, simulationTime }) {
-  const nextTrailHistory = syncTrailHistoryEntries({
-    trailHistory,
-    bodies: appState.bodies,
-    showTrails: appState.uiState.showTrails,
-    simulationTime,
-    maxTrailPoints: appState.simulationConfig.maxTrailPoints,
-    selectPoint: (body) => ({ x: body.position.x, y: body.position.y, z: body.position.z })
-  });
+  if (!appState.uiState.showTrails || simulationTime === 0) {
+    return {
+      nextTrailHistory: new Map(),
+      shouldReset: true,
+      removedBodyIds: [...trailHistory.keys()]
+    };
+  }
+
+  const activeBodyIds = new Set(appState.bodies.map((body) => body.id));
 
   return {
-    nextTrailHistory,
-    shouldReset: nextTrailHistory.size === 0,
-    removedBodyIds: [...trailHistory.keys()].filter((bodyId) => !nextTrailHistory.has(bodyId))
+    nextTrailHistory: trailHistory,
+    shouldReset: false,
+    removedBodyIds: [...trailHistory.keys()].filter((bodyId) => !activeBodyIds.has(bodyId))
   };
 }
 

@@ -114,6 +114,9 @@ class GeometryStub {
   constructor() {
     this.disposed = false;
     this.points = [];
+    this.attributes = new Map();
+    this.drawRange = { start: 0, count: 0 };
+    this.setFromPointsCalls = 0;
   }
 
   dispose() {
@@ -121,7 +124,28 @@ class GeometryStub {
   }
 
   setFromPoints(points) {
+    this.setFromPointsCalls += 1;
     this.points = points;
+  }
+
+  setAttribute(name, attribute) {
+    this.attributes.set(name, attribute);
+  }
+
+  getAttribute(name) {
+    return this.attributes.get(name) ?? null;
+  }
+
+  setDrawRange(start, count) {
+    this.drawRange = { start, count };
+  }
+}
+
+class BufferAttributeStub {
+  constructor(array, itemSize) {
+    this.array = array;
+    this.itemSize = itemSize;
+    this.needsUpdate = false;
   }
 }
 
@@ -204,6 +228,7 @@ function createThreeStub() {
     Mesh: MeshStub,
     Line: LineStub,
     Vector3: Vector3Stub,
+    BufferAttribute: BufferAttributeStub,
     SRGBColorSpace: "srgb"
   };
 }
@@ -318,8 +343,9 @@ function testTrailResetAndCameraTarget() {
   host.render(createModel({ bodies: bodiesB, simulationTime: 2, showTrails: true, cameraTarget: "body-1" }));
 
   assert.equal(host.trailLines.size, 1);
-  assert.equal(host.trailHistory.get("body-1").length, 2);
+  assert.equal(host.trailHistory.get("body-1").count, 2);
   assert.deepEqual(host.camera.lookAtTarget, { x: 1, y: 0, z: 0 });
+  assert.equal(host.trailLines.get("body-1").geometry.setFromPointsCalls, 0);
 
   host.render(createModel({ bodies: bodiesB, simulationTime: 3, showTrails: false, cameraTarget: "system-center" }));
 

@@ -6,7 +6,6 @@ import {
 } from "./renderer-helpers.js";
 import {
   buildSceneTrailPlan,
-  createTrailPoints,
   resolveSceneCameraFrame
 } from "./three-scene-runtime.js";
 import {
@@ -137,6 +136,80 @@ export class ThreeSceneHost {
     this.trailHistory.delete(bodyId);
   }
 
+  createTrailState(maxPoints) {
+    const normalizedMaxPoints = Math.max(2, Number(maxPoints) || 300);
+
+    return {
+      maxPoints: normalizedMaxPoints,
+      ringBuffer: new Float32Array(normalizedMaxPoints * 3),
+      displayBuffer: new Float32Array(normalizedMaxPoints * 3),
+      nextIndex: 0,
+      count: 0,
+      lastPoint: null
+    };
+  }
+
+  ensureTrailState(bodyId, maxPoints) {
+    const current = this.trailHistory.get(bodyId);
+    const normalizedMaxPoints = Math.max(2, Number(maxPoints) || 300);
+
+    if (current && current.maxPoints === normalizedMaxPoints) {
+      return current;
+    }
+
+    const nextState = this.createTrailState(normalizedMaxPoints);
+    this.trailHistory.set(bodyId, nextState);
+    return nextState;
+  }
+
+  appendTrailPoint(trailState, point) {
+    if (
+      trailState.lastPoint
+      && trailState.lastPoint.x === point.x
+      && trailState.lastPoint.y === point.y
+      && trailState.lastPoint.z === point.z
+    ) {
+      return false;
+    }
+
+    const offset = trailState.nextIndex * 3;
+    trailState.ringBuffer[offset] = point.x;
+    trailState.ringBuffer[offset + 1] = point.y;
+    trailState.ringBuffer[offset + 2] = point.z;
+    trailState.lastPoint = point;
+    trailState.nextIndex = (trailState.nextIndex + 1) % trailState.maxPoints;
+    trailState.count = Math.min(trailState.count + 1, trailState.maxPoints);
+    return true;
+  }
+
+  copyTrailStateToDisplayBuffer(trailState) {
+    if (trailState.count === 0) {
+      return;
+    }
+
+    const logicalStart = trailState.count === trailState.maxPoints ? trailState.nextIndex : 0;
+
+    for (let index = 0; index < trailState.count; index += 1) {
+      const ringIndex = ((logicalStart + index) % trailState.maxPoints) * 3;
+      const displayIndex = index * 3;
+      trailState.displayBuffer[displayIndex] = trailState.ringBuffer[ringIndex];
+      trailState.displayBuffer[displayIndex + 1] = trailState.ringBuffer[ringIndex + 1];
+      trailState.displayBuffer[displayIndex + 2] = trailState.ringBuffer[ringIndex + 2];
+    }
+  }
+
+  ensureTrailGeometry(trailLine, trailState) {
+    const existingAttribute = trailLine.geometry.getAttribute?.("position");
+
+    if (existingAttribute) {
+      return existingAttribute;
+    }
+
+    const attribute = new this.three.BufferAttribute(trailState.displayBuffer, 3);
+    trailLine.geometry.setAttribute("position", attribute);
+    return attribute;
+  }
+
   resetTrails() {
     for (const bodyId of [...this.trailLines.keys()]) {
       this.removeTrail(bodyId);
@@ -239,10 +312,8 @@ export class ThreeSceneHost {
       this.removeTrail(bodyId);
     }
 
-    this.trailHistory = trailPlan.nextTrailHistory;
-
     for (const body of appState.bodies) {
-      const history = this.trailHistory.get(body.id) ?? [];
+      const trailState = this.ensureTrailState(body.id, appState.simulationConfig.maxTrailPoints);
       let trailLine = this.trailLines.get(body.id);
 
       if (!trailLine) {
@@ -259,7 +330,21 @@ export class ThreeSceneHost {
       }
 
       trailLine.material.color.set(body.color);
-      trailLine.geometry.setFromPoints(createTrailPoints(history, (x, y, z) => new this.three.Vector3(x, y, z)));
+
+      const didAppend = this.appendTrailPoint(trailState, {
+        x: body.position.x,
+        y: body.position.y,
+        z: body.position.z
+      });
+
+      if (!didAppend) {
+        continue;
+      }
+
+      this.copyTrailStateToDisplayBuffer(trailState);
+      const attribute = this.ensureTrailGeometry(trailLine, trailState);
+      attribute.needsUpdate = true;
+      trailLine.geometry.setDrawRange(0, trailState.count);
     }
   }
 

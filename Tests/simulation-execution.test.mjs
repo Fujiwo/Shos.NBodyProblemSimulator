@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 
 import { computeTotalEnergy } from "../Sources/app/physics-engine.js";
 import {
+  decodeBodyStateBuffer,
+  encodeBodyStateBuffer,
   MainThreadSimulationExecutor,
   WorkerSimulationExecutor,
   chooseExecutionMode,
@@ -60,14 +62,26 @@ class FakeWorker {
 
   postMessage(message) {
     import("../Sources/app/physics-engine.js").then(({ simulateBatch }) => {
-      const result = simulateBatch(message.payload);
+      const result = simulateBatch({
+        bodies: decodeBodyStateBuffer(message.payload.bodyStateBuffer),
+        simulationConfig: message.payload.simulationConfig,
+        stepCount: message.payload.stepCount,
+        referenceEnergy: message.payload.referenceEnergy,
+        initialStepCount: message.payload.initialStepCount
+      });
+      const bodyStateBuffer = encodeBodyStateBuffer(result.bodies).buffer;
+
       queueMicrotask(() => {
         for (const listener of this.listeners.message) {
           listener({
             data: {
               type: "simulate-batch:result",
               payload: {
-                ...result,
+                totalEnergy: result.totalEnergy,
+                energyError: result.energyError,
+                totalStepCount: result.totalStepCount,
+                simulationTime: result.simulationTime,
+                bodyStateBuffer,
                 runId: message.payload.runId,
                 sequence: message.payload.sequence,
                 computeTimeMs: 0.25
