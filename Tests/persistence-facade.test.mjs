@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import { createInitialAppState } from "../Sources/app/defaults.js";
 import { PersistenceFacade } from "../Sources/app/persistence-facade.js";
-import { createHydratedAppState } from "../Sources/app/state-rules.js";
+import { PERSISTENCE_POLICY, createHydratedAppState } from "../Sources/app/state-rules.js";
 
 function installStorage(initialValue) {
   const storage = new Map();
@@ -101,6 +101,23 @@ function testSerializeNormalizesExpandedPanelsAndRestorePolicy() {
 
   assert.deepEqual(serialized.uiState.expandedBodyPanels, ["body-1", "body-3"]);
   assert.equal(serialized.playbackRestorePolicy, "restore-as-idle");
+}
+
+function testPersistencePolicyExplicitlyExcludesLifecycleObservabilityFields() {
+  assert.equal(PERSISTENCE_POLICY.nonPersistedRuntimeFields.includes("lifecycleMetadata"), true);
+  assert.equal(PERSISTENCE_POLICY.nonPersistedRuntimeFields.includes("lifecycleNotice"), true);
+
+  const facade = new PersistenceFacade();
+  const appState = createInitialAppState(3);
+  appState.lifecycleMetadata = {
+    reinitializeReason: "manual-restart"
+  };
+  appState.lifecycleNotice = "Restart manual-restart #3 @ 2026-03-27T00:00:00.000Z";
+
+  const serialized = facade.serialize(appState);
+
+  assert.equal(serialized.lifecycleMetadata, undefined);
+  assert.equal(serialized.lifecycleNotice, undefined);
 }
 
 function testLoadMigratesLegacyNamesAndVersion() {
@@ -505,6 +522,7 @@ function testHydrationRejectsOutOfRangeSeedValues() {
 
 testSerializeExcludesTransientPlaybackState();
 testSerializeNormalizesExpandedPanelsAndRestorePolicy();
+testPersistencePolicyExplicitlyExcludesLifecycleObservabilityFields();
 testLoadMigratesLegacyNamesAndVersion();
 testLoadFallsBackForInvalidJson();
 testLoadFallsBackForValidJsonWithInvalidShape();

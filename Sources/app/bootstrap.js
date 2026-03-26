@@ -50,6 +50,40 @@ function formatLifecycleNotice(lifecycleMetadata) {
   return `Restart ${lifecycleMetadata.reinitializeReason} #${lifecycleMetadata.reinitializeSequence} @ ${lifecycleMetadata.reinitializedAt}`;
 }
 
+function createBootstrapDestroyables({ unsubscribe, uiShell, layoutService, simulationLoop, renderer }) {
+  return [
+    createDestroyableCategory(
+      "bindings",
+      "bootstrap",
+      "Detach store and DOM bindings before subsystem shutdown.",
+      [],
+      [
+        createDestroyable("store-subscription", unsubscribe),
+        createDestroyable("ui-shell", () => uiShell.dispose())
+      ]
+    ),
+    createDestroyableCategory(
+      "runtime-services",
+      "bootstrap",
+      "Stop resize orchestration and simulation work before renderer disposal.",
+      ["bindings"],
+      [
+        createDestroyable("layout-service", () => layoutService.stop()),
+        createDestroyable("simulation-loop", () => simulationLoop.dispose())
+      ]
+    ),
+    createDestroyableCategory(
+      "rendering",
+      "renderer-facade",
+      "Release rendering resources after producers and listeners are stopped.",
+      ["runtime-services"],
+      [
+        createDestroyable("renderer", () => renderer.dispose())
+      ]
+    )
+  ];
+}
+
 export function hasValidDestroyableOrder(destroyableCategories) {
   const resolvedCategories = new Set();
 
@@ -139,7 +173,8 @@ export function bootstrapApp(documentRef, options = {}) {
     three = globalThis.THREE,
     executionMode: executionModeOverride,
     workerFactory = createWorkerFactory(),
-    lifecycleMetadata = null
+    lifecycleMetadata = null,
+    destroyablesFactory = createBootstrapDestroyables
   } = options;
   const rootElement = documentRef.querySelector('[data-role="app-root"]');
   const canvasElement = documentRef.querySelector('[data-role="viewport-canvas"]');
@@ -168,6 +203,15 @@ export function bootstrapApp(documentRef, options = {}) {
     renderer.render(model);
   });
 
+  const destroyables = destroyablesFactory({
+    unsubscribe,
+    uiShell,
+    layoutService,
+    simulationLoop,
+    renderer
+  });
+  const destroyablePlan = buildDestroyableDisposePlan(destroyables);
+
   const statusParts = [];
 
   if (loadResult.statusMessage) {
@@ -188,42 +232,11 @@ export function bootstrapApp(documentRef, options = {}) {
   uiShell.render(initialModel);
   renderer.render(initialModel);
 
-  const destroyables = [
-    createDestroyableCategory(
-      "bindings",
-      "bootstrap",
-      "Detach store and DOM bindings before subsystem shutdown.",
-      [],
-      [
-      createDestroyable("store-subscription", unsubscribe),
-      createDestroyable("ui-shell", () => uiShell.dispose())
-      ]
-    ),
-    createDestroyableCategory(
-      "runtime-services",
-      "bootstrap",
-      "Stop resize orchestration and simulation work before renderer disposal.",
-      ["bindings"],
-      [
-      createDestroyable("layout-service", () => layoutService.stop()),
-      createDestroyable("simulation-loop", () => simulationLoop.dispose())
-      ]
-    ),
-    createDestroyableCategory(
-      "rendering",
-      "renderer-facade",
-      "Release rendering resources after producers and listeners are stopped.",
-      ["runtime-services"],
-      [
-      createDestroyable("renderer", () => renderer.dispose())
-      ]
-    )
-  ];
-
   let disposed = false;
 
   return {
     destroyables,
+    destroyablePlan,
     runtime: {
       persistence,
       store,
@@ -240,7 +253,12 @@ export function bootstrapApp(documentRef, options = {}) {
       }
 
       disposed = true;
-      disposeDestroyables(destroyables);
+
+      for (const destroyableCategory of destroyablePlan) {
+        for (const destroyable of destroyableCategory.destroyables) {
+          destroyable.dispose();
+        }
+      }
     }
   };
 }

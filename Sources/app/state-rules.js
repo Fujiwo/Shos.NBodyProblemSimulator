@@ -15,6 +15,32 @@ const PRESET_RULES = {
   "random-cluster": { min: 3, max: 10 }
 };
 
+export const PERSISTENCE_POLICY = Object.freeze({
+  persistedAppStateFields: Object.freeze([
+    "appVersion",
+    "bodyCount",
+    "bodies",
+    "simulationConfig",
+    "uiState.selectedBodyId",
+    "uiState.cameraTarget",
+    "uiState.showTrails",
+    "uiState.expandedBodyPanels",
+    "committedInitialState",
+    "playbackRestorePolicy"
+  ]),
+  nonPersistedRuntimeFields: Object.freeze([
+    "simulationTime",
+    "metrics",
+    "statusMessage",
+    "executionNotice",
+    "lifecycleNotice",
+    "lifecycleMetadata",
+    "validationErrors",
+    "fieldErrors",
+    "fieldDrafts"
+  ])
+});
+
 function isFiniteNumber(value) {
   return Number.isFinite(Number(value));
 }

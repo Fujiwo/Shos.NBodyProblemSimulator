@@ -290,6 +290,11 @@ function testBootstrapOverwritesCorruptedStorageWithFallbackState() {
   assert.equal(canvasElement.width, 640);
   assert.equal(canvasElement.height, 360);
   assert.equal(typeof app.dispose, "function");
+  assert.deepEqual(app.destroyablePlan.map((entry) => entry.category), [
+    "bindings",
+    "runtime-services",
+    "rendering"
+  ]);
   assert.deepEqual(app.destroyables.map((entry) => ({
     category: entry.category,
     owner: entry.owner,
@@ -420,7 +425,7 @@ function testBootstrapDisposeUsesDeclaredCategoryOrder() {
   const app = bootstrapApp(documentRef);
   const disposeOrder = [];
 
-  for (const category of app.destroyables) {
+  for (const category of app.destroyablePlan) {
     for (const destroyable of category.destroyables) {
       destroyable.dispose = () => {
         disposeOrder.push(`${category.category}:${destroyable.label}`);
@@ -552,6 +557,33 @@ function testBuildDestroyableDisposePlanRejectsUnknownDependencies() {
   assert.equal(error.code, DESTROYABLE_PLAN_ERROR.UNKNOWN_DEPENDENCY);
 }
 
+function testBootstrapFailsFastForInvalidDestroyableDefinitions() {
+  const { documentRef, listeners, rootElement } = createBootstrapHarness(undefined);
+  let error;
+
+  try {
+    bootstrapApp(documentRef, {
+      destroyablesFactory() {
+        return [
+          {
+            category: "bindings",
+            dependsOn: ["missing"],
+            destroyables: []
+          }
+        ];
+      }
+    });
+  } catch (caughtError) {
+    error = caughtError;
+  }
+
+  assert.match(error.message, /unknown category/);
+  assert.equal(error.code, DESTROYABLE_PLAN_ERROR.UNKNOWN_DEPENDENCY);
+  assert.equal(listeners.some((entry) => entry.type === "resize"), false);
+  assert.equal(rootElement.eventLog.some((entry) => entry.action === "add" && entry.type === "click"), true);
+  assert.equal(rootElement.eventLog.some((entry) => entry.action === "remove" && entry.type === "click"), false);
+}
+
 testBootstrapOverwritesCorruptedStorageWithFallbackState();
 testBootstrapRendersLifecycleNoticeAndMetric();
 testBootstrapComposesMigrationStatusAndStagesNormalizedState();
@@ -564,5 +596,6 @@ testBuildDestroyableDisposePlanSortsByDependencies();
 testBuildDestroyableDisposePlanRejectsCycles();
 testBuildDestroyableDisposePlanRejectsDuplicateCategories();
 testBuildDestroyableDisposePlanRejectsUnknownDependencies();
+testBootstrapFailsFastForInvalidDestroyableDefinitions();
 
 console.log("bootstrap.test.mjs ok");
