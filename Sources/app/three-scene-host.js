@@ -1,14 +1,14 @@
-function createVector(x = 0, y = 0, z = 0) {
-  return { x, y, z };
-}
-
 import {
   createBodyMaterialVisual,
   getTexturePath,
   normalizeTextureKey,
-  resolveLoadedTexture,
-  syncTrailHistoryEntries
+  resolveLoadedTexture
 } from "./renderer-helpers.js";
+import {
+  buildSceneTrailPlan,
+  createTrailPoints,
+  resolveSceneCameraFrame
+} from "./three-scene-runtime.js";
 import { measureViewportDisplaySize } from "./viewport-layout.js";
 
 export class ThreeSceneHost {
@@ -224,81 +224,24 @@ export class ThreeSceneHost {
     }
   }
 
-  resolveCameraTarget(appState) {
-    const cameraTarget = appState.uiState.cameraTarget;
-
-    if (cameraTarget && cameraTarget !== "system-center") {
-      const targetBody = appState.bodies.find((body) => body.id === cameraTarget);
-
-      if (targetBody) {
-        return createVector(targetBody.position.x, targetBody.position.y, targetBody.position.z);
-      }
-    }
-
-    if (appState.bodies.length === 0) {
-      return createVector();
-    }
-
-    const weightedCenter = appState.bodies.reduce((accumulator, body) => {
-      const mass = Number.isFinite(body.mass) && body.mass > 0 ? body.mass : 0;
-
-      return {
-        x: accumulator.x + (body.position.x * mass),
-        y: accumulator.y + (body.position.y * mass),
-        z: accumulator.z + (body.position.z * mass),
-        totalMass: accumulator.totalMass + mass
-      };
-    }, {
-      x: 0,
-      y: 0,
-      z: 0,
-      totalMass: 0
-    });
-
-    if (weightedCenter.totalMass > 0) {
-      return createVector(
-        weightedCenter.x / weightedCenter.totalMass,
-        weightedCenter.y / weightedCenter.totalMass,
-        weightedCenter.z / weightedCenter.totalMass
-      );
-    }
-
-    const center = appState.bodies.reduce((accumulator, body) => ({
-      x: accumulator.x + body.position.x,
-      y: accumulator.y + body.position.y,
-      z: accumulator.z + body.position.z
-    }), createVector());
-
-    return createVector(
-      center.x / appState.bodies.length,
-      center.y / appState.bodies.length,
-      center.z / appState.bodies.length
-    );
-  }
-
   syncTrails(model) {
-    const { appState, runtime } = model;
-    const nextTrailHistory = syncTrailHistoryEntries({
+    const { appState } = model;
+    const trailPlan = buildSceneTrailPlan({
       trailHistory: this.trailHistory,
-      bodies: appState.bodies,
-      showTrails: appState.uiState.showTrails,
-      simulationTime: runtime.simulationTime,
-      maxTrailPoints: appState.simulationConfig.maxTrailPoints,
-      selectPoint: (body) => ({ x: body.position.x, y: body.position.y, z: body.position.z })
+      appState,
+      simulationTime: model.runtime.simulationTime
     });
 
-    if (nextTrailHistory.size === 0) {
+    if (trailPlan.shouldReset) {
       this.resetTrails();
       return;
     }
 
-    for (const bodyId of [...this.trailHistory.keys()]) {
-      if (!nextTrailHistory.has(bodyId)) {
-        this.removeTrail(bodyId);
-      }
+    for (const bodyId of trailPlan.removedBodyIds) {
+      this.removeTrail(bodyId);
     }
 
-    this.trailHistory = nextTrailHistory;
+    this.trailHistory = trailPlan.nextTrailHistory;
 
     for (const body of appState.bodies) {
       const history = this.trailHistory.get(body.id) ?? [];
@@ -318,7 +261,7 @@ export class ThreeSceneHost {
       }
 
       trailLine.material.color.set(body.color);
-      trailLine.geometry.setFromPoints(history.map((point) => new this.three.Vector3(point.x, point.y, point.z)));
+      trailLine.geometry.setFromPoints(createTrailPoints(history, (x, y, z) => new this.three.Vector3(x, y, z)));
     }
   }
 
@@ -330,12 +273,11 @@ export class ThreeSceneHost {
     this.syncMeshes(model.appState.bodies);
     this.syncTrails(model);
 
-    const elapsed = model.runtime.simulationTime;
-    const target = this.resolveCameraTarget(model.appState);
-    this.camera.position.x = target.x + Math.sin(elapsed * 0.18) * 0.2;
-    this.camera.position.y = target.y + 3.2;
-    this.camera.position.z = target.z + 8.2 + Math.cos(elapsed * 0.14) * 0.15;
-    this.camera.lookAt(target.x, target.y, target.z);
+    const cameraFrame = resolveSceneCameraFrame(model.appState, model.runtime.simulationTime);
+    this.camera.position.x = cameraFrame.position.x;
+    this.camera.position.y = cameraFrame.position.y;
+    this.camera.position.z = cameraFrame.position.z;
+    this.camera.lookAt(cameraFrame.target.x, cameraFrame.target.y, cameraFrame.target.z);
 
     this.renderer.render(this.scene, this.camera);
     return true;
