@@ -68,22 +68,22 @@ flowchart TD
 
 ## 動作概要
 
-- 現行のベースラインは、Velocity Verlet を既定の積分法とするメインスレッド実行経路を使用します。
-- Phase 4 以降では、RK4 比較、Worker 実行経路、シミュレーション処理時間の検証が現行ベースラインに追加されています。
+- 現在の既定実行経路は、Velocity Verlet を既定の積分法とするメインスレッド実行です。
+- 現在の実装では、RK4 比較、Worker 実行経路、シミュレーション処理時間の検証も利用できます。
 - 検証時は `?execution=main` または `?execution=worker` を使うことで、永続化されない実行方式の上書きができます。
 - Three.js は Sources/vendor 配下のローカル配布ファイルから読み込みます。
 - body 用テクスチャは Body.name を正規化した値に基づいて Sources/images から読み込まれます。
 - Three.js の初期化に失敗した場合でも、アプリは 2D フォールバックモードで継続利用でき、ステータスメッセージにテクスチャ付き body が使えない理由を表示します。
 - 既定の初期状態は Count 8 で、Sources/data/default-bodies.js に同梱された body データセットを使います。Data/nbodies.csv は実行時には読み込みません。
 - Target option の `System Center` は全 body の質量中心を追跡し、total mass が 0 の場合のみ average position にフォールバックします。
-- 現行の既定 preset 一覧は `binary-orbit`、`sample`、`random-cluster` です。
+- 現在の既定 preset 一覧は `binary-orbit`、`sample`、`random-cluster` です。
 - `sample` preset は Sources/data/default-bodies.js の固定データセットを適用します。
 - `random-cluster` はより広い生成範囲を使います。mass は `0.05` から `120.00`、radius は `6.00`、minimum body distance は `0.80`、tangent speed は `0.30` から `1.40`、per-axis velocity jitter は最大 `0.25` です。
 
 ## 永続化方針
 
 - localStorage は固定キー `nbody-simulator.state` を使用します。
-- `PERSISTENCE_POLICY` は、永続化対象フィールドと非永続化フィールドを実装、仕様書、計画書の間で整合させます。
+- 永続化フィールド方針は、永続化対象フィールドと非永続化フィールドを実装、仕様書、計画書の間で整合させます。
 
 永続化対象フィールド:
 
@@ -178,32 +178,32 @@ Set-Location Dist; python -m http.server 8080
 
 ## テスト
 
-- `npm test` を実行すると、静的な compact UI 契約チェックを含む Node ベースの回帰テストを実行します。
+- `npm test` を実行すると、静的なコンパクト UI 確認を含む Node ベースの回帰テストを実行します。
 - Playwright が使う Chromium browser をインストールするには、一度だけ `npm run test:ui:install` を実行します。
 - `npm run test:ui` を実行すると、ローカル静的サーバーを使った実ブラウザ UI 受け入れテストを実行します。
 - `npm run benchmark:phase4` を実行すると、`?execution=main` と `?execution=worker` を比較する 60 秒の比較処理を実行します。
 - ベンチマーク結果は Works/benchmarks/phase4/ に、時刻付きの *.raw.json、*.ci.json、および latest.raw.json、latest.ci.json として保存されます。
 
-### Phase 4 比較手順
+### ベンチマーク比較手順
 
-1. benchmark 前に `npm run test` を実行し、単体テストと結合テストを検証します。
-2. `npm run test:ui` を実行し、compact UI contract が実ブラウザでも維持されていることを確認します。
-3. `npm run benchmark:phase4` を実行し、固定 benchmark 条件でブラウザ計測処理を起動します。
-4. 全シナリオの詳細計測には latest.raw.json を使い、安定した CI comparison key には latest.ci.json を使います。
-5. 短い smoke run が必要な場合だけ `BENCHMARK_DURATION_MS` を上書きし、acceptance measurement では既定の 60000ms を維持します。
+1. ベンチマーク前に `npm run test` を実行し、単体テストと結合テストを検証します。
+2. `npm run test:ui` を実行し、コンパクト UI 条件が実ブラウザでも維持されていることを確認します。
+3. `npm run benchmark:phase4` を実行し、固定ベンチマーク条件でブラウザ計測処理を起動します。
+4. 全シナリオの詳細計測には latest.raw.json を使い、安定した CI 比較用キーには latest.ci.json を使います。
+5. 短時間確認が必要な場合だけ `BENCHMARK_DURATION_MS` を上書きし、受け入れ用計測では既定の 60000ms を維持します。
 
 ### execution=worker 比較手順
 
 1. まず `?execution=main` でアプリを開き、現在の基準結果を取得します。
-2. 次に `?execution=worker` でアプリを開き、同じ preset、body count、integrator 条件で Worker backend を強制します。
+2. 次に `?execution=worker` でアプリを開き、同じ preset、body count、integrator 条件で Worker 実行経路を強制します。
 3. 受け入れ条件では `random-cluster`、`bodyCount = 10`、`Integrator = Verlet`、`Trail = on`、camera interaction なしを使用します。
-4. Worker backend が runtime で失敗した場合、アプリは自動的に main-thread backend へ切り替わり、status message で fallback を報告します。
-5. fallback message が出た場合は Worker benchmark run 失敗として扱い、Worker を preferred backend と見なす前に原因を調査してください。
-6. CI では latest.ci.json を使用し、summary.overallStatus、checks.workerFallbackDetected、comparison 配下の metric comparison objects を評価します。
+4. Worker 実行経路が実行時に失敗した場合、アプリは自動的に main-thread 実行経路へ切り替わり、status message でフォールバックを報告します。
+5. フォールバック message が出た場合は Worker ベンチマーク失敗として扱い、Worker を既定経路候補と見なす前に原因を調査してください。
+6. CI では latest.ci.json を使用し、summary.overallStatus、checks.workerFallbackDetected、comparison 配下の比較結果オブジェクトを評価します。
 
-### Compact UI 契約チェック
+### コンパクト UI 確認項目
 
-- compact visible control text は Count、dt、Soft、Target、Trail、Gen、Run、Hold、Go、Reset のまま維持されます。
+- 表示上の control text は Count、dt、Soft、Target、Trail、Gen、Run、Hold、Go、Reset のまま維持されます。
 - visible text を短縮していても、interactive controls は aria-label を通じて正式な accessible name を保持します。
 - Validation は form が valid な間は hidden で、invalid input がある場合だけ表示されます。
 - Body settings は body ごとの Open または Closed toggle を維持し、複数の body editor を同時に開いたままにできます。
