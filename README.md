@@ -80,6 +80,13 @@ Non-persisted fields:
 3. Serve Sources over HTTP.
 4. Open Sources/index.html through the local server.
 
+## Minified bundle build
+
+- Run `npm run build:min` to generate the worker-preserving minified runtime.
+- This creates [Sources/main.min.js](Sources/main.min.js), [Sources/physics-worker.min.js](Sources/physics-worker.min.js), and [Sources/index.min.html](Sources/index.min.html).
+- Use [Sources/index.min.html](Sources/index.min.html) when you want the bundled runtime without changing the source entry files.
+- Run `npm run build:min:clean` to remove the generated minified files.
+
 ## Testing
 
 - Run npm test for the Node-based regression suite, including the static compact UI contract checks.
