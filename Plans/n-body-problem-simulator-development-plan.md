@@ -89,6 +89,7 @@
   - trail 履歴を破棄する
   - selectedBodyId を未選択へ戻す
   - camera target を system center へ戻す
+  - system center は全 Body の質量重み付き重心とし、総質量 0 の場合のみ position 平均へフォールバックする
   - playback state を idle に戻す
 - `bodyCount` を生成結果の体数へ同期する
 - `committedInitialState` を更新する
@@ -146,6 +147,13 @@ Reset 実行時は以下も同時に復元または初期化する。
 - `simulationTime = 0`
 - `playbackState = 'idle'`
 - `trail` 全消去
+
+アプリ初期表示の既定 Body データは次の条件で扱う。
+
+- 初期 `bodyCount` は 8 とする
+- authoring 上の元データは [Data/nbodies.csv](Data/nbodies.csv) とする
+- 実行時は CSV を直接読まず、[Sources/data/default-bodies.js](Sources/data/default-bodies.js) に配置した同等データを読む
+- この既定 Body データには `name`、`mass`、`position`、`velocity` を含め、`color` はアプリ既定 palette を index 順に補う
 
 状態遷移は以下とする。
 

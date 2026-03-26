@@ -147,7 +147,8 @@ test("body cards toggle independently and body inputs lock while running", async
     await page.locator(`[data-body-toggle="${bodyId}"]`).click();
   };
 
-  await expect(bodyCards).toHaveCount(3);
+  await expect(page.getByLabel("Body Count")).toHaveValue("8");
+  await expect(bodyCards).toHaveCount(8);
   await expect(openCards).toHaveCount(1);
 
   await clickBodyToggle("body-2");

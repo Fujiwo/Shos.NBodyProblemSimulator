@@ -1,3 +1,5 @@
+import { DEFAULT_BODY_SEED_DATA } from "../data/default-bodies.js";
+
 export const APP_VERSION = "0.4.0-phase4";
 export const STORAGE_KEY = "nbody-simulator.state";
 
@@ -14,15 +16,11 @@ const BODY_COLORS = [
   "#f9a8d4"
 ];
 
-const BODY_NAMES = [
-  "sun",
-  "mercury",
-  "venus",
-  "earth",
-  "moon",
-  "mars",
-  "jupiter",
-  "saturn"
+const FALLBACK_BODY_NAMES = [
+  "uranus",
+  "neptune",
+  "pluto",
+  "ceres"
 ];
 
 const BODY_LAYOUT = [
@@ -54,22 +52,23 @@ export function clampBodyCount(value) {
   const parsed = Number.parseInt(value, 10);
 
   if (!Number.isFinite(parsed)) {
-    return 3;
+    return DEFAULT_BODY_SEED_DATA.length;
   }
 
   return Math.min(10, Math.max(2, parsed));
 }
 
 export function createBody(index) {
+  const seededBody = DEFAULT_BODY_SEED_DATA[index];
   const preset = BODY_LAYOUT[index % BODY_LAYOUT.length];
-  const defaultName = BODY_NAMES[index] ?? `Body ${index + 1}`;
+  const defaultName = seededBody?.name ?? FALLBACK_BODY_NAMES[index - DEFAULT_BODY_SEED_DATA.length] ?? `Body ${index + 1}`;
 
   return {
     id: `body-${index + 1}`,
     name: defaultName,
-    mass: 1,
-    position: clone(preset.position),
-    velocity: clone(preset.velocity),
+    mass: seededBody?.mass ?? 1,
+    position: clone(seededBody?.position ?? preset.position),
+    velocity: clone(seededBody?.velocity ?? preset.velocity),
     color: BODY_COLORS[index % BODY_COLORS.length]
   };
 }
@@ -126,7 +125,7 @@ export function createCommittedInitialState(appState) {
   };
 }
 
-export function createInitialAppState(bodyCount = 3) {
+export function createInitialAppState(bodyCount = DEFAULT_BODY_SEED_DATA.length) {
   const bodies = createBodies(bodyCount);
 
   const appState = {

@@ -1,3 +1,4 @@
+import "./defaults.test.mjs";
 import "./physics-engine.test.mjs";
 import "./bootstrap.test.mjs";
 import "./persistence-facade.test.mjs";

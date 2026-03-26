@@ -65,6 +65,9 @@
 
 - 初回ロード時は localStorage の保存内容を読み込む。
 - 保存内容が存在しない場合は既定状態で起動する。
+- 既定状態の `bodyCount` は 8 とする。
+- 既定状態の初期 Body データは authoring 用の [Data/nbodies.csv](Data/nbodies.csv) を実行時に直接読むのではなく、[Sources/data/default-bodies.js](Sources/data/default-bodies.js) に配置した同等データを読み込む。
+- 上記の既定 Body データには各 Body の `name`、`mass`、`position`、`velocity` を含める。`color` はアプリ既定 palette を index 順に適用する。
 - 保存内容の `appVersion` が現在実装と互換でない場合は migration を試行する。
 - migration 不可の場合は既定状態へフォールバックし、破損データは上書きする。
 - 再読み込み後の `playbackState` は常に `idle` とする。
@@ -82,7 +85,7 @@
 
 - Body 数は 2 以上 10 以下の整数とする。
 - UI で増減可能とする。
-- 既定値は 3 とする。
+- 既定値は 8 とする。
 
 ### 5.2.2 Body 入力項目
 
@@ -170,6 +173,11 @@
 - `presetId` と `seed` を保存する。
 - `committedInitialState` を更新する。
 - 実行直後に localStorage を更新する。
+
+`system-center` は以下で定義する。
+
+- `mass > 0` の Body が 1 件以上ある場合は、全 Body の質量重み付き重心とする。
+- 有効質量の総和が 0 の場合は、全 Body の position 平均へフォールバックする。
 
 受け入れ基準は以下とする。
 
@@ -468,6 +476,7 @@ UiState {
 - `expandedBodyPanels` は Open な Body card の `body.id` 一覧とする。
 - 空配列を許容する。
 - hydration では存在しない id と重複 id を除去し、Body list 順へ正規化する。
+- `cameraTarget = 'system-center'` は renderer 上で全 Body の重心を意味する予約値とする。
 
 ## 8.4 AppState
 

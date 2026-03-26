@@ -10,6 +10,8 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 - Three.js is loaded from local vendored files under Sources/vendor.
 - Body textures are resolved from Sources/images using normalized Body.name values.
 - If Three.js cannot initialize, the app stays usable in 2D fallback mode and the status message explains that texture-backed bodies are unavailable.
+- The default startup state uses Count 8 and a bundled body dataset from Sources/data/default-bodies.js derived from Data/nbodies.csv rather than reading the CSV at runtime.
+- The Target option `System Center` tracks the center of mass of all bodies and falls back to the average position only when the total mass is zero.
 
 ## UI
 
