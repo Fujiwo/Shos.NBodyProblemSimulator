@@ -78,6 +78,7 @@ export function bootstrapApp(documentRef, options = {}) {
 
       disposed = true;
       unsubscribe();
+      uiShell.dispose();
       layoutService.stop();
       simulationLoop.dispose();
       renderer.dispose();

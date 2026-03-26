@@ -152,6 +152,9 @@ export class UiShell {
   constructor(rootElement, controller) {
     this.rootElement = rootElement;
     this.controller = controller;
+    this.handleClick = this.handleClick.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.eventsBound = false;
     this.elements = {
       playbackState: rootElement.querySelector('[data-role="playback-state"]'),
       statusMessage: rootElement.querySelector('[data-role="status-message"]'),
@@ -194,71 +197,88 @@ export class UiShell {
   }
 
   bindEvents() {
-    this.rootElement.addEventListener("click", (event) => {
-      const bodyToggle = event.target.closest("[data-body-toggle]");
+    if (this.eventsBound) {
+      return;
+    }
 
-      if (bodyToggle) {
-        this.controller.toggleBodyPanel(bodyToggle.dataset.bodyToggle, bodyToggle.dataset.nextOpen === "true");
-        return;
-      }
+    this.rootElement.addEventListener("click", this.handleClick);
+    this.rootElement.addEventListener("change", this.handleChange);
+    this.eventsBound = true;
+  }
 
-      const action = event.target.closest("[data-action]")?.dataset.action;
+  handleClick(event) {
+    const bodyToggle = event.target.closest("[data-body-toggle]");
 
-      if (!action) {
-        return;
-      }
+    if (bodyToggle) {
+      this.controller.toggleBodyPanel(bodyToggle.dataset.bodyToggle, bodyToggle.dataset.nextOpen === "true");
+      return;
+    }
 
-      this.controller[action]?.();
-    });
+    const action = event.target.closest("[data-action]")?.dataset.action;
 
-    this.rootElement.addEventListener("change", (event) => {
-      const target = event.target;
+    if (!action) {
+      return;
+    }
 
-      if (target.matches('[data-role="body-count"]')) {
-        this.controller.updateBodyCount(target.value);
-        return;
-      }
+    this.controller[action]?.();
+  }
 
-      if (target.matches('[data-role="preset-id"]')) {
-        this.controller.updateSimulationConfig("presetId", target.value);
-        return;
-      }
+  handleChange(event) {
+    const target = event.target;
 
-      if (target.matches('[data-role="seed"]')) {
-        this.controller.updateSimulationConfig("seed", target.value);
-        return;
-      }
+    if (target.matches('[data-role="body-count"]')) {
+      this.controller.updateBodyCount(target.value);
+      return;
+    }
 
-      if (target.matches('[data-role="time-step"]')) {
-        this.controller.updateSimulationConfig("timeStep", target.value);
-        return;
-      }
+    if (target.matches('[data-role="preset-id"]')) {
+      this.controller.updateSimulationConfig("presetId", target.value);
+      return;
+    }
 
-      if (target.matches('[data-role="softening"]')) {
-        this.controller.updateSimulationConfig("softening", target.value);
-        return;
-      }
+    if (target.matches('[data-role="seed"]')) {
+      this.controller.updateSimulationConfig("seed", target.value);
+      return;
+    }
 
-      if (target.matches('[data-role="integrator"]')) {
-        this.controller.updateSimulationConfig("integrator", target.value);
-        return;
-      }
+    if (target.matches('[data-role="time-step"]')) {
+      this.controller.updateSimulationConfig("timeStep", target.value);
+      return;
+    }
 
-      if (target.matches('[data-role="camera-target"]')) {
-        this.controller.updateCameraTarget(target.value);
-        return;
-      }
+    if (target.matches('[data-role="softening"]')) {
+      this.controller.updateSimulationConfig("softening", target.value);
+      return;
+    }
 
-      if (target.matches('[data-role="show-trails"]')) {
-        this.controller.updateShowTrails(target.checked);
-        return;
-      }
+    if (target.matches('[data-role="integrator"]')) {
+      this.controller.updateSimulationConfig("integrator", target.value);
+      return;
+    }
 
-      if (target.matches("[data-body-id][data-field]")) {
-        this.controller.updateBodyField(target.dataset.bodyId, target.dataset.field, target.value);
-      }
-    });
+    if (target.matches('[data-role="camera-target"]')) {
+      this.controller.updateCameraTarget(target.value);
+      return;
+    }
 
+    if (target.matches('[data-role="show-trails"]')) {
+      this.controller.updateShowTrails(target.checked);
+      return;
+    }
+
+    if (target.matches("[data-body-id][data-field]")) {
+      this.controller.updateBodyField(target.dataset.bodyId, target.dataset.field, target.value);
+    }
+  }
+
+  dispose() {
+    if (!this.eventsBound) {
+      return;
+    }
+
+    this.rootElement.removeEventListener("click", this.handleClick);
+    this.rootElement.removeEventListener("change", this.handleChange);
+    this.eventsBound = false;
   }
 
   render(model) {

@@ -93,7 +93,13 @@ function createRootStub() {
   }
 
   return {
-    addEventListener() {},
+    eventLog: [],
+    addEventListener(type, listener) {
+      this.eventLog.push({ action: "add", type, listener });
+    },
+    removeEventListener(type, listener) {
+      this.eventLog.push({ action: "remove", type, listener });
+    },
     querySelector(selector) {
       return selectors.get(selector) ?? null;
     },
@@ -341,13 +347,17 @@ function testBootstrapComposesWorkerUnavailableFallbackStatus() {
 }
 
 function testBootstrapDisposeStopsResizeBindingAndLoop() {
-  const { listeners, cancelledFrames, documentRef } = createBootstrapHarness(undefined);
+  const { listeners, cancelledFrames, rootElement, documentRef } = createBootstrapHarness(undefined);
 
   const app = bootstrapApp(documentRef);
   app.dispose();
   app.dispose();
 
   assert.equal(listeners.some((entry) => entry.action === "remove" && entry.type === "resize"), true);
+  assert.equal(rootElement.eventLog.some((entry) => entry.action === "add" && entry.type === "click"), true);
+  assert.equal(rootElement.eventLog.some((entry) => entry.action === "add" && entry.type === "change"), true);
+  assert.equal(rootElement.eventLog.some((entry) => entry.action === "remove" && entry.type === "click"), true);
+  assert.equal(rootElement.eventLog.some((entry) => entry.action === "remove" && entry.type === "change"), true);
   assert.deepEqual(cancelledFrames, [1]);
 }
 
