@@ -1,6 +1,7 @@
 import "./physics-engine.test.mjs";
 import "./bootstrap.test.mjs";
 import "./persistence-facade.test.mjs";
+import "./preset-generator.test.mjs";
 import "./renderer-facade.test.mjs";
 import "./renderer-helpers.test.mjs";
 import "./simulation-execution.test.mjs";

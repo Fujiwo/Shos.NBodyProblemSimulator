@@ -196,6 +196,44 @@ function testGenerateRejectsInvalidRandomClusterSeedDraft() {
   assert.deepEqual(loopCalls, []);
 }
 
+function testResetRestoresLatestCommittedGeneratedSnapshot() {
+  const { store, controller, loopCalls } = createControllerHarness();
+  const originalNow = Date.now;
+
+  Date.now = () => 1234567890;
+
+  try {
+    controller.updateSimulationConfig("seed", "");
+    controller.generate();
+  } finally {
+    Date.now = originalNow;
+  }
+
+  const committedSnapshot = store.getState().appState.committedInitialState;
+
+  store.update((model) => {
+    model.appState.uiState.playbackState = "running";
+    model.appState.bodies[0].position.x = 999;
+    model.appState.simulationConfig.seed = 7;
+    model.runtime.simulationTime = 12.5;
+    model.runtime.fieldDrafts.seed = "invalid";
+  });
+
+  controller.reset();
+
+  const state = store.getState();
+
+  assert.equal(state.appState.uiState.playbackState, "idle");
+  assert.deepEqual(state.appState.bodies, committedSnapshot.bodies);
+  assert.deepEqual(state.appState.simulationConfig, committedSnapshot.simulationConfig);
+  assert.equal(state.appState.simulationConfig.seed, 1234567890);
+  assert.equal(state.runtime.simulationTime, 0);
+  assert.deepEqual(state.runtime.fieldDrafts, {});
+  assert.equal(state.runtime.statusMessage, "Reset restored the committed initial state.");
+  assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-1"]);
+  assert.deepEqual(loopCalls, ["reset", "reset"]);
+}
+
 testTransitionGuards();
 testCameraTargetNormalization();
 testGenerateResetsRuntimeAndCommitsState();
@@ -205,5 +243,6 @@ testStartRejectsWhileRunningAndSetsStatusMessage();
 testStartRejectsWhilePausedAndSetsStatusMessage();
 testGenerateUsesAutoSeedWhenRandomClusterSeedDraftIsBlank();
 testGenerateRejectsInvalidRandomClusterSeedDraft();
+testResetRestoresLatestCommittedGeneratedSnapshot();
 
 console.log("simulation-controller.test.mjs ok");

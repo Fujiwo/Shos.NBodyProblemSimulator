@@ -23,8 +23,8 @@ function installStorage(initialValue) {
   return storage;
 }
 
-function createLegacyPersistedState() {
-  return JSON.stringify({
+function createLegacyPersistedState(overrides = {}) {
+  const baseState = {
     appVersion: "0.2.0-phase2",
     bodyCount: 2,
     bodies: [
@@ -68,6 +68,14 @@ function createLegacyPersistedState() {
       }
     },
     playbackRestorePolicy: "restore-as-idle"
+  };
+
+  return JSON.stringify({
+    ...baseState,
+    ...overrides,
+    committedInitialState: Object.prototype.hasOwnProperty.call(overrides, "committedInitialState")
+      ? overrides.committedInitialState
+      : baseState.committedInitialState
   });
 }
 
@@ -115,6 +123,64 @@ function testLoadFallsBackForValidJsonWithInvalidShape() {
   assert.equal(result.statusMessage, "Failed to restore saved state. Defaults were applied.");
   assert.equal(result.appState.uiState.playbackState, "idle");
   assert.equal(result.appState.simulationConfig.seed, 1001);
+}
+
+function testLoadRebuildsCommittedSnapshotWhenLegacySnapshotShapeIsCorrupted() {
+  installStorage(createLegacyPersistedState({
+    committedInitialState: 42
+  }));
+
+  const facade = new PersistenceFacade();
+  const result = facade.load();
+
+  assert.equal(result.statusMessage, "Saved state restored after migration from 0.2.0-phase2.");
+  assert.equal(result.appState.committedInitialState.bodyCount, result.appState.bodyCount);
+  assert.deepEqual(
+    result.appState.committedInitialState.bodies.map((body) => body.name),
+    result.appState.bodies.map((body) => body.name)
+  );
+  assert.equal(result.appState.committedInitialState.uiState.selectedBodyId, "body-1");
+  assert.equal(result.appState.committedInitialState.uiState.cameraTarget, "system-center");
+  assert.equal(result.appState.committedInitialState.uiState.showTrails, true);
+}
+
+function testLoadNormalizesCorruptedLegacyCommittedSnapshotFields() {
+  installStorage(createLegacyPersistedState({
+    committedInitialState: {
+      bodyCount: 99,
+      bodies: "bad bodies",
+      simulationConfig: {
+        presetId: "binary-orbit",
+        timeStep: -1,
+        softening: -2,
+        gravitationalConstant: "bad",
+        integrator: "bad",
+        maxTrailPoints: -5,
+        seed: 9999999999
+      },
+      uiState: {
+        selectedBodyId: "missing",
+        cameraTarget: "missing",
+        showTrails: "bad"
+      }
+    }
+  }));
+
+  const facade = new PersistenceFacade();
+  const result = facade.load();
+  const snapshot = result.appState.committedInitialState;
+
+  assert.equal(result.statusMessage, "Saved state restored after migration from 0.2.0-phase2.");
+  assert.equal(snapshot.bodyCount, 2);
+  assert.equal(snapshot.bodies.length, 2);
+  assert.equal(snapshot.simulationConfig.presetId, "binary-orbit");
+  assert.equal(snapshot.simulationConfig.seed, null);
+  assert.equal(snapshot.simulationConfig.timeStep, 0.005);
+  assert.equal(snapshot.simulationConfig.softening, 0.01);
+  assert.equal(snapshot.simulationConfig.integrator, "velocity-verlet");
+  assert.equal(snapshot.uiState.selectedBodyId, null);
+  assert.equal(snapshot.uiState.cameraTarget, "system-center");
+  assert.equal(snapshot.uiState.showTrails, true);
 }
 
 function testHydrationNormalizesPresetConstraintsAndSelection() {
@@ -179,6 +245,34 @@ function testHydrationRetainsRk4Integrator() {
   });
 
   assert.equal(hydrated.simulationConfig.integrator, "rk4");
+}
+
+function testHydrationNormalizesFixedPresetSeedToNull() {
+  const hydrated = createHydratedAppState({
+    appVersion: "0.4.0-phase4",
+    bodyCount: 2,
+    bodies: createInitialAppState(2).bodies,
+    simulationConfig: {
+      presetId: "binary-orbit",
+      timeStep: 0.005,
+      softening: 0.01,
+      gravitationalConstant: 1,
+      integrator: "velocity-verlet",
+      maxTrailPoints: 300,
+      seed: 9999999999
+    },
+    uiState: {
+      playbackState: "idle",
+      selectedBodyId: null,
+      cameraTarget: "system-center",
+      showTrails: true,
+      expandedBodyPanels: ["body-1"]
+    },
+    committedInitialState: null,
+    playbackRestorePolicy: "restore-as-idle"
+  });
+
+  assert.equal(hydrated.simulationConfig.seed, null);
 }
 
 function testHydrationNormalizesExpandedPanelsToValidUniqueBodyOrder() {
@@ -252,8 +346,11 @@ testSerializeExcludesTransientPlaybackState();
 testLoadMigratesLegacyNamesAndVersion();
 testLoadFallsBackForInvalidJson();
 testLoadFallsBackForValidJsonWithInvalidShape();
+testLoadRebuildsCommittedSnapshotWhenLegacySnapshotShapeIsCorrupted();
+testLoadNormalizesCorruptedLegacyCommittedSnapshotFields();
 testHydrationNormalizesPresetConstraintsAndSelection();
 testHydrationRetainsRk4Integrator();
+testHydrationNormalizesFixedPresetSeedToNull();
 testHydrationNormalizesExpandedPanelsToValidUniqueBodyOrder();
 testHydrationRejectsOutOfRangeSeedValues();
 

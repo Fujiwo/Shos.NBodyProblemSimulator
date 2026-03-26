@@ -80,15 +80,20 @@ function normalizeSimulationConfig(rawConfig) {
   const fallback = createSimulationConfig();
   const config = rawConfig && typeof rawConfig === "object" ? rawConfig : {};
   const presetId = normalizePresetId(config.presetId ?? fallback.presetId);
+  const timeStep = toFiniteNumber(config.timeStep, fallback.timeStep);
+  const softening = toFiniteNumber(config.softening, fallback.softening);
+  const normalizedSeed = presetId === "random-cluster"
+    ? (isValidPersistedSeed(config.seed) ? config.seed : fallback.seed)
+    : null;
 
   return {
     gravitationalConstant: toFiniteNumber(config.gravitationalConstant, fallback.gravitationalConstant),
-    timeStep: toFiniteNumber(config.timeStep, fallback.timeStep),
-    softening: toFiniteNumber(config.softening, fallback.softening),
+    timeStep: timeStep > 0 ? timeStep : fallback.timeStep,
+    softening: softening >= 0 ? softening : fallback.softening,
     integrator: config.integrator === "velocity-verlet" || config.integrator === "rk4" ? config.integrator : fallback.integrator,
     maxTrailPoints: Number.isInteger(config.maxTrailPoints) && config.maxTrailPoints > 0 ? config.maxTrailPoints : fallback.maxTrailPoints,
     presetId,
-    seed: isValidPersistedSeed(config.seed) ? config.seed : fallback.seed
+    seed: normalizedSeed
   };
 }
 
