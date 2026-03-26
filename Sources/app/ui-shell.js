@@ -99,6 +99,7 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
   const openAttribute = isExpanded ? " open" : "";
   const fieldErrors = runtime.fieldErrors;
   const colorValue = resolveFieldValue(runtime, body.id, "color", body.color);
+  const toggleLabel = isExpanded ? "Close" : "Open";
   const bodyMeta = isSelected
     ? `<span class="body-card-meta"><span class="body-card-id">${escapeHtml(formatBodyCardId(body.id))}</span><span class="body-card-selected">Sel</span></span>`
     : `<span class="body-card-meta"><span class="body-card-id">${escapeHtml(formatBodyCardId(body.id))}</span></span>`;
@@ -121,6 +122,7 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
         </span>
       </summary>
       <div class="body-card-inline-tools">
+        <button class="body-card-toggle" type="button" role="switch" aria-checked="${isExpanded ? "true" : "false"}" aria-label="${escapeHtml(toggleLabel)} body settings for ${escapeHtml(body.name)}" title="${escapeHtml(toggleLabel)} body settings" data-body-toggle="${body.id}" data-next-open="${isExpanded ? "false" : "true"}">${toggleLabel}</button>
         <label class="body-card-color-control${fieldErrors[getFieldKey(body.id, "color")] ? " field--error" : ""}">
           <input aria-label="Color for ${escapeHtml(body.name)}" data-body-id="${body.id}" data-field="color" type="color" value="${escapeHtml(colorValue)}"${disabledAttribute}>
           <span class="body-card-color-code">${escapeHtml(formatColorSummary(colorValue))}</span>
@@ -194,6 +196,13 @@ export class UiShell {
 
   bindEvents() {
     this.rootElement.addEventListener("click", (event) => {
+      const bodyToggle = event.target.closest("[data-body-toggle]");
+
+      if (bodyToggle) {
+        this.controller.toggleBodyPanel(bodyToggle.dataset.bodyToggle, bodyToggle.dataset.nextOpen === "true");
+        return;
+      }
+
       const action = event.target.closest("[data-action]")?.dataset.action;
 
       if (!action) {

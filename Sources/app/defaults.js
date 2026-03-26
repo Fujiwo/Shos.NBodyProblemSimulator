@@ -78,15 +78,17 @@ export function createBodies(bodyCount) {
   return Array.from({ length: bodyCount }, (_, index) => createBody(index));
 }
 
+export function createDefaultExpandedPanels(bodies) {
+  return bodies.length > 0 ? [bodies[0].id] : [];
+}
+
 export function normalizeExpandedPanels(expandedBodyPanels, bodies) {
-  const bodyIds = new Set(bodies.map((body) => body.id));
-  const normalized = expandedBodyPanels.filter((bodyId) => bodyIds.has(bodyId)).slice(0, 1);
+  const expanded = Array.isArray(expandedBodyPanels) ? expandedBodyPanels : [];
+  const expandedSet = new Set(expanded.filter((bodyId) => typeof bodyId === "string" && bodyId.length > 0));
 
-  if (normalized.length > 0) {
-    return normalized;
-  }
-
-  return bodies.slice(0, 1).map((body) => body.id);
+  return bodies
+    .map((body) => body.id)
+    .filter((bodyId) => expandedSet.has(bodyId));
 }
 
 export function createSimulationConfig() {
@@ -107,7 +109,7 @@ export function createUiState(bodies) {
     selectedBodyId: null,
     cameraTarget: "system-center",
     showTrails: true,
-    expandedBodyPanels: normalizeExpandedPanels([], bodies)
+    expandedBodyPanels: createDefaultExpandedPanels(bodies)
   };
 }
 

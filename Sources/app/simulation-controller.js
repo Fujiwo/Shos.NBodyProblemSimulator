@@ -2,6 +2,7 @@ import {
   clone,
   createBody,
   createCommittedInitialState,
+  createDefaultExpandedPanels,
   normalizeExpandedPanels
 } from "./defaults.js";
 import { generatePresetBodies } from "./preset-generator.js";
@@ -422,7 +423,7 @@ export class SimulationController {
       const expandedPanels = appState.uiState.expandedBodyPanels.filter((entry) => entry !== bodyId);
 
       if (isOpen) {
-        expandedPanels.unshift(bodyId);
+        expandedPanels.push(bodyId);
         appState.uiState.selectedBodyId = appState.bodies.some((body) => body.id === bodyId)
           ? bodyId
           : appState.uiState.selectedBodyId;
@@ -467,7 +468,9 @@ export class SimulationController {
       nextAppState.uiState.selectedBodyId = snapshot.uiState.selectedBodyId;
       nextAppState.uiState.cameraTarget = snapshot.uiState.cameraTarget;
       nextAppState.uiState.showTrails = snapshot.uiState.showTrails;
-      nextAppState.uiState.expandedBodyPanels = normalizeExpandedPanels(nextAppState.uiState.expandedBodyPanels, nextAppState.bodies);
+      nextAppState.uiState.expandedBodyPanels = nextAppState.uiState.expandedBodyPanels.length > 0
+        ? normalizeExpandedPanels(nextAppState.uiState.expandedBodyPanels, nextAppState.bodies)
+        : createDefaultExpandedPanels(nextAppState.bodies);
       nextRuntime.simulationTime = 0;
       nextRuntime.metrics.fps = "--";
       nextRuntime.metrics.energyError = "0.00e+0";
@@ -543,7 +546,7 @@ export class SimulationController {
       appState.uiState.selectedBodyId = snapshot.uiState.selectedBodyId;
       appState.uiState.cameraTarget = snapshot.uiState.cameraTarget;
       appState.uiState.showTrails = snapshot.uiState.showTrails;
-      appState.uiState.expandedBodyPanels = normalizeExpandedPanels([], appState.bodies);
+      appState.uiState.expandedBodyPanels = createDefaultExpandedPanels(appState.bodies);
       runtime.simulationTime = 0;
       runtime.metrics.fps = "--";
       runtime.metrics.energyError = "--";
@@ -571,7 +574,7 @@ export class SimulationController {
       appState.uiState.playbackState = "idle";
       appState.uiState.selectedBodyId = null;
       appState.uiState.cameraTarget = "system-center";
-      appState.uiState.expandedBodyPanels = normalizeExpandedPanels([], appState.bodies);
+      appState.uiState.expandedBodyPanels = createDefaultExpandedPanels(appState.bodies);
       runtime.simulationTime = 0;
       runtime.metrics.fps = "--";
       runtime.metrics.energyError = "--";

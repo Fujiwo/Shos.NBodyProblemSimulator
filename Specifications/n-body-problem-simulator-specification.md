@@ -365,7 +365,9 @@ $$
 - Control panel の compact input / select / button は高さ 36px を下限とする。
 - Body card summary と主要 panel 操作は 44px 以上を維持する。
 - 横スクロールを発生させない。
-- Body カードは折りたたみ可能とし、同時展開数は最大 1 とする。
+- Body カードは折りたたみ可能とし、各カードに Open / Closed の切替トグルを持たせる。
+- Body カードは独立して開閉でき、同時に複数件を展開してよい。
+- 初期表示は 1 番目の Body のみ Open とし、以後はユーザー操作を優先する。
 
 ## 7.2 UI 文言
 
@@ -448,6 +450,10 @@ UiState {
   expandedBodyPanels: string[]
 }
 ```
+
+- `expandedBodyPanels` は Open な Body card の `body.id` 一覧とする。
+- 空配列を許容する。
+- hydration では存在しない id と重複 id を除去し、Body list 順へ正規化する。
 
 ## 8.4 AppState
 

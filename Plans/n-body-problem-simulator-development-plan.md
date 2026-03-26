@@ -234,7 +234,9 @@ $$
 
 - 360px 幅でも主要操作ボタンが 2 行以内に収まること
 - Control panel の compact input / select / button は高さ 36px を下限とし、Body card summary と主要 panel 操作は 44px 以上を維持すること
-- Body カードは 1 件ずつ展開できる方式にし、同時展開は最大 1 件とする
+- Body カードごとに Open / Closed を切り替えられるトグルを持たせる
+- 各 Body カードは独立して開閉でき、同時に複数件を展開してよい
+- 初期状態は 1 番目の Body のみ Open とし、その後はユーザーが各カードを独立して切り替えられること
 - 数値入力はモバイルキーボード最適化のため decimal 入力を前提にする
 
 現行 UI の compact controls は、表示文言を短縮した上で `title` または `aria-label` に正式名称を保持する。
@@ -474,6 +476,10 @@ UiState {
   expandedBodyPanels: string[]
 }
 ```
+
+- `expandedBodyPanels` は現在 Open な Body card の `body.id` 一覧を保持する
+- 並び順は Body list 順を維持し、不正 id と重複 id は正規化で除去する
+- 0 件 Open も許容する
 
 ### 7.4 永続化スキーマ方針
 

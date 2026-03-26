@@ -19,7 +19,7 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 - The controls panel uses compact visible labels such as Count, dt, Soft, Target, and Trail while keeping full accessible names via title or aria-label.
 - The playback buttons use compact visible text such as Gen, Run, Hold, Go, and Reset.
 - Validation is hidden when there are no errors and is emphasized only when invalid input exists.
-- Body settings use single-expand cards so only one body editor is open at a time.
+- Body settings provide an Open or Closed toggle for every body card and allow multiple body editors to stay open at the same time.
 - The visualization stage is intentionally tall to prioritize the canvas area over non-interactive chrome.
 - The visualization height scales in stages across mobile, tablet, desktop, and wide desktop breakpoints.
 
@@ -60,7 +60,7 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 - Compact visible control text remains shortened as Count, dt, Soft, Target, Trail, Gen, Run, Hold, Go, and Reset.
 - Interactive controls keep their full accessible names through aria-label even when the visible text is shortened.
 - Validation stays hidden while the form is valid and appears only when invalid input exists.
-- Body settings keep the single-expand card behavior so only one body editor is open at a time.
+- Body settings keep a per-body Open or Closed toggle and allow multiple body editors to remain open at the same time.
 - At 360px width, the compact controls remain usable without horizontal overflow.
 - During running and paused playback states, body editing inputs stay disabled.
 

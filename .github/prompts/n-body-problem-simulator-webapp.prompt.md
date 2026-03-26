@@ -82,7 +82,8 @@ agent: agent
    - visible label / visible button text は compact 表示を許容し、正式名称は title または aria-label のような accessible name で保持する前提を明示すること。
    - compact visible text の例として、`Count`、`dt`、`Soft`、`Target`、`Trail`、`Gen`、`Run`、`Hold`、`Go` を扱えること。
    - Validation は常時表示ではなく、エラーが存在する時だけ表示して強調する前提で整理すること。
-   - Body settings は single-expand card を前提にし、同時展開数は最大 1 とすること。
+   - Body settings は各 Body ごとに Open / Closed を切り替えられるトグルを前提にすること。
+   - Body settings は各 Body card を独立して開閉でき、同時に複数件を展開できること。
 
 # アーキテクチャと設計方針
 - N体問題としての計算とパフォーマンスの両立を必須要件とし、ブラウザ上での滑らかな描画と、長時間実行時に破綻しにくい数値積分設計の両立を目指すこと。

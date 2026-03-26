@@ -110,7 +110,8 @@ Phase 1 で目指す成果は以下です。
 - visible label / visible button text は compact 表示を許容し、正式名称は title または aria-label で保持できる構造にすること
 - Validation は常時表示前提にせず、後続フェーズで「エラーがある時だけ表示」に切り替えられる構造にすること
 - Body settings panel は、後続で各 Body の Name、Mass、Position X/Y/Z、Velocity X/Y/Z、Color を差し込めるカード構造にすること
-- Body settings panel は 1 件だけ展開する折りたたみカード構造を許容すること
+- Body settings panel は各 Body ごとに Open / Closed を切り替えられるトグルを持つ折りたたみカード構造を許容すること
+- 各 Body card は独立して開閉でき、同時に複数件を展開できること
 - Visualization area には canvas の受け皿と overlay 表示領域を含めること
 
 ## 5. ファイル構成方針

@@ -129,12 +129,24 @@ test("validation appears only while invalid and start stays blocked", async ({ p
   await expect(startButton).toBeEnabled();
 });
 
-test("body cards render single-expand and body inputs lock while running", async ({ page }) => {
+test("body cards toggle independently and body inputs lock while running", async ({ page }) => {
   const bodyCards = page.locator('details[data-body-card]');
   const openCards = page.locator('details[data-body-card][open]');
+  const clickBodyToggle = async (bodyId) => {
+    await page.locator(`[data-body-toggle="${bodyId}"]`).dispatchEvent("click");
+  };
 
   await expect(bodyCards).toHaveCount(3);
   await expect(openCards).toHaveCount(1);
+
+  await clickBodyToggle("body-2");
+  await expect(page.locator('details[data-body-card][open]')).toHaveCount(2);
+
+  await clickBodyToggle("body-3");
+  await expect(page.locator('details[data-body-card][open]')).toHaveCount(3);
+
+  await clickBodyToggle("body-1");
+  await expect(page.locator('details[data-body-card][open]')).toHaveCount(2);
 
   const openBodyNameInput = page.locator('details[data-body-card][open] input[data-field="name"]').first();
   await expect(openBodyNameInput).toBeEnabled();

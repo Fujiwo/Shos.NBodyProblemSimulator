@@ -84,23 +84,29 @@ function testGenerateResetsRuntimeAndCommitsState() {
   assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-1"]);
 }
 
-function testBodyPanelStateKeepsSingleExpandedCard() {
+function testBodyPanelStateSupportsIndependentOpenAndClose() {
   const { store, controller } = createControllerHarness();
 
   controller.toggleBodyPanel("body-2", true);
 
   let state = store.getState();
-  assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-2"]);
+  assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-1", "body-2"]);
 
   controller.toggleBodyPanel("body-3", true);
 
   state = store.getState();
-  assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-3"]);
+  assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-1", "body-2", "body-3"]);
 
+  controller.toggleBodyPanel("body-1", false);
+
+  state = store.getState();
+  assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-2", "body-3"]);
+
+  controller.toggleBodyPanel("body-2", false);
   controller.toggleBodyPanel("body-3", false);
 
   state = store.getState();
-  assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-1"]);
+  assert.deepEqual(state.appState.uiState.expandedBodyPanels, []);
 }
 
 function testStartRejectsValidationErrorsAndSetsStatusMessage() {
@@ -149,7 +155,7 @@ function testStartRejectsWhilePausedAndSetsStatusMessage() {
 testTransitionGuards();
 testCameraTargetNormalization();
 testGenerateResetsRuntimeAndCommitsState();
-testBodyPanelStateKeepsSingleExpandedCard();
+testBodyPanelStateSupportsIndependentOpenAndClose();
 testStartRejectsValidationErrorsAndSetsStatusMessage();
 testStartRejectsWhileRunningAndSetsStatusMessage();
 testStartRejectsWhilePausedAndSetsStatusMessage();

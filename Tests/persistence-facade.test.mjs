@@ -139,6 +139,7 @@ function testHydrationNormalizesPresetConstraintsAndSelection() {
   assert.equal(hydrated.uiState.playbackState, "idle");
   assert.equal(hydrated.uiState.selectedBodyId, null);
   assert.equal(hydrated.uiState.cameraTarget, "system-center");
+  assert.deepEqual(hydrated.uiState.expandedBodyPanels, []);
 }
 
 function testHydrationRetainsRk4Integrator() {
@@ -169,10 +170,31 @@ function testHydrationRetainsRk4Integrator() {
   assert.equal(hydrated.simulationConfig.integrator, "rk4");
 }
 
+function testHydrationNormalizesExpandedPanelsToValidUniqueBodyOrder() {
+  const hydrated = createHydratedAppState({
+    appVersion: "0.4.0-phase4",
+    bodyCount: 3,
+    bodies: createInitialAppState(3).bodies,
+    simulationConfig: createInitialAppState(3).simulationConfig,
+    uiState: {
+      playbackState: "idle",
+      selectedBodyId: null,
+      cameraTarget: "system-center",
+      showTrails: true,
+      expandedBodyPanels: ["body-3", "missing", "body-1", "body-1"]
+    },
+    committedInitialState: null,
+    playbackRestorePolicy: "restore-as-idle"
+  });
+
+  assert.deepEqual(hydrated.uiState.expandedBodyPanels, ["body-1", "body-3"]);
+}
+
 testSerializeExcludesTransientPlaybackState();
 testLoadMigratesLegacyNamesAndVersion();
 testLoadFallsBackForInvalidJson();
 testHydrationNormalizesPresetConstraintsAndSelection();
 testHydrationRetainsRk4Integrator();
+testHydrationNormalizesExpandedPanelsToValidUniqueBodyOrder();
 
 console.log("persistence-facade.test.mjs ok");

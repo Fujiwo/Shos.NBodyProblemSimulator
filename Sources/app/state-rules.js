@@ -3,6 +3,7 @@ import {
   clone,
   createBodies,
   createCommittedInitialState,
+  createDefaultExpandedPanels,
   createInitialAppState,
   createSimulationConfig,
   normalizeExpandedPanels
@@ -100,7 +101,9 @@ function normalizeUiState(rawUiState, bodies) {
     selectedBodyId,
     cameraTarget,
     showTrails: typeof uiState.showTrails === "boolean" ? uiState.showTrails : true,
-    expandedBodyPanels: normalizeExpandedPanels(Array.isArray(uiState.expandedBodyPanels) ? uiState.expandedBodyPanels : [], bodies)
+    expandedBodyPanels: Array.isArray(uiState.expandedBodyPanels)
+      ? normalizeExpandedPanels(uiState.expandedBodyPanels, bodies)
+      : createDefaultExpandedPanels(bodies)
   };
 }
 
