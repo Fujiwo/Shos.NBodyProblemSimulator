@@ -29,14 +29,33 @@ function createDestroyableCategory(category, owner, purpose, dependsOn, destroya
   return { category, owner, purpose, dependsOn, destroyables };
 }
 
-function cleanupStartupResources(cleanupSteps) {
-  for (let index = cleanupSteps.length - 1; index >= 0; index -= 1) {
+function createStartupCleanupRegistry() {
+  return [];
+}
+
+function registerStartupCleanup(cleanupRegistry, cleanupStep) {
+  cleanupRegistry.push(cleanupStep);
+}
+
+function runStartupCleanup(cleanupRegistry) {
+  for (let index = cleanupRegistry.length - 1; index >= 0; index -= 1) {
     try {
-      cleanupSteps[index]();
+      cleanupRegistry[index]();
     } catch {
       // Preserve the original startup failure and keep cleanup best-effort.
     }
   }
+}
+
+function registerCoreStartupCleanup(cleanupRegistry, { renderer, simulationLoop, layoutService, uiShell }) {
+  registerStartupCleanup(cleanupRegistry, () => renderer.dispose());
+  registerStartupCleanup(cleanupRegistry, () => simulationLoop.dispose());
+  registerStartupCleanup(cleanupRegistry, () => layoutService.stop());
+  registerStartupCleanup(cleanupRegistry, () => uiShell.dispose());
+}
+
+function registerSubscriptionCleanup(cleanupRegistry, unsubscribe) {
+  registerStartupCleanup(cleanupRegistry, unsubscribe);
 }
 
 export const DESTROYABLE_PLAN_ERROR = {
@@ -203,13 +222,14 @@ export function bootstrapApp(documentRef, options = {}) {
   const uiShell = new UiShell(rootElement, controller);
   const renderCurrentModel = () => renderer.render(store.getState());
   const layoutService = new LayoutService(documentRef.documentElement, renderer, renderCurrentModel);
+  const startupCleanupRegistry = createStartupCleanupRegistry();
 
-  const startupCleanupSteps = [
-    () => renderer.dispose(),
-    () => simulationLoop.dispose(),
-    () => layoutService.stop(),
-    () => uiShell.dispose()
-  ];
+  registerCoreStartupCleanup(startupCleanupRegistry, {
+    renderer,
+    simulationLoop,
+    layoutService,
+    uiShell
+  });
 
   try {
     controller.attachLoop(simulationLoop);
@@ -221,7 +241,7 @@ export function bootstrapApp(documentRef, options = {}) {
       renderer.render(model);
     });
 
-    startupCleanupSteps.push(unsubscribe);
+    registerSubscriptionCleanup(startupCleanupRegistry, unsubscribe);
 
     const destroyables = destroyablesFactory({
       unsubscribe,
@@ -282,7 +302,7 @@ export function bootstrapApp(documentRef, options = {}) {
       }
     };
   } catch (error) {
-    cleanupStartupResources(startupCleanupSteps);
+    runStartupCleanup(startupCleanupRegistry);
     throw error;
   }
 }

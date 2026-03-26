@@ -544,6 +544,37 @@ UiState {
 - `committedInitialState` を保存対象に含め、Reset 復帰先を一意にする
 - `simulationConfig.gravitationalConstant` を保存対象に含める
 
+`PERSISTENCE_POLICY` として、保存対象と非保存対象を以下で固定する。
+
+保存対象:
+
+- `appVersion`
+- `bodyCount`
+- `bodies`
+- `simulationConfig`
+- `uiState.selectedBodyId`
+- `uiState.cameraTarget`
+- `uiState.showTrails`
+- `uiState.expandedBodyPanels`
+- `committedInitialState`
+- `playbackRestorePolicy`
+
+非保存対象:
+
+- `runtime.lifecycleMetadata`
+- `runtime.lifecycleNotice`
+- `runtime.statusMessage`
+- `runtime.executionNotice`
+- `runtime.validationErrors`
+- `runtime.fieldErrors`
+- `runtime.fieldDrafts`
+- `runtime.metrics`
+- `runtime.simulationTime`
+- trail の過去点列
+- worker accumulator や pending request などの中間計算状態
+
+`runtime.lifecycleMetadata` と `runtime.lifecycleNotice` は observability 専用の実行時情報とし、再読み込み後に前回セッションの値を引き継がない。
+
 ## 9. レスポンシブ対応方針
 
 - ブレークポイントは 3 段階とする
