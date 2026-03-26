@@ -35,6 +35,17 @@ test("compact controls keep short visible text and full accessible names", async
   await expect(page.locator('[data-role="metric-integrator"]')).toHaveText("velocity-verlet");
 });
 
+test("header stays compact while visualization keeps a tall viewport", async ({ page }) => {
+  const headerBox = await page.locator('.app-header').boundingBox();
+  const viewportBox = await page.locator('.viewport-stage').boundingBox();
+
+  expect(headerBox).not.toBeNull();
+  expect(viewportBox).not.toBeNull();
+
+  expect(headerBox.height).toBeLessThanOrEqual(92);
+  expect(viewportBox.height).toBeGreaterThanOrEqual(700);
+});
+
 test("validation appears only while invalid and start stays blocked", async ({ page }) => {
   const timeStep = page.getByLabel("Time Step");
   const validationPanel = page.locator('[data-role="validation-panel"]');
