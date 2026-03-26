@@ -196,6 +196,36 @@ h2 {
   gap: 5px;
 }
 
+.control-panel .field--compact {
+  align-items: center;
+  display: grid;
+  gap: 4px 8px;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.control-panel .field--compact > span:first-child {
+  align-self: center;
+  background: rgba(19, 43, 58, 0.08);
+  border-radius: 999px;
+  color: var(--text-body);
+  display: inline-flex;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  padding: 5px 8px;
+  text-transform: uppercase;
+}
+
+.control-panel .field--compact > input,
+.control-panel .field--compact > select {
+  grid-column: 2;
+}
+
+.control-panel .field--compact > .field-error {
+  grid-column: 1 / -1;
+}
+
 .field.field--error input,
 .field.field--error select,
 .body-grid .field.field--error input {
@@ -258,6 +288,11 @@ dt {
   gap: 4px;
 }
 
+.control-panel .toggle-field.field--compact {
+  grid-template-columns: auto auto;
+  justify-content: start;
+}
+
 .toggle-field input {
   width: 22px;
   height: 22px;
@@ -265,6 +300,7 @@ dt {
 }
 
 .control-panel .toggle-field input {
+  grid-column: 2;
   width: 18px;
   height: 18px;
 }
@@ -686,6 +722,10 @@ dd {
 
   .control-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .control-panel .button-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 
