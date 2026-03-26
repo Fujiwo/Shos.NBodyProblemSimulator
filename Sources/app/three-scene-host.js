@@ -14,7 +14,7 @@ export class ThreeSceneHost {
   constructor(canvasElement, options = {}) {
     this.canvasElement = canvasElement;
     this.onInvalidate = typeof options.onInvalidate === "function" ? options.onInvalidate : null;
-    this.three = globalThis.THREE;
+    this.three = options.three ?? globalThis.THREE;
     this.meshes = new Map();
     this.trailLines = new Map();
     this.trailHistory = new Map();

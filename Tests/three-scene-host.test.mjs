@@ -230,11 +230,12 @@ function createModel({ bodies, simulationTime = 1, showTrails = true, cameraTarg
 }
 
 function testTextureFallbackAndLoadedTexture() {
-  globalThis.THREE = createThreeStub();
+  delete globalThis.THREE;
   globalThis.window = { devicePixelRatio: 1 };
 
   let invalidateCalls = 0;
   const host = new ThreeSceneHost(createCanvasStub(), {
+    three: createThreeStub(),
     onInvalidate: () => {
       invalidateCalls += 1;
     }
@@ -278,13 +279,14 @@ function testInitializationStatusReportsFallbackReason() {
 }
 
 function testInitializationStatusReportsRendererConstructionFailure() {
-  globalThis.THREE = {
+  delete globalThis.THREE;
+  const three = {
     ...createThreeStub(),
     WebGLRenderer: ThrowingRendererStub
   };
   globalThis.window = { devicePixelRatio: 1 };
 
-  const host = new ThreeSceneHost(createCanvasStub(), {});
+  const host = new ThreeSceneHost(createCanvasStub(), { three });
   const status = host.getInitializationStatus();
 
   assert.equal(host.ready, false);
@@ -296,10 +298,10 @@ function testInitializationStatusReportsRendererConstructionFailure() {
 }
 
 function testTrailResetAndCameraTarget() {
-  globalThis.THREE = createThreeStub();
+  delete globalThis.THREE;
   globalThis.window = { devicePixelRatio: 1 };
 
-  const host = new ThreeSceneHost(createCanvasStub(), {});
+  const host = new ThreeSceneHost(createCanvasStub(), { three: createThreeStub() });
   const bodiesA = [
     { id: "body-1", name: "earth", mass: 1, position: { x: 0, y: 0, z: 0 }, color: "#3366ff" }
   ];
@@ -321,10 +323,10 @@ function testTrailResetAndCameraTarget() {
 }
 
 function testResizeUpdatesRendererAndCamera() {
-  globalThis.THREE = createThreeStub();
+  delete globalThis.THREE;
   globalThis.window = { devicePixelRatio: 1.5 };
 
-  const host = new ThreeSceneHost(createCanvasStub(800, 400), {});
+  const host = new ThreeSceneHost(createCanvasStub(800, 400), { three: createThreeStub() });
 
   host.resize();
 
@@ -335,10 +337,10 @@ function testResizeUpdatesRendererAndCamera() {
 }
 
 function testSystemCenterCameraTracksCenterOfMass() {
-  globalThis.THREE = createThreeStub();
+  delete globalThis.THREE;
   globalThis.window = { devicePixelRatio: 1 };
 
-  const host = new ThreeSceneHost(createCanvasStub(), {});
+  const host = new ThreeSceneHost(createCanvasStub(), { three: createThreeStub() });
   const bodiesA = [
     { id: "body-1", name: "earth", mass: 1, position: { x: 0, y: 0, z: 0 }, color: "#3366ff" },
     { id: "body-2", name: "mars", mass: 3, position: { x: 4, y: 0, z: 0 }, color: "#ff6633" }
@@ -356,10 +358,10 @@ function testSystemCenterCameraTracksCenterOfMass() {
 }
 
 function testSystemCenterFallsBackToPositionAverageWhenTotalMassIsZero() {
-  globalThis.THREE = createThreeStub();
+  delete globalThis.THREE;
   globalThis.window = { devicePixelRatio: 1 };
 
-  const host = new ThreeSceneHost(createCanvasStub(), {});
+  const host = new ThreeSceneHost(createCanvasStub(), { three: createThreeStub() });
   const bodies = [
     { id: "body-1", name: "earth", mass: 0, position: { x: 2, y: 1, z: -1 }, color: "#3366ff" },
     { id: "body-2", name: "mars", mass: 0, position: { x: 6, y: 3, z: 1 }, color: "#ff6633" }
@@ -371,10 +373,10 @@ function testSystemCenterFallsBackToPositionAverageWhenTotalMassIsZero() {
 }
 
 function testMeshRemovalDisposesMeshAndTrailResources() {
-  globalThis.THREE = createThreeStub();
+  delete globalThis.THREE;
   globalThis.window = { devicePixelRatio: 1 };
 
-  const host = new ThreeSceneHost(createCanvasStub(), {});
+  const host = new ThreeSceneHost(createCanvasStub(), { three: createThreeStub() });
   const initialBodies = [
     { id: "body-1", name: "earth", mass: 1, position: { x: 0, y: 0, z: 0 }, color: "#3366ff" },
     { id: "body-2", name: "mars", mass: 1, position: { x: 1, y: 0, z: 0 }, color: "#ff6633" }

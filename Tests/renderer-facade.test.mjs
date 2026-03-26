@@ -103,11 +103,11 @@ function createModel() {
 }
 
 function testRendererFacadeFallsBackTo2dWhenThreeRendererFails() {
-  globalThis.THREE = createFailingThreeStub();
+  delete globalThis.THREE;
   globalThis.window = { devicePixelRatio: 1 };
 
   const { canvas, drawCalls } = createCanvasAndContext();
-  const facade = new RendererFacade(canvas);
+  const facade = new RendererFacade(canvas, { three: createFailingThreeStub() });
 
   facade.resize();
   facade.render(createModel());

@@ -2,12 +2,14 @@ import { ThreeSceneHost } from "./three-scene-host.js";
 import { syncTrailHistoryEntries } from "./renderer-helpers.js";
 
 export class RendererFacade {
-  constructor(canvasElement) {
+  constructor(canvasElement, options = {}) {
+    const { three = globalThis.THREE } = options;
     this.canvasElement = canvasElement;
     this.pixelRatio = Math.max(1, window.devicePixelRatio || 1);
     this.latestModel = null;
     this.trailHistory = new Map();
     this.threeSceneHost = new ThreeSceneHost(canvasElement, {
+      three,
       onInvalidate: () => {
         if (this.latestModel) {
           this.render(this.latestModel);
