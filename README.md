@@ -24,24 +24,47 @@ The runtime keeps physics, rendering, UI updates, and persistence separated so t
 
 ```mermaid
 flowchart TD
-	User[User Interaction] --> UI[UiShell / DOM Controls]
-	UI --> Controller[SimulationController]
-	Controller --> Store[AppStore]
-	Controller --> Persistence[PersistenceFacade / localStorage]
-	Controller --> Renderer[RendererFacade]
-	Controller --> Loop[SimulationLoop]
-	Loop --> MainExec[Main-thread Execution]
-	Loop --> WorkerExec[WorkerSimulationExecutor]
-	MainExec --> Physics[PhysicsEngine]
-	WorkerExec --> Worker[physics-worker.js]
-	Physics --> RuntimeState[Runtime Metrics / Playback State]
-	Worker --> RuntimeState
-	RuntimeState --> Store
-	Store --> UI
+	User[User Interaction] --> Controls[UI Shell and Controls]
+	Controls --> Controller[Simulation Controller]
+	Controller --> Loop[Simulation Loop]
+	Controller --> Renderer[Renderer Facade]
+
+	subgraph StateDomain[State Management Domain]
+		Store[Application Store]
+		Bootstrap[Bootstrap Initialization]
+		Persistence[Persistence and localStorage]
+	end
+
+	subgraph PhysicsDomain[Physics Domain]
+		Loop --> MainPath[Main-thread Physics Path]
+		Loop --> WorkerPath[Worker Physics Path]
+		MainPath --> Physics[Physics Engine]
+		WorkerPath --> WorkerExecutor[Worker Executor]
+		WorkerExecutor --> WorkerScript[Physics Worker Script]
+		WorkerExecutor -- worker fallback detected --> MainPath
+	end
+
+	subgraph RenderingDomain[Rendering Domain]
+		Renderer --> RenderMode{Renderer Mode}
+		RenderMode --> ThreeMode[Three.js Textured Mode]
+		RenderMode --> FallbackMode[2D Fallback Mode]
+		ThreeMode --> ThreeHost[Three Scene Host]
+		ThreeHost --> TextureAssets[Local Textures in Sources/images]
+		ThreeHost --> Viewport[Viewport Canvas]
+		FallbackMode --> Viewport
+	end
+
+	Controller --> Store
+	Controller -- save --> Persistence
+	Persistence -- initial restore --> Bootstrap
+	Bootstrap --> Store
+	Physics --> Store
+	WorkerScript --> Store
+	Store --> Controls
 	Store --> Renderer
-	Renderer --> ThreeHost[ThreeSceneHost / 2D Fallback]
-	ThreeHost --> Viewport[Canvas Viewport]
 ```
+
+Persistence writes are routed through the controller boundary, while the initial restore path is performed by bootstrap before the first steady-state store flow begins.
 
 ## Runtime
 
