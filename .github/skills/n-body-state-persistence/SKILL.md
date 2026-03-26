@@ -42,7 +42,7 @@ argument-hint: Describe the persistence feature, restore bug, or state normaliza
 8. `committedInitialState` が現在の仕様形に沿っているか。
 9. 破損データ時に既定 state へフォールバックできるか。
 10. `appVersion` 不一致時に migration を差し込める構造になっているか。
-11. `expandedBodyPanels` が現行 UI 方針どおり最大 1 件に正規化されるか。
+11. `expandedBodyPanels` が現行 UI 方針どおり存在する Body card の id のみに正規化され、複数件の展開状態を保持できるか。
 
 ## 推奨ワークフロー
 

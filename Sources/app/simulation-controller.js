@@ -12,6 +12,11 @@ function isFiniteNumber(value) {
   return Number.isFinite(Number(value));
 }
 
+function isValidSeedValue(value) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 0 && parsed <= 4294967295;
+}
+
 function toNumber(value, fallback = 0) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -107,7 +112,7 @@ export class SimulationController {
     if (appState.simulationConfig.presetId === "random-cluster") {
       const seed = appState.simulationConfig.seed;
 
-      if (!Number.isInteger(seed) || seed < 0 || seed > 4294967295) {
+      if (!isValidSeedValue(seed)) {
         fieldErrors.seed = "Seed must be a 32-bit unsigned integer for random-cluster.";
       }
     }
@@ -123,7 +128,7 @@ export class SimulationController {
         }
       } else if (key === "seed") {
         if (appState.simulationConfig.presetId === "random-cluster") {
-          if (!isFiniteNumber(rawValue) || !Number.isInteger(Number(rawValue)) || Number(rawValue) < 0 || Number(rawValue) > 4294967295) {
+          if (rawValue !== "" && !isValidSeedValue(rawValue)) {
             fieldErrors.seed = "Seed must be a 32-bit unsigned integer for random-cluster.";
           }
         }
@@ -281,12 +286,30 @@ export class SimulationController {
     }
 
     if (key === "timeStep" || key === "softening" || key === "seed") {
+      if (key === "seed" && rawValue === "") {
+        const isRandomCluster = this.store.getState().appState.simulationConfig.presetId === "random-cluster";
+
+        this.mutateAppState((appState, runtime) => {
+          if (isRandomCluster) {
+            runtime.fieldDrafts.seed = "";
+            return;
+          }
+
+          appState.simulationConfig.seed = null;
+          delete runtime.fieldDrafts.seed;
+        }, {
+          commitWhenIdle: !isRandomCluster,
+          shouldPersist: !isRandomCluster
+        });
+        return;
+      }
+
       const fieldKey = key;
       const isSeedOptional = key === "seed" && this.store.getState().appState.simulationConfig.presetId !== "random-cluster" && rawValue === "";
       const isValidNumber = rawValue !== "" && isFiniteNumber(rawValue);
       const parsedValue = rawValue === "" ? null : Number(rawValue);
 
-      if (isSeedOptional || (key === "seed" ? isValidNumber && Number.isInteger(parsedValue) && parsedValue >= 0 && parsedValue <= 4294967295 : isValidNumber && (key !== "timeStep" || parsedValue > 0) && (key !== "softening" || parsedValue >= 0))) {
+      if (isSeedOptional || (key === "seed" ? isValidSeedValue(parsedValue) : isValidNumber && (key !== "timeStep" || parsedValue > 0) && (key !== "softening" || parsedValue >= 0))) {
         this.mutateAppState((appState, runtime) => {
           appState.simulationConfig[key] = parsedValue;
           delete runtime.fieldDrafts[fieldKey];
@@ -560,6 +583,13 @@ export class SimulationController {
   }
 
   generate() {
+    const { appState, runtime } = this.store.getState();
+
+    if (appState.simulationConfig.presetId === "random-cluster" && runtime.fieldDrafts.seed !== undefined && runtime.fieldDrafts.seed !== "") {
+      this.setStatus("Resolve the Seed field before generating random-cluster.");
+      return;
+    }
+
     this.mutateAppState((appState, runtime) => {
       const generation = generatePresetBodies({
         presetId: appState.simulationConfig.presetId,

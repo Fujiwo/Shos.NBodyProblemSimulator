@@ -13,6 +13,6 @@
 - モバイルファーストで設計し、最大 10 体の設定 UI がスマートフォンでも破綻しないことを優先する。
 - 現行 UI は compact controls を前提とし、visible label や visible button text の短縮表示は許容するが、title や aria-label などの accessible name で正式名称を保持する。
 - 現行 UI の Validation は常時表示ではなく、エラーが存在する時だけ表示して強調する。
-- 現行 UI の Body settings は single-expand card を前提とし、同時展開数は最大 1 とする。
+- 現行 UI の Body settings は各 Body card を独立して開閉でき、同時に複数件を展開できる前提とする。
 - Large レイアウトの左カラム幅は compact UI 前提として 240px から 300px を許容する。
 - プロンプトや仕様のレビューでは、まず要件不足、矛盾、受け入れ基準の欠落、将来実装を迷わせる曖昧さを優先して指摘する。

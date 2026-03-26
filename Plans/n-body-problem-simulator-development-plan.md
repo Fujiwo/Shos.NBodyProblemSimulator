@@ -78,6 +78,8 @@
 - 現行 baseline では preset と seed の併用を採用する
   - preset は生成ルールのカテゴリ識別子
   - seed は同一 preset 内の具体的な初期値再現に使う
+- `random-cluster` の Seed 入力欄は空欄を許容し、空欄は次回 Generate 時の auto seed 採番指示として扱う
+- `random-cluster` の Seed 入力欄に非空値を入れる場合は 32-bit 符号なし整数のみ許容し、不正な非空値が残っている間は Generate を失敗として扱う
 - 再現キーは preset ごとに以下で定義する
   - `binary-orbit`: `presetId`
   - `three-body-figure-eight`: `presetId`
@@ -91,6 +93,8 @@
 - `bodyCount` を生成結果の体数へ同期する
 - `committedInitialState` を更新する
 - Generate 実行直後に localStorage を更新する
+- `random-cluster` で Seed 入力欄が空欄のまま Generate した場合は現在時刻由来の整数を採番し、その採番結果を state と localStorage へ保存する
+- `random-cluster` で Seed 入力欄に不正な非空値がある場合は Generate を実行せず、前回有効状態を保持する
 
 現行 baseline で含める preset は以下で固定する。
 

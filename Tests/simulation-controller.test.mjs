@@ -152,6 +152,50 @@ function testStartRejectsWhilePausedAndSetsStatusMessage() {
   assert.deepEqual(loopCalls, ["start", "pause"]);
 }
 
+function testGenerateUsesAutoSeedWhenRandomClusterSeedDraftIsBlank() {
+  const { store, controller, loopCalls } = createControllerHarness();
+  const originalNow = Date.now;
+
+  Date.now = () => 1234567890;
+
+  try {
+    controller.updateSimulationConfig("seed", "");
+
+    let state = store.getState();
+    assert.equal(state.runtime.fieldDrafts.seed, "");
+    assert.equal(state.runtime.fieldErrors.seed, undefined);
+
+    controller.generate();
+
+    state = store.getState();
+    assert.equal(state.appState.simulationConfig.seed, 1234567890);
+    assert.deepEqual(state.runtime.fieldDrafts, {});
+    assert.equal(state.runtime.statusMessage, "Random cluster generated with seed 1234567890.");
+    assert.deepEqual(loopCalls, ["reset"]);
+  } finally {
+    Date.now = originalNow;
+  }
+}
+
+function testGenerateRejectsInvalidRandomClusterSeedDraft() {
+  const { store, controller, loopCalls } = createControllerHarness();
+  const beforeState = store.getState();
+  const beforeSeed = beforeState.appState.simulationConfig.seed;
+  const beforeBodyNames = beforeState.appState.bodies.map((body) => body.name);
+
+  controller.updateSimulationConfig("seed", "not-a-number");
+  controller.generate();
+
+  const state = store.getState();
+
+  assert.equal(state.appState.simulationConfig.seed, beforeSeed);
+  assert.deepEqual(state.appState.bodies.map((body) => body.name), beforeBodyNames);
+  assert.equal(state.runtime.fieldDrafts.seed, "not-a-number");
+  assert.equal(state.runtime.fieldErrors.seed, "Seed must be a 32-bit unsigned integer for random-cluster.");
+  assert.equal(state.runtime.statusMessage, "Resolve the Seed field before generating random-cluster.");
+  assert.deepEqual(loopCalls, []);
+}
+
 testTransitionGuards();
 testCameraTargetNormalization();
 testGenerateResetsRuntimeAndCommitsState();
@@ -159,5 +203,7 @@ testBodyPanelStateSupportsIndependentOpenAndClose();
 testStartRejectsValidationErrorsAndSetsStatusMessage();
 testStartRejectsWhileRunningAndSetsStatusMessage();
 testStartRejectsWhilePausedAndSetsStatusMessage();
+testGenerateUsesAutoSeedWhenRandomClusterSeedDraftIsBlank();
+testGenerateRejectsInvalidRandomClusterSeedDraft();
 
 console.log("simulation-controller.test.mjs ok");

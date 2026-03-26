@@ -59,7 +59,7 @@ argument-hint: Describe the feature, bug, or files to work on
 3. Start、Pause、Resume、Reset の状態遷移が一貫していること。
 4. compact controls を採用する場合、visible label / visible button text は短縮しても accessible name で正式名称を保持すること。
 5. Validation は常時表示せず、エラーが存在する時だけ表示して強調する方針を優先すること。
-6. Body settings は single-expand card を前提にし、同時展開数は最大 1 とすること。
+6. Body settings は各 Body card を独立して開閉でき、同時に複数件を展開できること。
 
 ## レビュー時の優先観点
 

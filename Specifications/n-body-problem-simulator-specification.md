@@ -152,8 +152,10 @@
 
 - Seed は 32-bit 符号なし整数とする。
 - `binary-orbit` と `three-body-figure-eight` は既定値を使うため Seed を参照しないが、保存値としては `null` を許容する。
-- `random-cluster` では Seed を必須とする。
-- Seed 未指定で `random-cluster` を実行する場合は現在時刻由来の整数を生成し、その値を保存する。
+- `random-cluster` では Seed 入力欄の空欄を許容し、空欄は「次回 Generate 実行時に auto seed を採番する」指示として扱う。
+- `random-cluster` で Seed に非空値を入力する場合は、32-bit 符号なし整数でなければならない。
+- Seed 入力欄が空欄のまま `random-cluster` を実行する場合は現在時刻由来の整数を生成し、その値を保存する。
+- Seed 入力欄に不正な非空値が残っている場合、`random-cluster` の Generate は失敗とし、前回有効状態を保持する。
 - `random-cluster` では `bodyCount` も再現キーに含める。
 
 ### 5.3.4 Generate 実行時の更新内容
@@ -172,6 +174,8 @@
 受け入れ基準は以下とする。
 
 - 同一再現キーで Generate した結果が一致すること
+- `random-cluster` で Seed 入力欄を空欄にして Generate した場合、auto 採番された Seed が状態と表示へ反映されること
+- `random-cluster` で Seed 入力欄に不正な非空値がある場合、Generate が失敗し、前回有効状態が保持されること
 - Generate 後に画面上の時間、選択状態、軌跡が初期化されること
 - Generate 後に再読み込みしても同じ設定が復元されること
 
@@ -573,6 +577,7 @@ Worker 導入有無の最終判断は以下で行う。
 - localStorage 読み込み失敗時は既定状態へ戻す。
 - Three.js 初期化失敗時は、2D fallback renderer へ切り替え、texture-backed bodies が unavailable である理由を英語メッセージで表示する。シミュレーション UI は継続利用可能とする。
 - Generate 失敗時は前回有効状態を保持する。
+- `random-cluster` の Seed 入力欄に不正な非空値がある場合は Generate を実行せず、Seed 修正を促す英語ステータスメッセージを表示する。
 
 UI エラーメッセージは英語とし、少なくとも以下を定義する。
 
