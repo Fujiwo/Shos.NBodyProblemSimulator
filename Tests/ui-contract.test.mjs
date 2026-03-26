@@ -21,7 +21,7 @@ function testCompactControlsMarkup() {
   assert.match(indexHtml, /<span title="Body Count">Count<\/span>/);
   assert.match(indexHtml, /<input data-role="body-count" type="number" min="2" max="10" step="1" inputmode="numeric" aria-label="Body Count">/);
   assert.match(indexHtml, /<select data-role="preset-id" aria-label="Preset">/);
-  assert.match(indexHtml, /<input data-role="seed" type="number" min="0" max="4294967295" step="1" inputmode="numeric" aria-label="Seed">/);
+  assert.match(indexHtml, /<input data-role="seed" type="number" min="0" max="4294967295" step="1" inputmode="numeric" aria-label="Seed" placeholder="auto on Gen">/);
   assert.match(indexHtml, /<span title="Time Step">dt<\/span>/);
   assert.match(indexHtml, /<input data-role="time-step" type="number" step="0\.001" inputmode="decimal" aria-label="Time Step">/);
   assert.match(indexHtml, /<span title="Softening">Soft<\/span>/);
@@ -85,6 +85,7 @@ function testCompactControlsCssContract() {
   assert.match(uiShellSource, /data-body-toggle="\$\{body\.id\}"/);
   assert.match(uiShellSource, /data-open="\$\{isExpanded \? "true" : "false"\}"/);
   assert.match(uiShellSource, /role="switch"/);
+  assert.match(uiShellSource, /this\.elements\.seed\.placeholder = appState\.simulationConfig\.presetId === "random-cluster"/);
 }
 
 testCompactControlsMarkup();

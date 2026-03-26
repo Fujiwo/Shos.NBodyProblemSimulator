@@ -10,6 +10,8 @@
 
 ### 1. High: `.github` 配下の作業指示が、現行の Body card 契約と矛盾している
 
+対応状況: 対応済み。2026-03-26 に `.github/copilot-instructions.md`、`.github/skills/n-body-state-persistence/SKILL.md`、`.github/skills/n-body-vanilla-webapp/SKILL.md`、`.github/skills/n-body-testing-and-validation/SKILL.md` を multi-open 前提へ更新した。
+
 現行実装とテストは、Body card の複数同時オープンを前提にしている。実装側では `data-open` を各カードに持たせており、[Sources/app/ui-shell.js#L107](../../Sources/app/ui-shell.js#L107) で各 Body card が独立状態を持つ。テスト側でも [Tests/simulation-controller.test.mjs#L98](../../Tests/simulation-controller.test.mjs#L98) で 3 枚同時オープンを期待している。
 
 一方で、将来の実装を誘導する `.github` 配下の指示は、いまも single-expand を要求している。
@@ -32,6 +34,8 @@
 - テスト方針も、"最大 1 件" ではなく、"独立して開閉できること" を確認対象に置き換える。
 
 ### 2. Medium: `random-cluster` の invalid seed 入力時に、Generate が現在入力ではなく直前の有効 seed を使って成功してしまう
+
+対応状況: 対応済み。2026-03-26 に [Sources/app/simulation-controller.js](../../Sources/app/simulation-controller.js) を修正し、invalid non-empty seed の Generate をブロックするよう更新した。あわせて [Tests/simulation-controller.test.mjs](../../Tests/simulation-controller.test.mjs) と [Tests/ui-acceptance.spec.mjs](../../Tests/ui-acceptance.spec.mjs) に回帰テストを追加し、Seed 欄が空欄のときに auto 生成予定だと分かる UI 文言も追加した。
 
 `updateSimulationConfig("seed", rawValue)` は、seed が不正なとき canonical state を更新せず、draft だけを保持する。[Sources/app/simulation-controller.js#L285](../../Sources/app/simulation-controller.js#L285) と [Sources/app/simulation-controller.js#L300](../../Sources/app/simulation-controller.js#L300) がその境界になっている。
 
@@ -60,11 +64,11 @@
 
 ## Residual Risk
 
-- invalid seed の Generate 経路を直接検証するテストは、今回の確認範囲では見当たらなかった。
-- そのため、seed 入力まわりは修正時に回帰テストを追加しないと再発しやすい。
+- invalid seed の Generate 経路については controller テストと UI テストを追加済みである。
+- 今後は Seed placeholder や status message の変更時に、compact UI 契約と再現性表示の両方を同時に確認しないと回帰しやすい。
 
 ## Summary
 
-- 最優先は `.github` 配下の stale guidance 解消。
-- 次点で `random-cluster` の invalid seed 時の Generate 挙動を、仕様どおりの失敗または明示的ブロックへ寄せるべき。
-- ほかの候補所見も確認したが、最終的にレビューへ残したのは、再現性と根拠が十分なものに限定した。
+- High 指摘だった `.github` 配下の stale guidance は修正済み。
+- Medium 指摘だった `random-cluster` の invalid seed 時の Generate 挙動も修正済みで、controller と UI の回帰テストを追加した。
+- ほかの候補所見も確認したが、レビューへ残したのは、再現性と根拠が十分なものに限定した。

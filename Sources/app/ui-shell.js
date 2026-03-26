@@ -277,6 +277,9 @@ export class UiShell {
     this.elements.bodyCount.value = String(appState.bodyCount);
     this.elements.presetId.value = appState.simulationConfig.presetId || "random-cluster";
     this.elements.seed.value = runtime.fieldDrafts.seed ?? (appState.simulationConfig.seed ?? "");
+    this.elements.seed.placeholder = appState.simulationConfig.presetId === "random-cluster"
+      ? "auto on Gen"
+      : "Preset fixed";
     this.elements.timeStep.value = runtime.fieldDrafts.timeStep ?? String(appState.simulationConfig.timeStep);
     this.elements.softening.value = runtime.fieldDrafts.softening ?? String(appState.simulationConfig.softening);
     this.elements.integrator.value = appState.simulationConfig.integrator;

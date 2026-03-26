@@ -18,6 +18,7 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 - The helper copy in the header is hidden on small and medium layouts and reappears only on wide desktop layouts.
 - The controls panel sits directly below the header at every breakpoint, and on large layouts it becomes a compact full-width strip above the body editor and viewport row.
 - The controls panel uses compact visible labels such as Count, dt, Soft, Target, and Trail while keeping full accessible names via title or aria-label.
+- The Seed field shows `auto on Gen` while blank for `random-cluster`, so the next Generate action is understood to assign an automatic seed.
 - The playback buttons use compact visible text such as Gen, Run, Hold, Go, and Reset.
 - Validation is hidden when there are no errors and is emphasized only when invalid input exists.
 - Body settings provide an Open or Closed toggle for every body card and allow multiple body editors to stay open at the same time.

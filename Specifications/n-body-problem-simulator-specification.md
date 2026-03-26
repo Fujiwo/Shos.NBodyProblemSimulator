@@ -400,6 +400,7 @@ UI 文言は英語とし、accessible name は正式名称を保持する。visi
   - accessible name: `Body Count`, visible text: `Count`
   - accessible name: `Preset`, visible text: `Preset`
   - accessible name: `Seed`, visible text: `Seed`
+  - `random-cluster` の Seed 欄が空欄の時は placeholder に `auto on Gen` を表示し、Generate 実行時に auto seed が採番されることを示す
   - accessible name: `Time Step`, visible text: `dt`
   - accessible name: `Softening`, visible text: `Soft`
   - accessible name: `Integrator`, visible text: `Int`

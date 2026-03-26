@@ -20,6 +20,7 @@ test("compact controls keep short visible text and full accessible names", async
   await expect(page.getByLabel("Body Count")).toBeVisible();
   await expect(page.getByLabel("Preset")).toBeVisible();
   await expect(page.getByLabel("Seed")).toBeVisible();
+  await expect(page.getByLabel("Seed")).toHaveAttribute("placeholder", "auto on Gen");
   await expect(page.getByLabel("Time Step")).toBeVisible();
   await expect(page.getByLabel("Softening")).toBeVisible();
   await expect(page.getByLabel("Integrator")).toBeVisible();
@@ -176,6 +177,44 @@ test("body cards toggle independently and body inputs lock while running", async
   await expect(page.locator('[data-role="playback-state"]')).toHaveText("Idle");
   await expect(page.locator('[data-body-card][data-open="true"]')).toHaveCount(1);
   await expect(page.locator('[data-body-card][data-open="true"] input[data-field="name"]').first()).toBeEnabled();
+});
+
+test("seed input shows auto generation hint and generate applies an auto seed in the browser", async ({ page }) => {
+  await page.evaluate(() => {
+    Date.now = () => 1234567890;
+  });
+
+  const seedInput = page.getByLabel("Seed");
+
+  await seedInput.fill("");
+  await expect(seedInput).toHaveValue("");
+  await expect(seedInput).toHaveAttribute("placeholder", "auto on Gen");
+  await expect(page.locator('[data-role="validation-panel"]')).toBeHidden();
+
+  await page.getByRole("button", { name: "Generate" }).click();
+
+  await expect(page.locator('[data-role="status-message"]')).toHaveText("Random cluster generated with seed 1234567890.");
+  await expect(page.locator('[data-role="metric-current-seed"]')).toHaveText("1234567890");
+  await expect(seedInput).toHaveValue("1234567890");
+  await expect(page.locator('[data-role="metric-reproducibility-key"]')).toContainText("seed=1234567890");
+});
+
+test("invalid random-cluster seed stays blocked in the browser", async ({ page }) => {
+  const seedInput = page.getByLabel("Seed");
+
+  await expect(page.locator('[data-role="metric-current-seed"]')).toHaveText("1001");
+  await seedInput.evaluate((input, nextValue) => {
+    input.value = nextValue;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }, "4294967296");
+
+  await expect(page.locator('[data-role="validation-panel"]')).toContainText("Seed must be a 32-bit unsigned integer for random-cluster.");
+
+  await page.getByRole("button", { name: "Generate" }).click();
+
+  await expect(page.locator('[data-role="status-message"]')).toHaveText("Resolve the Seed field before generating random-cluster.");
+  await expect(page.locator('[data-role="metric-current-seed"]')).toHaveText("1001");
+  await expect(seedInput).toHaveValue("4294967296");
 });
 
 test.describe("mobile compact layout", () => {
