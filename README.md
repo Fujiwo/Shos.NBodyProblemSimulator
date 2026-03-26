@@ -12,10 +12,36 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 ## Published sample
 
 - [https://www2.shos.info/shosnbody/](https://www2.shos.info/shosnbody/)
+- The published sample is a browser-hosted build of the current simulator and is useful for checking the current UI, rendering mode, and playback flow without local setup.
 
 ### Execution image
 
 ![Execution image of the published sample](README-assets/shos-nbody.png)
+
+## Architecture
+
+The runtime keeps physics, rendering, UI updates, and persistence separated so the main-thread path and Worker path can share the same application state flow.
+
+```mermaid
+flowchart TD
+	User[User Interaction] --> UI[UiShell / DOM Controls]
+	UI --> Controller[SimulationController]
+	Controller --> Store[AppStore]
+	Controller --> Persistence[PersistenceFacade / localStorage]
+	Controller --> Renderer[RendererFacade]
+	Controller --> Loop[SimulationLoop]
+	Loop --> MainExec[Main-thread Execution]
+	Loop --> WorkerExec[WorkerSimulationExecutor]
+	MainExec --> Physics[PhysicsEngine]
+	WorkerExec --> Worker[physics-worker.js]
+	Physics --> RuntimeState[Runtime Metrics / Playback State]
+	Worker --> RuntimeState
+	RuntimeState --> Store
+	Store --> UI
+	Store --> Renderer
+	Renderer --> ThreeHost[ThreeSceneHost / 2D Fallback]
+	ThreeHost --> Viewport[Canvas Viewport]
+```
 
 ## Runtime
 
