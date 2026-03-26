@@ -296,12 +296,15 @@ function testBootstrapComposesNoSavedStateStatusWithoutRestorePrefix() {
 
   const persisted = JSON.parse(storage.get("nbody-simulator.state"));
   const statusMessage = rootElement.elements.get('[data-role="status-message"]').textContent;
+  const executionNotice = rootElement.elements.get('[data-role="execution-notice"]');
 
   assert.equal(persisted.appVersion, APP_VERSION);
   assert.equal(
     statusMessage,
     `${MAIN_THREAD_STATUS} ${THREE_FALLBACK_STATUS}`
   );
+  assert.equal(executionNotice.textContent, "");
+  assert.equal(executionNotice.hidden, true);
 }
 
 function testBootstrapComposesWorkerUnavailableFallbackStatus() {
@@ -319,11 +322,14 @@ function testBootstrapComposesWorkerUnavailableFallbackStatus() {
   bootstrapApp(documentRef);
 
   const statusMessage = rootElement.elements.get('[data-role="status-message"]').textContent;
+  const executionNotice = rootElement.elements.get('[data-role="execution-notice"]');
 
   assert.equal(
     statusMessage,
     `${WORKER_FALLBACK_STATUS} ${THREE_FALLBACK_STATUS}`
   );
+  assert.equal(executionNotice.textContent, "");
+  assert.equal(executionNotice.hidden, true);
 }
 
 testBootstrapOverwritesCorruptedStorageWithFallbackState();

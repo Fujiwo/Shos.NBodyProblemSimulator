@@ -47,10 +47,11 @@ function normalizeBody(rawBody, index) {
   const fallbackBody = createBodies(index + 1)[index];
   const body = rawBody && typeof rawBody === "object" ? rawBody : {};
   const mass = toFiniteNumber(body.mass, fallbackBody.mass);
+  const validName = typeof body.name === "string" && body.name.length > 0 && body.name.length <= 32;
 
   return {
     id: typeof body.id === "string" && body.id.length > 0 ? body.id : fallbackBody.id,
-    name: typeof body.name === "string" && body.name.length > 0 ? body.name : fallbackBody.name,
+    name: validName ? body.name : fallbackBody.name,
     mass: mass > 0 ? mass : fallbackBody.mass,
     position: {
       x: toFiniteNumber(body.position?.x, fallbackBody.position.x),

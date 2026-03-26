@@ -351,6 +351,79 @@ function testHydrationNormalizesCorruptedBodyMassAndVectors() {
   assert.equal(hydrated.committedInitialState.bodies[0].velocity.y, fallbackBodies[0].velocity.y);
 }
 
+function testHydrationNormalizesCorruptedBodyNameAndColor() {
+  const fallbackBodies = createInitialAppState(3).bodies;
+  const hydrated = createHydratedAppState({
+    appVersion: "0.4.0-phase4",
+    bodyCount: 3,
+    bodies: [
+      {
+        id: "body-1",
+        name: "",
+        mass: 1,
+        position: { x: 0, y: 0, z: 0 },
+        velocity: { x: 0, y: 0, z: 0 },
+        color: ""
+      },
+      {
+        id: "body-2",
+        name: 42,
+        mass: 1,
+        position: { x: 1, y: 1, z: 1 },
+        velocity: { x: 1, y: 1, z: 1 },
+        color: null
+      },
+      {
+        id: "body-3",
+        name: "x".repeat(33),
+        mass: 1,
+        position: { x: 2, y: 2, z: 2 },
+        velocity: { x: 2, y: 2, z: 2 },
+        color: "#123456"
+      }
+    ],
+    simulationConfig: createInitialAppState(3).simulationConfig,
+    uiState: {
+      playbackState: "idle",
+      selectedBodyId: null,
+      cameraTarget: "system-center",
+      showTrails: true,
+      expandedBodyPanels: ["body-1"]
+    },
+    committedInitialState: {
+      bodyCount: 3,
+      bodies: [
+        {
+          id: "body-1",
+          name: "",
+          mass: 1,
+          position: { x: 0, y: 0, z: 0 },
+          velocity: { x: 0, y: 0, z: 0 },
+          color: ""
+        },
+        fallbackBodies[1],
+        fallbackBodies[2]
+      ],
+      simulationConfig: createInitialAppState(3).simulationConfig,
+      uiState: {
+        selectedBodyId: null,
+        cameraTarget: "system-center",
+        showTrails: true
+      }
+    },
+    playbackRestorePolicy: "restore-as-idle"
+  });
+
+  assert.equal(hydrated.bodies[0].name, fallbackBodies[0].name);
+  assert.equal(hydrated.bodies[0].color, fallbackBodies[0].color);
+  assert.equal(hydrated.bodies[1].name, fallbackBodies[1].name);
+  assert.equal(hydrated.bodies[1].color, fallbackBodies[1].color);
+  assert.equal(hydrated.bodies[2].name, fallbackBodies[2].name);
+  assert.equal(hydrated.bodies[2].color, "#123456");
+  assert.equal(hydrated.committedInitialState.bodies[0].name, fallbackBodies[0].name);
+  assert.equal(hydrated.committedInitialState.bodies[0].color, fallbackBodies[0].color);
+}
+
 function testHydrationNormalizesExpandedPanelsToValidUniqueBodyOrder() {
   const hydrated = createHydratedAppState({
     appVersion: "0.4.0-phase4",
@@ -428,6 +501,7 @@ testHydrationNormalizesPresetConstraintsAndSelection();
 testHydrationRetainsRk4Integrator();
 testHydrationNormalizesFixedPresetSeedToNull();
 testHydrationNormalizesCorruptedBodyMassAndVectors();
+testHydrationNormalizesCorruptedBodyNameAndColor();
 testHydrationNormalizesExpandedPanelsToValidUniqueBodyOrder();
 testHydrationRejectsOutOfRangeSeedValues();
 

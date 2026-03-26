@@ -53,6 +53,7 @@ function setPlaybackState(store, playbackState) {
 
 async function testAccumulatorCapLimitsStepsPerFrame() {
   const { store, loop } = createLoopHarness();
+  const initialStatusMessage = store.getState().runtime.statusMessage;
 
   loop.prepareForStart();
   setPlaybackState(store, "running");
@@ -67,6 +68,7 @@ async function testAccumulatorCapLimitsStepsPerFrame() {
   assert.equal(state.runtime.simulationTime, 0.02);
   assert.ok(Math.abs(loop.accumulator - 0.23) < 1e-12);
   assert.equal(state.runtime.metrics.pipelineTime, "1.50 ms");
+  assert.equal(state.runtime.statusMessage, initialStatusMessage);
   assert.equal(state.runtime.executionNotice, "Worker runtime error detected. Automatically switched to main-thread simulation.");
 }
 
