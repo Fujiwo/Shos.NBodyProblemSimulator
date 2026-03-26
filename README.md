@@ -20,8 +20,23 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 
 1. Run npm install.
 2. Run npm run vendor:three.
-2. Serve Sources over HTTP.
-3. Open Sources/index.html through the local server.
+3. Serve Sources over HTTP.
+4. Open Sources/index.html through the local server.
+
+## Testing
+
+- Run npm test for the Node-based regression suite, including the static compact UI contract checks.
+- Run npm run test:ui:install once to install the Chromium browser used by Playwright.
+- Run npm run test:ui for real-browser UI acceptance coverage against a local static server.
+
+### Compact UI contract checks
+
+- Compact visible control text remains shortened as Count, dt, Soft, Target, Trail, Gen, Run, Hold, Go, and Reset.
+- Interactive controls keep their full accessible names through aria-label even when the visible text is shortened.
+- Validation stays hidden while the form is valid and appears only when invalid input exists.
+- Body settings keep the single-expand card behavior so only one body editor is open at a time.
+- At 360px width, the compact controls remain usable without horizontal overflow.
+- During running and paused playback states, body editing inputs stay disabled.
 
 ## Repository conventions
 

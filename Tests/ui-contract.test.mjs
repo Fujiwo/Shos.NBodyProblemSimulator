@@ -18,10 +18,17 @@ function testCompactControlsMarkup() {
   assert.match(indexHtml, /<h2 id="controls-heading">Controls<\/h2>/);
 
   assert.match(indexHtml, /<span title="Body Count">Count<\/span>/);
+  assert.match(indexHtml, /<input data-role="body-count" type="number" min="2" max="10" step="1" inputmode="numeric" aria-label="Body Count">/);
+  assert.match(indexHtml, /<select data-role="preset-id" aria-label="Preset">/);
+  assert.match(indexHtml, /<input data-role="seed" type="number" min="0" max="4294967295" step="1" inputmode="numeric" aria-label="Seed">/);
   assert.match(indexHtml, /<span title="Time Step">dt<\/span>/);
+  assert.match(indexHtml, /<input data-role="time-step" type="number" step="0\.001" inputmode="decimal" aria-label="Time Step">/);
   assert.match(indexHtml, /<span title="Softening">Soft<\/span>/);
+  assert.match(indexHtml, /<input data-role="softening" type="number" step="0\.001" inputmode="decimal" aria-label="Softening">/);
   assert.match(indexHtml, /<span title="Camera Target">Target<\/span>/);
+  assert.match(indexHtml, /<select data-role="camera-target" aria-label="Camera Target"><\/select>/);
   assert.match(indexHtml, /<span title="Trails">Trail<\/span>/);
+  assert.match(indexHtml, /<input data-role="show-trails" type="checkbox" aria-label="Trails">/);
 
   assert.match(indexHtml, /<button data-action="generate" type="button" title="Generate" aria-label="Generate">Gen<\/button>/);
   assert.match(indexHtml, /<button data-action="start" type="button" title="Start" aria-label="Start">Run<\/button>/);
