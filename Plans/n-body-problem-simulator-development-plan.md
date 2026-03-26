@@ -205,10 +205,13 @@ $$
 
 - Header
   - App title
-  - Preset selector
-  - Seed display
+  - Playback state
+  - Status message
 - Control panel
+  - compact heading: `Setup` / `Controls`
   - Body count selector
+  - Preset selector
+  - Seed input
   - Generate button
   - Start button
   - Pause button
@@ -230,9 +233,25 @@ $$
 ### 3.3 モバイル操作性要件
 
 - 360px 幅でも主要操作ボタンが 2 行以内に収まること
-- 各入力要素は最小タップ領域 44px を確保すること
-- Body カードは 1 件ずつ展開できる方式にし、同時展開は最大 2 件までとする
+- Control panel の compact input / select / button は高さ 36px を下限とし、Body card summary と主要 panel 操作は 44px 以上を維持すること
+- Body カードは 1 件ずつ展開できる方式にし、同時展開は最大 1 件とする
 - 数値入力はモバイルキーボード最適化のため decimal 入力を前提にする
+
+現行 UI の compact controls は、表示文言を短縮した上で `title` または `aria-label` に正式名称を保持する。
+
+- 表示ラベル例
+  - `Body Count` -> `Count`
+  - `Time Step` -> `dt`
+  - `Softening` -> `Soft`
+  - `Camera Target` -> `Target`
+  - `Trails` -> `Trail`
+- 表示ボタン例
+  - `Generate` -> `Gen`
+  - `Start` -> `Run`
+  - `Pause` -> `Hold`
+  - `Resume` -> `Go`
+  - `Reset` -> `Reset`
+- Validation は常時表示せず、入力エラーが存在する時だけ強調表示する
 
 ## 4. 採用アルゴリズム候補と採用理由
 
@@ -509,7 +528,7 @@ UiState {
 - Medium
   - 設定パネル上段、キャンバス下段
 - Large
-  - 左パネル 320px から 400px、右側をキャンバスに充てる
+  - 左パネル 240px から 300px、右側をキャンバスに充てる
 - キャンバスはウィンドウリサイズ時に再計算する
 - 10 体時でも縦スクロールで操作完了できることを優先し、横スクロールは発生させない
 

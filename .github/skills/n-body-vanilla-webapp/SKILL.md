@@ -57,6 +57,9 @@ argument-hint: Describe the feature, bug, or files to work on
 1. スマートフォン幅でも 10 体分の入力導線が破綻しないこと。
 2. キャンバスが UI に押しつぶされず、可視領域が確保されること。
 3. Start、Pause、Resume、Reset の状態遷移が一貫していること。
+4. compact controls を採用する場合、visible label / visible button text は短縮しても accessible name で正式名称を保持すること。
+5. Validation は常時表示せず、エラーが存在する時だけ表示して強調する方針を優先すること。
+6. Body settings は single-expand card を前提にし、同時展開数は最大 1 とすること。
 
 ## レビュー時の優先観点
 

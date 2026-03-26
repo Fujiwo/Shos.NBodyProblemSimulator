@@ -34,6 +34,9 @@ argument-hint: Describe the test target, acceptance criteria, or validation gap
 8. 性能確認では対象ブラウザと測定条件を固定する。
 9. エネルギー誤差確認ではステップ数、preset、許容値を明示する。
 10. texture あり Body と texture なし Body の両方で描画継続を確認する。
+11. compact controls の visible text が短縮されていても accessible name が正式名称を維持しているか確認する。
+12. Validation がエラー時のみ表示される現行 UI 方針を検証対象に含める。
+13. Body card が single-expand 方針どおり最大 1 件だけ開くか確認する。
 
 ## 推奨ワークフロー
 

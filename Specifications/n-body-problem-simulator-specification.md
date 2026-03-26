@@ -356,38 +356,47 @@ $$
 - Medium
   - 設定パネル上段、Canvas 下段とする。
 - Large
-  - 左側に 320px から 400px の設定パネル、右側に Canvas を配置する。
+  - 左側に 240px から 300px の設定パネル、右側に Canvas を配置する。
 
 ### 7.1.3 モバイル操作要件
 
 - 360px 幅でも主要ボタンを 2 行以内に収める。
-- タップ対象は 44px 以上確保する。
+- Control panel の compact input / select / button は高さ 36px を下限とする。
+- Body card summary と主要 panel 操作は 44px 以上を維持する。
 - 横スクロールを発生させない。
-- Body カードは折りたたみ可能とし、同時展開数は最大 2 とする。
+- Body カードは折りたたみ可能とし、同時展開数は最大 1 とする。
 
 ## 7.2 UI 文言
 
-UI 文言は英語とし、少なくとも以下を含む。
+UI 文言は英語とし、accessible name は正式名称を保持する。visible label / visible button text は compact 表示を許容する。
 
 - App title: `3D N-body problem simulator`
+- Control panel heading
+  - eyebrow: `Setup`
+  - heading: `Controls`
 - Buttons
-  - `Generate`
-  - `Start`
-  - `Pause`
-  - `Resume`
-  - `Reset`
+  - accessible name: `Generate`, visible text: `Gen`
+  - accessible name: `Start`, visible text: `Run`
+  - accessible name: `Pause`, visible text: `Hold`
+  - accessible name: `Resume`, visible text: `Go`
+  - accessible name: `Reset`, visible text: `Reset`
 - Labels
-  - `Body Count`
-  - `Mass`
-  - `Position X`
-  - `Position Y`
-  - `Position Z`
-  - `Velocity X`
-  - `Velocity Y`
-  - `Velocity Z`
-  - `Time Step`
-  - `Softening`
-  - `Trails`
+  - accessible name: `Body Count`, visible text: `Count`
+  - accessible name: `Preset`, visible text: `Preset`
+  - accessible name: `Seed`, visible text: `Seed`
+  - accessible name: `Time Step`, visible text: `dt`
+  - accessible name: `Softening`, visible text: `Soft`
+  - accessible name: `Camera Target`, visible text: `Target`
+  - accessible name: `Trails`, visible text: `Trail`
+  - Body card fields: `Name`, `Mass`, `Position`, `Velocity`, `Color`
+- Preset option visible text
+  - `binary-orbit` -> `Binary`
+  - `three-body-figure-eight` -> `Figure-8`
+  - `random-cluster` -> `Random`
+- Validation panel
+  - title: `Errors`
+  - hidden when no validation errors exist
+  - visible and emphasized only when validation errors exist
 
 ## 8. データ仕様
 

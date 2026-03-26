@@ -42,6 +42,7 @@ argument-hint: Describe the persistence feature, restore bug, or state normaliza
 8. `committedInitialState` が現在の仕様形に沿っているか。
 9. 破損データ時に既定 state へフォールバックできるか。
 10. `appVersion` 不一致時に migration を差し込める構造になっているか。
+11. `expandedBodyPanels` が現行 UI 方針どおり最大 1 件に正規化されるか。
 
 ## 推奨ワークフロー
 

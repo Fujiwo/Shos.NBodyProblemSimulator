@@ -8,6 +8,14 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 - Body textures are resolved from Sources/images using normalized Body.name values.
 - If Three.js cannot initialize, the app stays usable in 2D fallback mode and the status message explains that texture-backed bodies are unavailable.
 
+## UI
+
+- The header shows the app title, playback state, and a runtime status message.
+- The controls panel uses compact visible labels such as Count, dt, Soft, Target, and Trail while keeping full accessible names via title or aria-label.
+- The playback buttons use compact visible text such as Gen, Run, Hold, Go, and Reset.
+- Validation is hidden when there are no errors and is emphasized only when invalid input exists.
+- Body settings use single-expand cards so only one body editor is open at a time.
+
 ## Local setup
 
 1. Run npm install.

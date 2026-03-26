@@ -67,6 +67,8 @@ Phase 1 で目指す成果は以下です。
   - Visualization area
   - Metrics overlay
 - UI 表示文言は英語にすること
+- Header は app title に加えて playback state と status message の表示領域を持てること
+- Control panel heading は compact heading として `Setup` / `Controls` を許容すること
 
 ## 2. CSS 基盤
 - モバイルファーストで実装すること
@@ -74,6 +76,7 @@ Phase 1 で目指す成果は以下です。
 - 360px 幅でも横スクロールを発生させない構成にすること
 - Canvas / viewport 領域が潰れないように高さ戦略を入れること
 - 後続フェーズで Body カードが最大 10 件に増えても破綻しにくい構造にすること
+- Large では左パネル 240px から 300px 程度の compact column を許容すること
 
 ## 3. JavaScript 初期化基盤
 - `main.js` からアプリを起動すること
@@ -102,8 +105,12 @@ Phase 1 で目指す成果は以下です。
   - Seed
   - Time Step
   - Softening
+  - Camera Target
   - Trails
+- visible label / visible button text は compact 表示を許容し、正式名称は title または aria-label で保持できる構造にすること
+- Validation は常時表示前提にせず、後続フェーズで「エラーがある時だけ表示」に切り替えられる構造にすること
 - Body settings panel は、後続で各 Body の Name、Mass、Position X/Y/Z、Velocity X/Y/Z、Color を差し込めるカード構造にすること
+- Body settings panel は 1 件だけ展開する折りたたみカード構造を許容すること
 - Visualization area には canvas の受け皿と overlay 表示領域を含めること
 
 ## 5. ファイル構成方針

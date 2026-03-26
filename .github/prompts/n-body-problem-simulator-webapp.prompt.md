@@ -76,6 +76,14 @@ agent: agent
    - 再実行時に初期条件へ戻すのか、現在状態から再開するのかを状態遷移として定義すること。
    - `Reset` が復帰する `committedInitialState` の保存内容を、物理条件だけでなく必要な UI 状態を含めて明示すること。
 
+4. 現行 UI 前提
+   - Header には app title に加えて playback state と status message を置く前提で整理すること。
+   - Control panel heading は compact heading として `Setup` / `Controls` を許容すること。
+   - visible label / visible button text は compact 表示を許容し、正式名称は title または aria-label のような accessible name で保持する前提を明示すること。
+   - compact visible text の例として、`Count`、`dt`、`Soft`、`Target`、`Trail`、`Gen`、`Run`、`Hold`、`Go` を扱えること。
+   - Validation は常時表示ではなく、エラーが存在する時だけ表示して強調する前提で整理すること。
+   - Body settings は single-expand card を前提にし、同時展開数は最大 1 とすること。
+
 # アーキテクチャと設計方針
 - N体問題としての計算とパフォーマンスの両立を必須要件とし、ブラウザ上での滑らかな描画と、長時間実行時に破綻しにくい数値積分設計の両立を目指すこと。
 - 計画書内で、対象デバイス、目標 FPS、1 フレーム当たりの演算予算、許容するエネルギー誤差評価方法を必ず数値付きで定義すること。
@@ -85,6 +93,7 @@ agent: agent
 - 精度維持とメインスレッドのブロック回避のため、Web Worker を採用する案と採用しない案を比較した上で、採用方針を明示すること。
 - Web Worker の有効化判定は Desktop だけで閉じず、サポート対象のモバイルブラウザでの再計測方針まで明記すること。
 - アニメーションには `requestAnimationFrame` を基本とし、必要に応じて `async/await` を補助的に用いること。
+- Large レイアウトの左パネル幅は compact UI 前提として 240px から 300px を許容すること。
 
 # 将来のファイル構成案(今回は計画書内に構成案として記載するのみ)
 - `Sources/index.html`

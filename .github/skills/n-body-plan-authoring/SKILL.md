@@ -40,6 +40,11 @@ argument-hint: Describe the target document and whether you want drafting, revie
    - ロジックと描画の分離。
    - Web Worker の採否。
    - 将来ファイル構成案。
+7. UI 表示仕様が現行実装と矛盾していないか確認する。
+   - visible label / visible button text と accessible name の対応。
+   - Validation を常時表示するか、エラー時のみ表示するか。
+   - Body card の同時展開数。
+   - Large レイアウト時の左カラム幅。
 
 ## 推奨ワークフロー
 
