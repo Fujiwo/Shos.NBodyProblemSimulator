@@ -1,8 +1,8 @@
 import {
   clone,
-  createBody,
   createDefaultExpandedPanels
 } from "./defaults.js";
+import { normalizePresetBodyCollection } from "./body-collection.js";
 import { createCommittedInitialState, restoreCommittedInitialState } from "./committed-state.js";
 import { generatePresetBodies } from "./preset-generator.js";
 import { getPresetRule, normalizeBodyCountForPreset, normalizeExpandedPanels } from "./state-rules.js";
@@ -34,14 +34,6 @@ function setNestedValue(target, fieldPath, value) {
 
 function getBodyFieldKey(bodyId, fieldPath) {
   return `body:${bodyId}:${fieldPath}`;
-}
-
-function deleteKeysWithPrefix(object, prefix) {
-  for (const key of Object.keys(object)) {
-    if (key.startsWith(prefix)) {
-      delete object[key];
-    }
-  }
 }
 
 export class SimulationController {
@@ -208,27 +200,18 @@ export class SimulationController {
     const nextBodyCount = normalizeBodyCountForPreset(presetId, parsed);
 
     this.mutateAppState((appState, runtime) => {
-      const currentBodies = clone(appState.bodies);
-      const removedBodyIds = currentBodies.slice(nextBodyCount).map((body) => body.id);
-      const nextBodies = currentBodies.slice(0, nextBodyCount);
+      const normalizedCollection = normalizePresetBodyCollection({
+        presetId,
+        bodyCount: nextBodyCount,
+        bodies: appState.bodies,
+        uiState: appState.uiState,
+        fieldDrafts: runtime.fieldDrafts
+      });
 
-      for (let index = nextBodies.length; index < nextBodyCount; index += 1) {
-        nextBodies.push(createBody(index));
-      }
-
-      appState.bodyCount = nextBodyCount;
-      appState.bodies = nextBodies;
-      appState.uiState.selectedBodyId = nextBodies.some((body) => body.id === appState.uiState.selectedBodyId)
-        ? appState.uiState.selectedBodyId
-        : null;
-      appState.uiState.cameraTarget = nextBodies.some((body) => body.id === appState.uiState.cameraTarget)
-        ? appState.uiState.cameraTarget
-        : "system-center";
-      appState.uiState.expandedBodyPanels = normalizeExpandedPanels(appState.uiState.expandedBodyPanels, appState.bodies);
-
-      for (const bodyId of removedBodyIds) {
-        deleteKeysWithPrefix(runtime.fieldDrafts, `body:${bodyId}:`);
-      }
+      appState.bodyCount = normalizedCollection.bodyCount;
+      appState.bodies = normalizedCollection.bodies;
+      appState.uiState = normalizedCollection.uiState;
+      runtime.fieldDrafts = normalizedCollection.fieldDrafts;
     }, {
       commitWhenIdle: true,
       statusMessage: nextBodyCount !== parsed
@@ -237,47 +220,27 @@ export class SimulationController {
     });
   }
 
-  normalizeBodyCollectionForPreset(appState, runtime) {
-    const normalizedCount = normalizeBodyCountForPreset(appState.simulationConfig.presetId, appState.bodyCount);
-
-    if (normalizedCount === appState.bodyCount && appState.bodies.length === appState.bodyCount) {
-      return normalizedCount;
-    }
-
-    const removedBodyIds = clone(appState.bodies).slice(normalizedCount).map((body) => body.id);
-    const nextBodies = clone(appState.bodies).slice(0, normalizedCount);
-
-    for (let index = nextBodies.length; index < normalizedCount; index += 1) {
-      nextBodies.push(createBody(index));
-    }
-
-    appState.bodyCount = normalizedCount;
-    appState.bodies = nextBodies;
-    appState.uiState.selectedBodyId = nextBodies.some((body) => body.id === appState.uiState.selectedBodyId)
-      ? appState.uiState.selectedBodyId
-      : null;
-    appState.uiState.cameraTarget = nextBodies.some((body) => body.id === appState.uiState.cameraTarget)
-      ? appState.uiState.cameraTarget
-      : "system-center";
-    appState.uiState.expandedBodyPanels = normalizeExpandedPanels(appState.uiState.expandedBodyPanels, nextBodies);
-
-    for (const bodyId of removedBodyIds) {
-      deleteKeysWithPrefix(runtime.fieldDrafts, `body:${bodyId}:`);
-    }
-
-    return normalizedCount;
-  }
-
   updateSimulationConfig(key, rawValue) {
     if (key === "presetId") {
       this.mutateAppState((appState, runtime) => {
         appState.simulationConfig[key] = rawValue;
-        const normalizedCount = this.normalizeBodyCollectionForPreset(appState, runtime);
+        const normalizedCollection = normalizePresetBodyCollection({
+          presetId: appState.simulationConfig.presetId,
+          bodyCount: appState.bodyCount,
+          bodies: appState.bodies,
+          uiState: appState.uiState,
+          fieldDrafts: runtime.fieldDrafts
+        });
+
+        appState.bodyCount = normalizedCollection.bodyCount;
+        appState.bodies = normalizedCollection.bodies;
+        appState.uiState = normalizedCollection.uiState;
+        runtime.fieldDrafts = normalizedCollection.fieldDrafts;
         delete runtime.fieldDrafts.bodyCount;
         if (appState.simulationConfig.presetId !== "random-cluster") {
           delete runtime.fieldDrafts.seed;
         }
-        runtime.statusMessage = `${appState.simulationConfig.presetId} selected. Body count is ${normalizedCount}.`;
+        runtime.statusMessage = `${appState.simulationConfig.presetId} selected. Body count is ${normalizedCollection.bodyCount}.`;
       }, {
         commitWhenIdle: true
       });
@@ -512,7 +475,7 @@ export class SimulationController {
       return;
     }
 
-    this.loop?.prepareForStart();
+    this.loop?.startRun(this.store.getState().appState);
   }
 
   pause() {
@@ -529,7 +492,7 @@ export class SimulationController {
     });
 
     if (didPause) {
-      this.loop?.prepareForPause();
+      this.loop?.pauseRun();
     }
   }
 
@@ -547,7 +510,7 @@ export class SimulationController {
     });
 
     if (didResume) {
-      this.loop?.prepareForResume();
+      this.loop?.resumeRun();
     }
   }
 
@@ -587,7 +550,7 @@ export class SimulationController {
       statusMessage: "Reset restored the committed initial state."
     });
 
-    this.loop?.reset();
+    this.loop?.resetRun();
   }
 
   generate() {
@@ -627,6 +590,6 @@ export class SimulationController {
       }
     });
 
-    this.loop?.reset();
+    this.loop?.resetRun();
   }
 }

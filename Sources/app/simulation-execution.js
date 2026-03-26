@@ -6,6 +6,29 @@ function defaultNow() {
     : Date.now();
 }
 
+export function createSimulationRequestKey(runId, sequence) {
+  return `${runId}:${sequence}`;
+}
+
+export function createSimulationJob({
+  appState,
+  stepCount,
+  referenceEnergy,
+  initialStepCount,
+  runId,
+  sequence
+}) {
+  return {
+    bodies: appState.bodies,
+    simulationConfig: appState.simulationConfig,
+    stepCount,
+    referenceEnergy,
+    initialStepCount,
+    runId,
+    sequence
+  };
+}
+
 export function formatPipelineTime(value) {
   return Number.isFinite(value) ? `${value.toFixed(2)} ms` : "--";
 }
@@ -76,7 +99,7 @@ export class WorkerSimulationExecutor {
   }
 
   submit(job) {
-    const requestKey = `${job.runId}:${job.sequence}`;
+    const requestKey = createSimulationRequestKey(job.runId, job.sequence);
     const startedAt = this.now();
 
     return new Promise((resolve, reject) => {
@@ -100,7 +123,7 @@ export class WorkerSimulationExecutor {
       return;
     }
 
-    const requestKey = `${message.payload.runId}:${message.payload.sequence}`;
+    const requestKey = createSimulationRequestKey(message.payload.runId, message.payload.sequence);
     const pending = this.pending.get(requestKey);
 
     if (!pending) {

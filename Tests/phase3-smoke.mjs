@@ -1,3 +1,4 @@
+import "./body-collection.test.mjs";
 import "./committed-state.test.mjs";
 import "./defaults.test.mjs";
 import "./physics-engine.test.mjs";

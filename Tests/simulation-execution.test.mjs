@@ -4,7 +4,9 @@ import { computeTotalEnergy } from "../Sources/app/physics-engine.js";
 import {
   MainThreadSimulationExecutor,
   WorkerSimulationExecutor,
-  chooseExecutionMode
+  chooseExecutionMode,
+  createSimulationJob,
+  createSimulationRequestKey
 } from "../Sources/app/simulation-execution.js";
 
 function createBodies() {
@@ -113,15 +115,18 @@ function flushPromises() {
 
 async function testMainThreadAndWorkerExecutorsProduceEquivalentResults() {
   const referenceEnergy = computeTotalEnergy(createBodies(), createConfig("rk4"));
-  const job = {
+  const appState = {
     bodies: createBodies(),
-    simulationConfig: createConfig("rk4"),
+    simulationConfig: createConfig("rk4")
+  };
+  const job = createSimulationJob({
+    appState,
     stepCount: 20,
     referenceEnergy,
     initialStepCount: 0,
     runId: 1,
     sequence: 1
-  };
+  });
 
   const mainExecutor = new MainThreadSimulationExecutor({ now: (() => {
     let value = 0;
@@ -155,6 +160,7 @@ async function testMainThreadAndWorkerExecutorsProduceEquivalentResults() {
   }
 
   assert.ok(Math.abs(mainResult.energyError - workerResult.energyError) <= 1e-12);
+  assert.equal(createSimulationRequestKey(job.runId, job.sequence), "1:1");
   assert.equal(chooseExecutionMode({ requestedMode: "worker", workerSupported: false }), "main");
   assert.equal(chooseExecutionMode({ requestedMode: "worker", workerSupported: true }), "worker");
   assert.equal(chooseExecutionMode({ requestedMode: "auto", workerSupported: true }), "main");
@@ -176,13 +182,17 @@ async function testCreateExecutorFallsBackToMainThreadAfterWorkerRuntimeError() 
 
   const referenceEnergy = computeTotalEnergy(createBodies(), createConfig("velocity-verlet"));
   const result = await executor.submit({
-    bodies: createBodies(),
-    simulationConfig: createConfig("velocity-verlet"),
-    stepCount: 2,
-    referenceEnergy,
-    initialStepCount: 0,
-    runId: 1,
-    sequence: 1
+    ...createSimulationJob({
+      appState: {
+        bodies: createBodies(),
+        simulationConfig: createConfig("velocity-verlet")
+      },
+      stepCount: 2,
+      referenceEnergy,
+      initialStepCount: 0,
+      runId: 1,
+      sequence: 1
+    })
   });
 
   assert.equal(executor.getStatus().mode, "main");

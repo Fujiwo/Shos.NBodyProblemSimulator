@@ -55,7 +55,7 @@ async function testAccumulatorCapLimitsStepsPerFrame() {
   const { store, loop } = createLoopHarness();
   const initialStatusMessage = store.getState().runtime.statusMessage;
 
-  loop.prepareForStart();
+  loop.startRun(store.getState().appState);
   setPlaybackState(store, "running");
   loop.lastFrameTime = 0;
 
@@ -113,11 +113,11 @@ function testEnergyReferenceResetsAndReinitializes() {
     store.getState().appState.simulationConfig
   );
 
-  loop.prepareForStart();
+  loop.startRun(store.getState().appState);
   assert.ok(Number.isFinite(loop.referenceEnergy));
   assert.ok(Math.abs(loop.referenceEnergy - initialEnergy) < 1e-12);
 
-  loop.reset();
+  loop.resetRun();
   assert.equal(loop.referenceEnergy, null);
 
   setPlaybackState(store, "running");
@@ -183,11 +183,11 @@ async function testStaleAsyncResultsAreIgnoredAfterReset() {
     dispose() {}
   });
 
-  loop.prepareForStart();
+  loop.startRun(store.getState().appState);
   setPlaybackState(store, "running");
   loop.lastFrameTime = 0;
   loop.handleFrame(1000);
-  loop.reset();
+  loop.resetRun();
   resolver();
   await flushPromises();
 

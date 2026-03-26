@@ -15,16 +15,16 @@ function createControllerHarness() {
   });
 
   controller.attachLoop({
-    prepareForStart() {
+    startRun() {
       loopCalls.push("start");
     },
-    prepareForPause() {
+    pauseRun() {
       loopCalls.push("pause");
     },
-    prepareForResume() {
+    resumeRun() {
       loopCalls.push("resume");
     },
-    reset() {
+    resetRun() {
       loopCalls.push("reset");
     }
   });
@@ -82,6 +82,31 @@ function testGenerateResetsRuntimeAndCommitsState() {
     state.appState.bodies.map((body) => body.name)
   );
   assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-1"]);
+}
+
+function testPresetChangeNormalizesBodyCollectionAndDrafts() {
+  const { store, controller } = createControllerHarness();
+
+  controller.updateSelectedBody("body-8");
+  controller.updateCameraTarget("body-8");
+
+  store.update((model) => {
+    model.runtime.fieldDrafts["body:body-8:name"] = "draft";
+    model.runtime.fieldDrafts["body:body-4:mass"] = "4";
+  });
+
+  controller.updateSimulationConfig("presetId", "binary-orbit");
+
+  const state = store.getState();
+
+  assert.equal(state.appState.bodyCount, 2);
+  assert.equal(state.appState.bodies.length, 2);
+  assert.equal(state.appState.uiState.selectedBodyId, null);
+  assert.equal(state.appState.uiState.cameraTarget, "system-center");
+  assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-1"]);
+  assert.equal(state.runtime.fieldDrafts["body:body-8:name"], undefined);
+  assert.equal(state.runtime.fieldDrafts["body:body-4:mass"], undefined);
+  assert.equal(state.runtime.statusMessage, "binary-orbit selected. Body count is 2.");
 }
 
 function testBodyPanelStateSupportsIndependentOpenAndClose() {
@@ -237,6 +262,7 @@ function testResetRestoresLatestCommittedGeneratedSnapshot() {
 testTransitionGuards();
 testCameraTargetNormalization();
 testGenerateResetsRuntimeAndCommitsState();
+testPresetChangeNormalizesBodyCollectionAndDrafts();
 testBodyPanelStateSupportsIndependentOpenAndClose();
 testStartRejectsValidationErrorsAndSetsStatusMessage();
 testStartRejectsWhileRunningAndSetsStatusMessage();

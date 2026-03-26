@@ -1,5 +1,5 @@
 import { computeTotalEnergy } from "./physics-engine.js";
-import { formatPipelineTime } from "./simulation-execution.js";
+import { createSimulationJob, formatPipelineTime } from "./simulation-execution.js";
 
 const MAX_STEPS_PER_FRAME = 4;
 const MAX_FRAME_DELTA_SECONDS = 0.25;
@@ -33,6 +33,27 @@ export class SimulationLoop {
     this.handleExecutionResult = this.handleExecutionResult.bind(this);
   }
 
+  transitionRunSession({ appState = null, clearReferenceEnergy = false, clearProgress = false } = {}) {
+    this.runId += 1;
+    this.accumulator = 0;
+    this.lastFrameTime = null;
+    this.requestSequence = 0;
+    this.appliedSequence = 0;
+    this.pendingRequest = null;
+
+    if (clearProgress) {
+      this.stepCount = 0;
+      this.framesInWindow = 0;
+      this.fpsWindowStart = null;
+    }
+
+    if (clearReferenceEnergy) {
+      this.referenceEnergy = null;
+    } else if (appState) {
+      this.referenceEnergy = computeTotalEnergy(appState.bodies, appState.simulationConfig);
+    }
+  }
+
   start() {
     if (this.rafId !== null) {
       return;
@@ -50,48 +71,26 @@ export class SimulationLoop {
     this.executionBackend?.dispose?.();
   }
 
-  prepareForStart() {
-    this.runId += 1;
-    this.accumulator = 0;
-    this.lastFrameTime = null;
-    this.stepCount = 0;
-    this.framesInWindow = 0;
-    this.fpsWindowStart = null;
-    this.requestSequence = 0;
-    this.appliedSequence = 0;
-    this.pendingRequest = null;
-
-    const state = this.store.getState();
-    this.referenceEnergy = computeTotalEnergy(state.appState.bodies, state.appState.simulationConfig);
+  startRun(appState) {
+    this.transitionRunSession({
+      appState,
+      clearProgress: true
+    });
   }
 
-  prepareForResume() {
-    this.runId += 1;
-    this.accumulator = 0;
-    this.lastFrameTime = null;
-    this.requestSequence = 0;
-    this.appliedSequence = 0;
-    this.pendingRequest = null;
+  resumeRun() {
+    this.transitionRunSession();
   }
 
-  prepareForPause() {
-    this.runId += 1;
-    this.accumulator = 0;
-    this.lastFrameTime = null;
-    this.pendingRequest = null;
+  pauseRun() {
+    this.transitionRunSession();
   }
 
-  reset() {
-    this.runId += 1;
-    this.accumulator = 0;
-    this.lastFrameTime = null;
-    this.referenceEnergy = null;
-    this.stepCount = 0;
-    this.framesInWindow = 0;
-    this.fpsWindowStart = null;
-    this.requestSequence = 0;
-    this.appliedSequence = 0;
-    this.pendingRequest = null;
+  resetRun() {
+    this.transitionRunSession({
+      clearReferenceEnergy: true,
+      clearProgress: true
+    });
   }
 
   handleFrame(now) {
@@ -148,15 +147,14 @@ export class SimulationLoop {
     const sequence = this.requestSequence + 1;
     this.requestSequence = sequence;
 
-    this.pendingRequest = this.executionBackend.submit({
-      bodies: state.appState.bodies,
-      simulationConfig: state.appState.simulationConfig,
+    this.pendingRequest = this.executionBackend.submit(createSimulationJob({
+      appState: state.appState,
       stepCount,
       referenceEnergy: this.referenceEnergy,
       initialStepCount: this.stepCount,
       runId: this.runId,
       sequence
-    });
+    }));
 
     this.pendingRequest
       .then(this.handleExecutionResult)
