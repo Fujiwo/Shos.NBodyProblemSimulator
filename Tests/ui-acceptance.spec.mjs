@@ -130,25 +130,25 @@ test("validation appears only while invalid and start stays blocked", async ({ p
 });
 
 test("body cards toggle independently and body inputs lock while running", async ({ page }) => {
-  const bodyCards = page.locator('details[data-body-card]');
-  const openCards = page.locator('details[data-body-card][open]');
+  const bodyCards = page.locator('[data-body-card]');
+  const openCards = page.locator('[data-body-card][data-open="true"]');
   const clickBodyToggle = async (bodyId) => {
-    await page.locator(`[data-body-toggle="${bodyId}"]`).dispatchEvent("click");
+    await page.locator(`[data-body-toggle="${bodyId}"]`).click();
   };
 
   await expect(bodyCards).toHaveCount(3);
   await expect(openCards).toHaveCount(1);
 
   await clickBodyToggle("body-2");
-  await expect(page.locator('details[data-body-card][open]')).toHaveCount(2);
+  await expect(page.locator('[data-body-card][data-open="true"]')).toHaveCount(2);
 
   await clickBodyToggle("body-3");
-  await expect(page.locator('details[data-body-card][open]')).toHaveCount(3);
+  await expect(page.locator('[data-body-card][data-open="true"]')).toHaveCount(3);
 
   await clickBodyToggle("body-1");
-  await expect(page.locator('details[data-body-card][open]')).toHaveCount(2);
+  await expect(page.locator('[data-body-card][data-open="true"]')).toHaveCount(2);
 
-  const openBodyNameInput = page.locator('details[data-body-card][open] input[data-field="name"]').first();
+  const openBodyNameInput = page.locator('[data-body-card][data-open="true"] input[data-field="name"]').first();
   await expect(openBodyNameInput).toBeEnabled();
 
   await page.getByRole("button", { name: "Start" }).click();
@@ -164,8 +164,8 @@ test("body cards toggle independently and body inputs lock while running", async
 
   await page.getByRole("button", { name: "Reset" }).click();
   await expect(page.locator('[data-role="playback-state"]')).toHaveText("Idle");
-  await expect(page.locator('details[data-body-card][open]')).toHaveCount(1);
-  await expect(page.locator('details[data-body-card][open] input[data-field="name"]').first()).toBeEnabled();
+  await expect(page.locator('[data-body-card][data-open="true"]')).toHaveCount(1);
+  await expect(page.locator('[data-body-card][data-open="true"] input[data-field="name"]').first()).toBeEnabled();
 });
 
 test.describe("mobile compact layout", () => {

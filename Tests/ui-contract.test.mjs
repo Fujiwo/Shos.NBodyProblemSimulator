@@ -62,7 +62,7 @@ function testCompactControlsCssContract() {
   assert.match(styleCss, /\.app-header \{[\s\S]*?gap: 6px;[\s\S]*?padding: 8px 10px;/);
   assert.match(styleCss, /h1 \{[\s\S]*?font-size: clamp\(0\.96rem, 1\.3vw, 1\.18rem\);/);
   assert.match(styleCss, /\.header-copy \{[\s\S]*?display: none;/);
-  assert.match(styleCss, /\.status-copy \{[\s\S]*?display: -webkit-box;[\s\S]*?-webkit-line-clamp: 2;/);
+  assert.match(styleCss, /\.status-copy \{[\s\S]*?display: -webkit-box;[\s\S]*?-webkit-line-clamp: 1;/);
   assert.match(styleCss, /\.control-panel \.field input,\s*\n\.control-panel \.field select \{[\s\S]*?min-height: 36px;/);
   assert.match(styleCss, /\.control-panel button \{[\s\S]*?min-height: 36px;/);
   assert.match(styleCss, /\.validation-panel\[hidden\] \{[\s\S]*?display: none;/);
@@ -77,7 +77,9 @@ function testCompactControlsCssContract() {
   assert.match(styleCss, /@media \(min-width: 1440px\) \{[\s\S]*?\.viewport-stage \{[\s\S]*?min-height: clamp\(760px, 86vh, 1020px\);/);
   assert.match(styleCss, /\.control-panel \.button-grid \{[\s\S]*?grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/);
   assert.match(styleCss, /\.body-card-toggle \{[\s\S]*?min-height: 24px;/);
+  assert.match(styleCss, /\.body-card-body\[hidden\] \{[\s\S]*?display: none;/);
   assert.match(uiShellSource, /data-body-toggle="\$\{body\.id\}"/);
+  assert.match(uiShellSource, /data-open="\$\{isExpanded \? "true" : "false"\}"/);
   assert.match(uiShellSource, /role="switch"/);
 }
 

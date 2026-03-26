@@ -96,7 +96,6 @@ function vectorFieldGroupTemplate(body, runtime, vectorKey, label, disabledAttri
 
 function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
   const disabledAttribute = disabled ? " disabled" : "";
-  const openAttribute = isExpanded ? " open" : "";
   const fieldErrors = runtime.fieldErrors;
   const colorValue = resolveFieldValue(runtime, body.id, "color", body.color);
   const toggleLabel = isExpanded ? "Close" : "Open";
@@ -105,8 +104,8 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
     : `<span class="body-card-meta"><span class="body-card-id">${escapeHtml(formatBodyCardId(body.id))}</span></span>`;
 
   return `
-    <details class="body-card" data-body-card="${body.id}"${openAttribute}>
-      <summary>
+    <article class="body-card" data-body-card="${body.id}" data-open="${isExpanded ? "true" : "false"}">
+      <div class="body-card-header">
         <span class="body-card-badge" style="background:${escapeHtml(body.color)}"></span>
         <span class="body-card-summary">
           <span class="body-card-title-row">
@@ -120,16 +119,16 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
             <span class="body-card-chip"><span class="body-card-chip-label body-card-chip-label--color">C</span><span class="body-card-chip-value">${escapeHtml(formatColorSummary(colorValue))}</span></span>
           </span>
         </span>
-      </summary>
-      <div class="body-card-inline-tools">
-        <button class="body-card-toggle" type="button" role="switch" aria-checked="${isExpanded ? "true" : "false"}" aria-label="${escapeHtml(toggleLabel)} body settings for ${escapeHtml(body.name)}" title="${escapeHtml(toggleLabel)} body settings" data-body-toggle="${body.id}" data-next-open="${isExpanded ? "false" : "true"}">${toggleLabel}</button>
-        <label class="body-card-color-control${fieldErrors[getFieldKey(body.id, "color")] ? " field--error" : ""}">
-          <input aria-label="Color for ${escapeHtml(body.name)}" data-body-id="${body.id}" data-field="color" type="color" value="${escapeHtml(colorValue)}"${disabledAttribute}>
-          <span class="body-card-color-code">${escapeHtml(formatColorSummary(colorValue))}</span>
-        </label>
-        ${renderFieldError(fieldErrors, getFieldKey(body.id, "color"))}
+        <div class="body-card-inline-tools">
+          <button class="body-card-toggle" type="button" role="switch" aria-checked="${isExpanded ? "true" : "false"}" aria-label="${escapeHtml(toggleLabel)} body settings for ${escapeHtml(body.name)}" title="${escapeHtml(toggleLabel)} body settings" data-body-toggle="${body.id}" data-next-open="${isExpanded ? "false" : "true"}">${toggleLabel}</button>
+          <label class="body-card-color-control${fieldErrors[getFieldKey(body.id, "color")] ? " field--error" : ""}">
+            <input aria-label="Color for ${escapeHtml(body.name)}" data-body-id="${body.id}" data-field="color" type="color" value="${escapeHtml(colorValue)}"${disabledAttribute}>
+            <span class="body-card-color-code">${escapeHtml(formatColorSummary(colorValue))}</span>
+          </label>
+          ${renderFieldError(fieldErrors, getFieldKey(body.id, "color"))}
+        </div>
       </div>
-      <div class="body-card-body">
+      <div class="body-card-body"${isExpanded ? "" : " hidden"}>
         <div class="body-grid">
           <label class="field${fieldErrors[getFieldKey(body.id, "name")] ? " field--error" : ""}">
             <span>Name</span>
@@ -145,7 +144,7 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
           ${vectorFieldGroupTemplate(body, runtime, "velocity", "Velocity", disabledAttribute)}
         </div>
       </div>
-    </details>
+    </article>
   `;
 }
 
@@ -260,15 +259,6 @@ export class UiShell {
       }
     });
 
-    this.rootElement.addEventListener("toggle", (event) => {
-      const details = event.target;
-
-      if (!details.matches("details[data-body-card]")) {
-        return;
-      }
-
-      this.controller.toggleBodyPanel(details.dataset.bodyCard, details.open);
-    }, true);
   }
 
   render(model) {

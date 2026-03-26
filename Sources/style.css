@@ -419,28 +419,20 @@ button:disabled {
   gap: 10px;
 }
 
-  position: relative;
 .body-card {
   border: 1px solid rgba(19, 43, 58, 0.12);
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.68);
   overflow: clip;
-  position: relative;
 }
 
-.body-card summary {
+.body-card-header {
   align-items: start;
-  cursor: pointer;
   display: grid;
-  padding: 12px 108px 12px 14px;
-  gap: 4px;
-  grid-template-columns: auto 1fr;
-  list-style: none;
+  gap: 8px 10px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 12px 14px;
   min-height: 44px;
-}
-
-.body-card summary::-webkit-details-marker {
-  display: none;
 }
 
 .body-card-badge {
@@ -500,13 +492,11 @@ button:disabled {
 }
 
 .body-card-inline-tools {
+  align-content: start;
   align-items: end;
   display: grid;
   gap: 6px;
   justify-items: end;
-  position: absolute;
-  right: 14px;
-  top: 10px;
 }
 
 .body-card-toggle {
@@ -575,6 +565,10 @@ button:disabled {
   display: grid;
   gap: 8px;
   padding: 0 14px 12px;
+}
+
+.body-card-body[hidden] {
+  display: none;
 }
 
 .body-grid {
@@ -698,8 +692,8 @@ dd {
 }
 
 @media (max-width: 599px) {
-  .body-card summary {
-    padding-right: 48px;
+  .body-card-header {
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
   .body-card-chip {
@@ -748,8 +742,8 @@ dd {
   }
 
   .body-card-inline-tools {
-    right: 10px;
-    top: 12px;
+    grid-column: 1 / -1;
+    justify-items: start;
   }
 
   .body-card-toggle {
