@@ -233,3 +233,20 @@ Set-Location Dist; python -m http.server 8080
 2. `npm run vendor:three` を実行します。
 3. 必要なら `npm run vendor:three:verify` を実行します。
 4. `npm test` を実行します。
+
+## 著者
+
+Fujio Kojima: 日本のソフトウェア開発者
+* Microsoft MVP for Development Tools - Visual C# (Jul. 2005 - Dec. 2014)
+* Microsoft MVP for .NET (Jan. 2015 - Oct. 2015)
+* Microsoft MVP for Visual Studio and Development Technologies (Nov. 2015 - Jun. 2018)
+* Microsoft MVP for Developer Technologies (Nov. 2018 - Jun. 2026)
+* [MVP Profile](https://mvp.microsoft.com/en-US/mvp/profile/4185d172-3c9a-e411-93f2-9cb65495d3c4 "MVP Profile")
+* [Blog (Japanese)](http://wp.shos.info "Blog (Japanese)")
+* [Web Site (Japanese)](http://www.shos.info "Web Site (Japanese)")
+* [Twitter](https://twitter.com/Fujiwo)
+* [Instagram](https://www.instagram.com/fujiwo/)
+
+## ライセンス
+
+このプロジェクトは MIT License の下で提供されています。詳細は [LICENSE](LICENSE) を参照してください。
