@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
 import { APP_VERSION } from "../Sources/app/defaults.js";
-import { bootstrapApp, hasValidDestroyableOrder } from "../Sources/app/bootstrap.js";
+import { bootstrapApp, buildDestroyableDisposePlan, hasValidDestroyableOrder } from "../Sources/app/bootstrap.js";
 
 const MAIN_THREAD_STATUS = "Main-thread simulation backend ready.";
 const WORKER_FALLBACK_STATUS = "Worker backend unavailable. Falling back to main-thread simulation.";
@@ -436,6 +436,49 @@ function testDestroyableOrderValidationRejectsDependencyViolations() {
   ]), false);
 }
 
+function testBuildDestroyableDisposePlanSortsByDependencies() {
+  const disposePlan = buildDestroyableDisposePlan([
+    {
+      category: "rendering",
+      dependsOn: ["runtime-services"],
+      destroyables: []
+    },
+    {
+      category: "bindings",
+      dependsOn: [],
+      destroyables: []
+    },
+    {
+      category: "runtime-services",
+      dependsOn: ["bindings"],
+      destroyables: []
+    }
+  ]);
+
+  assert.deepEqual(disposePlan.map((category) => category.category), [
+    "bindings",
+    "runtime-services",
+    "rendering"
+  ]);
+}
+
+function testBuildDestroyableDisposePlanRejectsCycles() {
+  assert.throws(() => {
+    buildDestroyableDisposePlan([
+      {
+        category: "bindings",
+        dependsOn: ["rendering"],
+        destroyables: []
+      },
+      {
+        category: "rendering",
+        dependsOn: ["bindings"],
+        destroyables: []
+      }
+    ]);
+  }, /unresolved or cyclic dependencies/);
+}
+
 testBootstrapOverwritesCorruptedStorageWithFallbackState();
 testBootstrapComposesMigrationStatusAndStagesNormalizedState();
 testBootstrapComposesNoSavedStateStatusWithoutRestorePrefix();
@@ -443,5 +486,7 @@ testBootstrapComposesWorkerUnavailableFallbackStatus();
 testBootstrapDisposeStopsResizeBindingAndLoop();
 testBootstrapDisposeUsesDeclaredCategoryOrder();
 testDestroyableOrderValidationRejectsDependencyViolations();
+testBuildDestroyableDisposePlanSortsByDependencies();
+testBuildDestroyableDisposePlanRejectsCycles();
 
 console.log("bootstrap.test.mjs ok");

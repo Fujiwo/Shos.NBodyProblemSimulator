@@ -43,8 +43,35 @@ export function hasValidDestroyableOrder(destroyableCategories) {
   return true;
 }
 
+export function buildDestroyableDisposePlan(destroyableCategories) {
+  const remainingCategories = new Map(
+    destroyableCategories.map((destroyableCategory) => [destroyableCategory.category, destroyableCategory])
+  );
+  const resolvedCategories = new Set();
+  const disposePlan = [];
+
+  while (remainingCategories.size > 0) {
+    const readyCategories = [...remainingCategories.values()]
+      .filter((destroyableCategory) => destroyableCategory.dependsOn.every((dependency) => resolvedCategories.has(dependency)));
+
+    if (readyCategories.length === 0) {
+      throw new Error("Destroyable categories contain unresolved or cyclic dependencies.");
+    }
+
+    for (const readyCategory of readyCategories) {
+      disposePlan.push(readyCategory);
+      resolvedCategories.add(readyCategory.category);
+      remainingCategories.delete(readyCategory.category);
+    }
+  }
+
+  return disposePlan;
+}
+
 function disposeDestroyables(destroyableCategories) {
-  for (const destroyableCategory of destroyableCategories) {
+  const disposePlan = buildDestroyableDisposePlan(destroyableCategories);
+
+  for (const destroyableCategory of disposePlan) {
     for (const destroyable of destroyableCategory.destroyables) {
       destroyable.dispose();
     }
