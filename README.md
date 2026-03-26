@@ -87,6 +87,31 @@ Non-persisted fields:
 - Use [Dist/index.html](Dist/index.html) when you want the bundled runtime in a distribution-only directory without changing the source entry files.
 - Run `npm run build:min:clean` to remove the generated Dist directory and legacy minified files previously emitted under Sources.
 
+### Serving Dist
+
+1. Run `npm run build:min`.
+2. Start a static HTTP server with Dist as the document root.
+3. Open `http://localhost:<port>/index.html` in the browser.
+4. Do not open Dist/index.html with a `file:///` URL because module loading and Worker startup are expected to run over HTTP.
+
+Example using Node:
+
+```bash
+npx serve Dist
+```
+
+Example using Python:
+
+```bash
+python -m http.server 8080 --directory Dist
+```
+
+Example using PowerShell:
+
+```powershell
+Set-Location Dist; python -m http.server 8080
+```
+
 ## Testing
 
 - Run npm test for the Node-based regression suite, including the static compact UI contract checks.
