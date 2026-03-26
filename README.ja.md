@@ -1,6 +1,11 @@
 # Shos.NBodyProblemSimulator
 
-[英語版 README](README.md)
+[English README](README.md)
+
+![Browser](https://img.shields.io/badge/runtime-browser%20only-1f6feb?style=flat-square)
+![Web Worker](https://img.shields.io/badge/compute-Web%20Worker-bb6c2f?style=flat-square)
+![Playwright](https://img.shields.io/badge/tested%20with-Playwright-2ead33?style=flat-square&logo=playwright&logoColor=white)
+[![Live Demo](https://img.shields.io/badge/demo-live%20site-0a7f5a?style=flat-square&logo=googlechrome&logoColor=white)](https://www2.shos.info/shosnbody/)
 
 HTML5、CSS3、Vanilla JavaScript、Three.js で構築された、ブラウザ専用の 3 次元 N 体問題シミュレーターです。
 

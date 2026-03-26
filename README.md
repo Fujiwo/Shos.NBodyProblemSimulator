@@ -2,6 +2,11 @@
 
 [Japanese README](README.ja.md)
 
+![Browser](https://img.shields.io/badge/runtime-browser%20only-1f6feb?style=flat-square)
+![Web Worker](https://img.shields.io/badge/compute-Web%20Worker-bb6c2f?style=flat-square)
+![Playwright](https://img.shields.io/badge/tested%20with-Playwright-2ead33?style=flat-square&logo=playwright&logoColor=white)
+[![Live Demo](https://img.shields.io/badge/demo-live%20site-0a7f5a?style=flat-square&logo=googlechrome&logoColor=white)](https://www2.shos.info/shosnbody/)
+
 Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScript, and Three.js.
 
 ## Published sample
