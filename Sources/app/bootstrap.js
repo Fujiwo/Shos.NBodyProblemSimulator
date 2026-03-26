@@ -21,6 +21,16 @@ function createWorkerFactory() {
   return () => new Worker(new URL("../workers/physics-worker.js", import.meta.url), { type: "module" });
 }
 
+function createDestroyable(label, dispose) {
+  return { label, dispose };
+}
+
+function disposeDestroyables(destroyables) {
+  for (const destroyable of destroyables) {
+    destroyable.dispose();
+  }
+}
+
 export function bootstrapApp(documentRef, options = {}) {
   const { three = globalThis.THREE, executionMode: executionModeOverride, workerFactory = createWorkerFactory() } = options;
   const rootElement = documentRef.querySelector('[data-role="app-root"]');
@@ -68,20 +78,35 @@ export function bootstrapApp(documentRef, options = {}) {
   uiShell.render(initialModel);
   renderer.render(initialModel);
 
+  const destroyables = [
+    createDestroyable("store-subscription", unsubscribe),
+    createDestroyable("ui-shell", () => uiShell.dispose()),
+    createDestroyable("layout-service", () => layoutService.stop()),
+    createDestroyable("simulation-loop", () => simulationLoop.dispose()),
+    createDestroyable("renderer", () => renderer.dispose())
+  ];
+
   let disposed = false;
 
   return {
+    destroyables,
+    runtime: {
+      persistence,
+      store,
+      renderer,
+      controller,
+      executionBackend,
+      simulationLoop,
+      uiShell,
+      layoutService
+    },
     dispose() {
       if (disposed) {
         return;
       }
 
       disposed = true;
-      unsubscribe();
-      uiShell.dispose();
-      layoutService.stop();
-      simulationLoop.dispose();
-      renderer.dispose();
+      disposeDestroyables(destroyables);
     }
   };
 }

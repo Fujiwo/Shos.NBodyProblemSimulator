@@ -1,3 +1,4 @@
+import "./app-lifecycle.test.mjs";
 import "./body-collection.test.mjs";
 import "./committed-state.test.mjs";
 import "./defaults.test.mjs";

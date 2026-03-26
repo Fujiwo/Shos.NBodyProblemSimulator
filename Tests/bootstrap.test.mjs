@@ -284,6 +284,13 @@ function testBootstrapOverwritesCorruptedStorageWithFallbackState() {
   assert.equal(canvasElement.width, 640);
   assert.equal(canvasElement.height, 360);
   assert.equal(typeof app.dispose, "function");
+  assert.deepEqual(app.destroyables.map((entry) => entry.label), [
+    "store-subscription",
+    "ui-shell",
+    "layout-service",
+    "simulation-loop",
+    "renderer"
+  ]);
 }
 
 function testBootstrapComposesMigrationStatusAndStagesNormalizedState() {
@@ -350,6 +357,7 @@ function testBootstrapDisposeStopsResizeBindingAndLoop() {
   const { listeners, cancelledFrames, rootElement, documentRef } = createBootstrapHarness(undefined);
 
   const app = bootstrapApp(documentRef);
+  assert.equal(app.runtime.uiShell.rootElement, rootElement);
   app.dispose();
   app.dispose();
 
