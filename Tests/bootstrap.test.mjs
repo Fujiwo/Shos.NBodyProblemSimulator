@@ -581,7 +581,8 @@ function testBootstrapFailsFastForInvalidDestroyableDefinitions() {
   assert.equal(error.code, DESTROYABLE_PLAN_ERROR.UNKNOWN_DEPENDENCY);
   assert.equal(listeners.some((entry) => entry.type === "resize"), false);
   assert.equal(rootElement.eventLog.some((entry) => entry.action === "add" && entry.type === "click"), true);
-  assert.equal(rootElement.eventLog.some((entry) => entry.action === "remove" && entry.type === "click"), false);
+  assert.equal(rootElement.eventLog.some((entry) => entry.action === "remove" && entry.type === "click"), true);
+  assert.equal(rootElement.eventLog.some((entry) => entry.action === "remove" && entry.type === "change"), true);
 }
 
 testBootstrapOverwritesCorruptedStorageWithFallbackState();

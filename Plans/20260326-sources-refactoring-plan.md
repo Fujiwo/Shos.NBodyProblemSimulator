@@ -71,6 +71,7 @@
 
 - public contract を変える変更は必ず対応テストを更新する
 - localStorage payload、runtime field draft、validation error の境界を壊さない
+- `PERSISTENCE_POLICY` により、保存対象と非保存対象をコードと文書の両方で固定する
 - Worker あり/なし双方で simulation pipeline time と playback state の整合を維持する
 
 ### 5.3 可読性
@@ -160,6 +161,35 @@
 - persisted payload の正規化入口が明確である
 - fallback state 構築と storage I/O が分離されている
 - `committedInitialState` の更新責務が一箇所で追える
+- observability 用 lifecycle metadata が localStorage 保存対象へ混入しない
+
+Phase 2 の persistence 境界では、少なくとも以下を保存対象に固定する。
+
+- `appVersion`
+- `bodyCount`
+- `bodies`
+- `simulationConfig`
+- `uiState.selectedBodyId`
+- `uiState.cameraTarget`
+- `uiState.showTrails`
+- `uiState.expandedBodyPanels`
+- `committedInitialState`
+- `playbackRestorePolicy`
+
+Phase 2 の persistence 境界では、少なくとも以下を非保存対象に固定する。
+
+- `runtime.lifecycleMetadata`
+- `runtime.lifecycleNotice`
+- `runtime.statusMessage`
+- `runtime.executionNotice`
+- `runtime.validationErrors`
+- `runtime.fieldErrors`
+- `runtime.fieldDrafts`
+- `runtime.metrics`
+- `runtime.simulationTime`
+- trail の過去点列
+- worker accumulator や pending request などの中間計算状態
+- bootstrap fail-fast 時に部分初期化済み resource を cleanup して副作用を残さない
 
 ### フェーズ 3: preset と simulation control の整理
 

@@ -73,6 +73,8 @@
 - 再読み込み後の `playbackState` は常に `idle` とする。
 - `committedInitialState` が存在する場合は Reset 復帰先として復元する。
 - Three.js 初期化成功時は `Three.js textured mode`、失敗時は `2D fallback mode` と texture unavailable 理由をステータスメッセージへ表示する。
+- bootstrap は destroyable category の dependency 定義を起動時に検証し、無効な定義を検出した場合は初期化を fail-fast で中断する。
+- fail-fast 時は、その時点までに生成した event binding、subscription、loop、renderer などの部分初期化済み resource を安全に cleanup し、追加の副作用を残さない。
 
 受け入れ基準は以下とする。
 
@@ -534,6 +536,20 @@ AppState {
 - `playbackRestorePolicy`
 
 ## 9.4 保存しない対象
+
+- `runtime.lifecycleMetadata`
+- `runtime.lifecycleNotice`
+- `runtime.statusMessage`
+- `runtime.executionNotice`
+- `runtime.validationErrors`
+- `runtime.fieldErrors`
+- `runtime.fieldDrafts`
+- `runtime.metrics`
+- `runtime.simulationTime`
+- trail の過去点列
+- worker accumulator や pending request などの中間計算状態
+
+`runtime.lifecycleMetadata` と `runtime.lifecycleNotice` は observability 専用の実行時情報であり、再読み込み後に前回セッションの値を引き継がない。再読み込み後は entrypoint がその時点の起動理由、sequence、timestamp を新たに注入する。
 
 - 実行中の accumulator
 - 現在フレームの中間計算結果

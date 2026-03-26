@@ -29,6 +29,16 @@ function createDestroyableCategory(category, owner, purpose, dependsOn, destroya
   return { category, owner, purpose, dependsOn, destroyables };
 }
 
+function cleanupStartupResources(cleanupSteps) {
+  for (let index = cleanupSteps.length - 1; index >= 0; index -= 1) {
+    try {
+      cleanupSteps[index]();
+    } catch {
+      // Preserve the original startup failure and keep cleanup best-effort.
+    }
+  }
+}
+
 export const DESTROYABLE_PLAN_ERROR = {
   DUPLICATE_CATEGORY: "duplicate-category",
   UNKNOWN_DEPENDENCY: "unknown-dependency",
@@ -194,71 +204,85 @@ export function bootstrapApp(documentRef, options = {}) {
   const renderCurrentModel = () => renderer.render(store.getState());
   const layoutService = new LayoutService(documentRef.documentElement, renderer, renderCurrentModel);
 
-  controller.attachLoop(simulationLoop);
-  controller.refreshValidation();
-  uiShell.bindEvents();
+  const startupCleanupSteps = [
+    () => renderer.dispose(),
+    () => simulationLoop.dispose(),
+    () => layoutService.stop(),
+    () => uiShell.dispose()
+  ];
 
-  const unsubscribe = store.subscribe((model) => {
-    uiShell.render(model);
-    renderer.render(model);
-  });
+  try {
+    controller.attachLoop(simulationLoop);
+    controller.refreshValidation();
+    uiShell.bindEvents();
 
-  const destroyables = destroyablesFactory({
-    unsubscribe,
-    uiShell,
-    layoutService,
-    simulationLoop,
-    renderer
-  });
-  const destroyablePlan = buildDestroyableDisposePlan(destroyables);
+    const unsubscribe = store.subscribe((model) => {
+      uiShell.render(model);
+      renderer.render(model);
+    });
 
-  const statusParts = [];
+    startupCleanupSteps.push(unsubscribe);
 
-  if (loadResult.statusMessage) {
-    statusParts.push(loadResult.statusMessage);
-  }
-
-  statusParts.push(executionBackend.getStatus().message);
-  statusParts.push(renderer.getInitializationStatus().message);
-  controller.setStatus(statusParts.join(" "));
-
-  layoutService.start();
-  simulationLoop.start();
-
-  const initialModel = store.getState();
-  initialModel.runtime.lifecycleMetadata = lifecycleMetadata;
-  initialModel.runtime.lifecycleNotice = formatLifecycleNotice(lifecycleMetadata);
-  persistence.stage(initialModel.appState);
-  uiShell.render(initialModel);
-  renderer.render(initialModel);
-
-  let disposed = false;
-
-  return {
-    destroyables,
-    destroyablePlan,
-    runtime: {
-      persistence,
-      store,
-      renderer,
-      controller,
-      executionBackend,
-      simulationLoop,
+    const destroyables = destroyablesFactory({
+      unsubscribe,
       uiShell,
-      layoutService
-    },
-    dispose() {
-      if (disposed) {
-        return;
-      }
+      layoutService,
+      simulationLoop,
+      renderer
+    });
+    const destroyablePlan = buildDestroyableDisposePlan(destroyables);
 
-      disposed = true;
+    const statusParts = [];
 
-      for (const destroyableCategory of destroyablePlan) {
-        for (const destroyable of destroyableCategory.destroyables) {
-          destroyable.dispose();
+    if (loadResult.statusMessage) {
+      statusParts.push(loadResult.statusMessage);
+    }
+
+    statusParts.push(executionBackend.getStatus().message);
+    statusParts.push(renderer.getInitializationStatus().message);
+    controller.setStatus(statusParts.join(" "));
+
+    layoutService.start();
+    simulationLoop.start();
+
+    const initialModel = store.getState();
+    initialModel.runtime.lifecycleMetadata = lifecycleMetadata;
+    initialModel.runtime.lifecycleNotice = formatLifecycleNotice(lifecycleMetadata);
+    persistence.stage(initialModel.appState);
+    uiShell.render(initialModel);
+    renderer.render(initialModel);
+
+    let disposed = false;
+
+    return {
+      destroyables,
+      destroyablePlan,
+      runtime: {
+        persistence,
+        store,
+        renderer,
+        controller,
+        executionBackend,
+        simulationLoop,
+        uiShell,
+        layoutService
+      },
+      dispose() {
+        if (disposed) {
+          return;
+        }
+
+        disposed = true;
+
+        for (const destroyableCategory of destroyablePlan) {
+          for (const destroyable of destroyableCategory.destroyables) {
+            destroyable.dispose();
+          }
         }
       }
-    }
-  };
+    };
+  } catch (error) {
+    cleanupStartupResources(startupCleanupSteps);
+    throw error;
+  }
 }
