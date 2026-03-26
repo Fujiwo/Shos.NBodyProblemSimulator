@@ -544,7 +544,7 @@ UiState {
 - `committedInitialState` を保存対象に含め、Reset 復帰先を一意にする
 - `simulationConfig.gravitationalConstant` を保存対象に含める
 
-`PERSISTENCE_POLICY` として、保存対象と非保存対象を以下で固定する。
+`PERSISTENCE_POLICY` として、保存対象と保存しない対象を以下で固定する。
 
 保存対象:
 
@@ -559,7 +559,7 @@ UiState {
 - `committedInitialState`
 - `playbackRestorePolicy`
 
-非保存対象:
+保存しない対象:
 
 - `runtime.lifecycleMetadata`
 - `runtime.lifecycleNotice`
@@ -574,6 +574,8 @@ UiState {
 - worker accumulator や pending request などの中間計算状態
 
 `runtime.lifecycleMetadata` と `runtime.lifecycleNotice` は observability 専用の実行時情報とし、再読み込み後に前回セッションの値を引き継がない。
+
+`playbackState = running` と `playbackState = paused` は保存しない。再読み込み後は `playbackRestorePolicy = restore-as-idle` に従って常に `idle` へ正規化する。
 
 ## 9. レスポンシブ対応方針
 

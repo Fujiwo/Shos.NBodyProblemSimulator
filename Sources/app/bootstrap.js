@@ -1,4 +1,10 @@
 import { AppStore } from "./app-store.js";
+import {
+  createStartupCleanupRegistry,
+  registerCoreStartupCleanup,
+  registerSubscriptionCleanup,
+  runStartupCleanup
+} from "./bootstrap-startup-cleanup.js";
 import { createSimulationExecutor } from "./simulation-execution.js";
 import { createInitialModel } from "./defaults.js";
 import { LayoutService } from "./layout-service.js";
@@ -27,35 +33,6 @@ function createDestroyable(label, dispose) {
 
 function createDestroyableCategory(category, owner, purpose, dependsOn, destroyables) {
   return { category, owner, purpose, dependsOn, destroyables };
-}
-
-function createStartupCleanupRegistry() {
-  return [];
-}
-
-function registerStartupCleanup(cleanupRegistry, cleanupStep) {
-  cleanupRegistry.push(cleanupStep);
-}
-
-function runStartupCleanup(cleanupRegistry) {
-  for (let index = cleanupRegistry.length - 1; index >= 0; index -= 1) {
-    try {
-      cleanupRegistry[index]();
-    } catch {
-      // Preserve the original startup failure and keep cleanup best-effort.
-    }
-  }
-}
-
-function registerCoreStartupCleanup(cleanupRegistry, { renderer, simulationLoop, layoutService, uiShell }) {
-  registerStartupCleanup(cleanupRegistry, () => renderer.dispose());
-  registerStartupCleanup(cleanupRegistry, () => simulationLoop.dispose());
-  registerStartupCleanup(cleanupRegistry, () => layoutService.stop());
-  registerStartupCleanup(cleanupRegistry, () => uiShell.dispose());
-}
-
-function registerSubscriptionCleanup(cleanupRegistry, unsubscribe) {
-  registerStartupCleanup(cleanupRegistry, unsubscribe);
 }
 
 export const DESTROYABLE_PLAN_ERROR = {

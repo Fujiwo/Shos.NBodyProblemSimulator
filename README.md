@@ -13,6 +13,47 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 - The default startup state uses Count 8 and a bundled body dataset from Sources/data/default-bodies.js derived from Data/nbodies.csv rather than reading the CSV at runtime.
 - The Target option `System Center` tracks the center of mass of all bodies and falls back to the average position only when the total mass is zero.
 
+## Persistence policy
+
+- localStorage uses the fixed key `nbody-simulator.state`.
+- `PERSISTENCE_POLICY` keeps the persisted fields and non-persisted fields aligned across the implementation, specification, and plans.
+
+Persisted fields:
+
+- `appVersion`
+- `bodyCount`
+- `bodies`
+- `simulationConfig.gravitationalConstant`
+- `simulationConfig.timeStep`
+- `simulationConfig.softening`
+- `simulationConfig.integrator`
+- `simulationConfig.maxTrailPoints`
+- `simulationConfig.presetId`
+- `simulationConfig.seed`
+- `uiState.selectedBodyId`
+- `uiState.cameraTarget`
+- `uiState.showTrails`
+- `uiState.expandedBodyPanels`
+- `committedInitialState`
+- `playbackRestorePolicy`
+
+Non-persisted fields:
+
+- `runtime.lifecycleMetadata`
+- `runtime.lifecycleNotice`
+- `runtime.statusMessage`
+- `runtime.executionNotice`
+- `runtime.validationErrors`
+- `runtime.fieldErrors`
+- `runtime.fieldDrafts`
+- `runtime.metrics`
+- `runtime.simulationTime`
+- trail history point arrays
+- intermediate computation state such as worker accumulators and pending requests
+
+- `runtime.lifecycleMetadata` and `runtime.lifecycleNotice` are observability-only runtime values and are reinjected on each startup.
+- `playbackState = running` and `playbackState = paused` are not persisted. Reload always normalizes playback to `idle` through `playbackRestorePolicy = restore-as-idle`.
+
 ## UI
 
 - The header shows the app title, playback state, and a runtime status message.

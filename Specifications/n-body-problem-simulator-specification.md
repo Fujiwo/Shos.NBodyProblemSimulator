@@ -516,7 +516,7 @@ AppState {
 - 表示設定変更時
 - アプリ設定変更時
 
-## 9.3 保存対象
+## 9.3 PERSISTENCE_POLICY: 保存対象
 
 - `appVersion`
 - `bodyCount`
@@ -535,7 +535,7 @@ AppState {
 - `committedInitialState`
 - `playbackRestorePolicy`
 
-## 9.4 保存しない対象
+## 9.4 PERSISTENCE_POLICY: 保存しない対象
 
 - `runtime.lifecycleMetadata`
 - `runtime.lifecycleNotice`
@@ -551,11 +551,7 @@ AppState {
 
 `runtime.lifecycleMetadata` と `runtime.lifecycleNotice` は observability 専用の実行時情報であり、再読み込み後に前回セッションの値を引き継がない。再読み込み後は entrypoint がその時点の起動理由、sequence、timestamp を新たに注入する。
 
-- 実行中の accumulator
-- 現在フレームの中間計算結果
-- `playbackState = running`
-- `playbackState = paused`
-- trail の過去点列
+`playbackState = running` と `playbackState = paused` は保存しない。再読み込み後は `playbackRestorePolicy = restore-as-idle` に従って常に `idle` へ正規化する。
 
 ## 10. 物理演算ループ仕様
 
