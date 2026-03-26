@@ -197,7 +197,7 @@ export function bootstrapApp(documentRef, options = {}) {
   });
   const simulationLoop = new SimulationLoop(store, executionBackend);
   const uiShell = new UiShell(rootElement, controller);
-  const renderCurrentModel = () => renderer.render(store.getState());
+  const renderCurrentModel = () => renderer.render(store.getStateReference());
   const layoutService = new LayoutService(documentRef.documentElement, renderer, renderCurrentModel);
   const startupCleanupRegistry = createStartupCleanupRegistry();
 
@@ -242,7 +242,7 @@ export function bootstrapApp(documentRef, options = {}) {
     layoutService.start();
     simulationLoop.start();
 
-    const initialModel = store.getState();
+    const initialModel = store.getStateReference();
     initialModel.runtime.lifecycleMetadata = lifecycleMetadata;
     initialModel.runtime.lifecycleNotice = formatLifecycleNotice(lifecycleMetadata);
     persistence.stage(initialModel.appState);

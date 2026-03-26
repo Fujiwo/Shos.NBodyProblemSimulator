@@ -40,6 +40,42 @@ function formatLifecycleMetric(runtime) {
   return runtime.lifecycleNotice || "--";
 }
 
+function buildCameraTargetRenderKey(appState) {
+  return `${appState.uiState.cameraTarget}|${appState.bodies
+    .map((body) => `${body.id}:${body.name}`)
+    .join("|")}`;
+}
+
+function buildValidationRenderKey(runtime) {
+  return runtime.validationErrors.join("|");
+}
+
+function buildBodyCardRenderKey(appState, runtime, bodyInputsDisabled) {
+  const bodyFieldDraftEntries = Object.entries(runtime.fieldDrafts)
+    .filter(([key]) => key.startsWith("body:"))
+    .sort(([left], [right]) => left.localeCompare(right));
+  const bodyFieldErrorEntries = Object.entries(runtime.fieldErrors)
+    .filter(([key]) => key.startsWith("body:"))
+    .sort(([left], [right]) => left.localeCompare(right));
+  const staticKey = `${appState.uiState.playbackState}|${bodyInputsDisabled}|${appState.uiState.selectedBodyId ?? ""}|${appState.uiState.expandedBodyPanels.join(",")}`;
+
+  if (bodyInputsDisabled) {
+    return `${staticKey}|${appState.bodies
+      .map((body) => `${body.id}:${body.name}:${body.mass}:${body.color}`)
+      .join("|")}|${bodyFieldErrorEntries
+      .map(([key, value]) => `${key}:${value}`)
+      .join("|")}`;
+  }
+
+  return `${staticKey}|${appState.bodies
+    .map((body) => `${body.id}:${body.name}:${body.mass}:${body.color}:${body.position.x},${body.position.y},${body.position.z}:${body.velocity.x},${body.velocity.y},${body.velocity.z}`)
+    .join("|")}|${bodyFieldDraftEntries
+    .map(([key, value]) => `${key}:${value}`)
+    .join("|")}|${bodyFieldErrorEntries
+    .map(([key, value]) => `${key}:${value}`)
+    .join("|")}`;
+}
+
 function renderCameraTargetOptions(appState) {
   const selectedValue = appState.uiState.cameraTarget;
   const systemCenterOption = `<option value="system-center"${selectedValue === "system-center" ? " selected" : ""}>System Center</option>`;
@@ -173,6 +209,11 @@ export class UiShell {
     this.handleClick = this.handleClick.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.eventsBound = false;
+    this.renderCache = {
+      cameraTargetKey: null,
+      validationKey: null,
+      bodyCardKey: null
+    };
     this.elements = {
       playbackState: rootElement.querySelector('[data-role="playback-state"]'),
       statusMessage: rootElement.querySelector('[data-role="status-message"]'),
@@ -211,6 +252,13 @@ export class UiShell {
         timeStep: rootElement.querySelector('[data-field-error="timeStep"]'),
         softening: rootElement.querySelector('[data-field-error="softening"]'),
         integrator: rootElement.querySelector('[data-field-error="integrator"]')
+      },
+      actions: {
+        generate: rootElement.querySelector('[data-action="generate"]'),
+        start: rootElement.querySelector('[data-action="start"]'),
+        pause: rootElement.querySelector('[data-action="pause"]'),
+        resume: rootElement.querySelector('[data-action="resume"]'),
+        reset: rootElement.querySelector('[data-action="reset"]')
       }
     };
   }
@@ -322,7 +370,13 @@ export class UiShell {
     this.elements.timeStep.value = formatNumericInputValue(appState.simulationConfig.timeStep, runtime.fieldDrafts.timeStep);
     this.elements.softening.value = formatNumericInputValue(appState.simulationConfig.softening, runtime.fieldDrafts.softening);
     this.elements.integrator.value = appState.simulationConfig.integrator;
-    this.elements.cameraTarget.innerHTML = renderCameraTargetOptions(appState);
+
+    const cameraTargetKey = buildCameraTargetRenderKey(appState);
+    if (this.renderCache.cameraTargetKey !== cameraTargetKey) {
+      this.elements.cameraTarget.innerHTML = renderCameraTargetOptions(appState);
+      this.renderCache.cameraTargetKey = cameraTargetKey;
+    }
+
     this.elements.showTrails.checked = appState.uiState.showTrails;
     this.elements.bodyCount.disabled = bodyInputsDisabled;
     this.elements.presetId.disabled = bodyInputsDisabled;
@@ -331,17 +385,22 @@ export class UiShell {
     this.elements.softening.disabled = bodyInputsDisabled;
     this.elements.integrator.disabled = bodyInputsDisabled;
 
-    this.rootElement.querySelector('[data-action="generate"]').disabled = false;
-    this.rootElement.querySelector('[data-action="start"]').disabled = !canStart;
-    this.rootElement.querySelector('[data-action="pause"]').disabled = !canPause;
-    this.rootElement.querySelector('[data-action="resume"]').disabled = !canResume;
-    this.rootElement.querySelector('[data-action="reset"]').disabled = !canReset;
+    this.elements.actions.generate.disabled = false;
+    this.elements.actions.start.disabled = !canStart;
+    this.elements.actions.pause.disabled = !canPause;
+    this.elements.actions.resume.disabled = !canResume;
+    this.elements.actions.reset.disabled = !canReset;
 
     const hasValidationErrors = runtime.validationErrors.length > 0;
 
-    this.elements.validationList.innerHTML = runtime.validationErrors
-      .map((error) => `<li>${escapeHtml(error)}</li>`)
-      .join("");
+    const validationKey = buildValidationRenderKey(runtime);
+    if (this.renderCache.validationKey !== validationKey) {
+      this.elements.validationList.innerHTML = runtime.validationErrors
+        .map((error) => `<li>${escapeHtml(error)}</li>`)
+        .join("");
+      this.renderCache.validationKey = validationKey;
+    }
+
     this.elements.validationPanel.hidden = !hasValidationErrors;
     this.elements.validationPanel.dataset.state = hasValidationErrors ? "invalid" : "valid";
 
@@ -351,15 +410,19 @@ export class UiShell {
       this.elements.controlFieldErrors[key].textContent = errorMessage;
     }
 
-    this.elements.bodyCardList.innerHTML = appState.bodies
-      .map((body) => bodyCardTemplate(
-        body,
-        appState.uiState.expandedBodyPanels.includes(body.id),
-        bodyInputsDisabled,
-        runtime,
-        appState.uiState.selectedBodyId === body.id
-      ))
-      .join("");
+    const bodyCardKey = buildBodyCardRenderKey(appState, runtime, bodyInputsDisabled);
+    if (this.renderCache.bodyCardKey !== bodyCardKey) {
+      this.elements.bodyCardList.innerHTML = appState.bodies
+        .map((body) => bodyCardTemplate(
+          body,
+          appState.uiState.expandedBodyPanels.includes(body.id),
+          bodyInputsDisabled,
+          runtime,
+          appState.uiState.selectedBodyId === body.id
+        ))
+        .join("");
+      this.renderCache.bodyCardKey = bodyCardKey;
+    }
 
     this.elements.metricFps.textContent = runtime.metrics.fps;
     this.elements.metricSimulationTime.textContent = formatDisplayFloat(runtime.simulationTime) || "--";

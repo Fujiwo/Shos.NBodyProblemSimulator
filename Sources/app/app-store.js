@@ -13,18 +13,20 @@ export class AppStore {
     return clone(this.#state);
   }
 
+  getStateReference() {
+    return this.#state;
+  }
+
   subscribe(listener) {
     this.#listeners.add(listener);
     return () => this.#listeners.delete(listener);
   }
 
   update(mutator) {
-    const draft = clone(this.#state);
-    mutator(draft);
-    this.#state = draft;
+    mutator(this.#state);
 
     for (const listener of this.#listeners) {
-      listener(this.getState());
+      listener(this.#state);
     }
   }
 }

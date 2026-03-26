@@ -90,7 +90,7 @@ export class SimulationLoop {
     this.rafId = null;
     this.rafId = requestAnimationFrame(this.handleFrame);
 
-    const state = this.store.getState();
+    const state = this.store.getStateReference();
     const playbackState = state.appState.uiState.playbackState;
 
     if (playbackState !== "idle") {

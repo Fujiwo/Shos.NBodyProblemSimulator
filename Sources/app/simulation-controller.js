@@ -167,7 +167,7 @@ export class SimulationController {
     });
 
     if (options.shouldPersist !== false) {
-      this.persistence.stage(this.store.getState().appState);
+      this.persistence.stage(this.store.getStateReference().appState);
     }
   }
 
@@ -184,7 +184,7 @@ export class SimulationController {
   }
 
   updateBodyCount(value) {
-    const currentState = this.store.getState();
+    const currentState = this.store.getStateReference();
     const presetId = currentState.appState.simulationConfig.presetId;
     const parsed = Number.parseInt(value, 10);
 
@@ -253,7 +253,7 @@ export class SimulationController {
 
     if (key === "timeStep" || key === "softening" || key === "seed") {
       if (key === "seed" && rawValue === "") {
-        const isRandomCluster = this.store.getState().appState.simulationConfig.presetId === "random-cluster";
+        const isRandomCluster = this.store.getStateReference().appState.simulationConfig.presetId === "random-cluster";
 
         this.mutateAppState((appState, runtime) => {
           if (isRandomCluster) {
@@ -271,7 +271,7 @@ export class SimulationController {
       }
 
       const fieldKey = key;
-      const isSeedOptional = key === "seed" && this.store.getState().appState.simulationConfig.presetId !== "random-cluster" && rawValue === "";
+      const isSeedOptional = key === "seed" && this.store.getStateReference().appState.simulationConfig.presetId !== "random-cluster" && rawValue === "";
       const isValidNumber = rawValue !== "" && isFiniteNumber(rawValue);
       const parsedValue = rawValue === "" ? null : Number(rawValue);
 
@@ -423,7 +423,7 @@ export class SimulationController {
   }
 
   start() {
-    const { appState, runtime } = this.store.getState();
+    const { appState, runtime } = this.store.getStateReference();
     const validationErrors = this.computeValidation(appState, runtime.fieldDrafts).validationErrors;
 
     if (appState.uiState.playbackState !== "idle") {
@@ -476,7 +476,7 @@ export class SimulationController {
       return;
     }
 
-    this.loop?.startRun(this.store.getState().appState);
+    this.loop?.startRun(this.store.getStateReference().appState);
   }
 
   pause() {
@@ -516,7 +516,7 @@ export class SimulationController {
   }
 
   reset() {
-    const { appState } = this.store.getState();
+    const { appState } = this.store.getStateReference();
 
     if (!appState.committedInitialState) {
       this.setStatus("No committed initial state is available for reset.");
@@ -551,7 +551,7 @@ export class SimulationController {
   }
 
   generate() {
-    const { appState, runtime } = this.store.getState();
+    const { appState, runtime } = this.store.getStateReference();
 
     if (appState.simulationConfig.presetId === "random-cluster" && runtime.fieldDrafts.seed !== undefined && runtime.fieldDrafts.seed !== "") {
       this.setStatus("Resolve the Seed field before generating random-cluster.");

@@ -18,6 +18,7 @@ import "./runtime-state.test.mjs";
 import "./three-scene-runtime.test.mjs";
 import "./three-scene-host.test.mjs";
 import "./ui-contract.test.mjs";
+import "./ui-shell.test.mjs";
 import "./viewport-layout.test.mjs";
 
 console.log("phase3-smoke-ok");
