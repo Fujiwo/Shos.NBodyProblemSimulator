@@ -225,6 +225,9 @@ export class SimulationController {
     if (key === "presetId") {
       this.mutateAppState((appState, runtime) => {
         appState.simulationConfig[key] = rawValue;
+        if (appState.simulationConfig.presetId !== "random-cluster") {
+          appState.simulationConfig.seed = null;
+        }
         const normalizedCollection = normalizePresetBodyCollection({
           presetId: appState.simulationConfig.presetId,
           bodyCount: appState.bodyCount,

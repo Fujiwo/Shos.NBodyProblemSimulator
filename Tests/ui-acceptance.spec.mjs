@@ -19,7 +19,7 @@ test("compact controls keep short visible text and full accessible names", async
 
   await expect(page.getByLabel("Body Count")).toBeVisible();
   await expect(page.getByLabel("Preset")).toBeVisible();
-  await expect(page.getByLabel("Preset").locator("option")).toHaveCount(2);
+  await expect(page.getByLabel("Preset").locator("option")).toHaveCount(3);
   await expect(page.getByLabel("Seed")).toBeVisible();
   await expect(page.getByLabel("Seed")).toHaveAttribute("placeholder", "auto on Gen");
   await expect(page.getByLabel("Time Step")).toBeVisible();
@@ -38,6 +38,16 @@ test("compact controls keep short visible text and full accessible names", async
   await expect(page.locator('[data-role="execution-notice"]')).toBeHidden();
   await expect(page.locator('[data-role="metric-integrator"]')).toHaveText("velocity-verlet");
   await expect(page.locator('[data-role="metric-lifecycle"]')).toContainText("Restart initial-load #1 @");
+});
+
+test("sample preset applies the bundled default body dataset", async ({ page }) => {
+  await page.getByLabel("Preset").selectOption("sample");
+  await page.getByRole("button", { name: "Generate" }).click();
+
+  await expect(page.locator('[data-role="status-message"]')).toHaveText("Preset initial conditions generated for sample.");
+  await expect(page.getByLabel("Body Count")).toHaveValue("8");
+  await expect(page.locator('[data-body-card="body-1"] input[data-field="name"]')).toHaveValue("sun");
+  await expect(page.locator('[data-body-card="body-1"] input[data-field="mass"]')).toHaveValue("52.00");
 });
 
 test("displayed real numbers stay within two decimal places", async ({ page }) => {

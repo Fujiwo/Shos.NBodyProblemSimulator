@@ -42,6 +42,7 @@ function testCompactControlsMarkup() {
   assert.match(indexHtml, /<button data-action="reset" type="button" title="Reset" aria-label="Reset">Reset<\/button>/);
 
   assert.match(indexHtml, /<option value="binary-orbit">Binary<\/option>/);
+  assert.match(indexHtml, /<option value="sample">Sample<\/option>/);
   assert.match(indexHtml, /<option value="random-cluster">Random<\/option>/);
   assert.match(indexHtml, /<dt>Pipeline Time<\/dt>/);
   assert.match(indexHtml, /<dt>Integrator<\/dt>/);

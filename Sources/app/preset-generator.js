@@ -1,11 +1,12 @@
 import { createBody } from "./defaults.js";
 import { normalizeBodyCountForPreset, normalizePresetId } from "./state-rules.js";
+import { DEFAULT_BODY_SEED_DATA } from "../data/default-bodies.js";
 
 const RANDOM_CLUSTER_RADIUS = 6;
 const RANDOM_CLUSTER_MIN_DISTANCE = 0.8;
 const RANDOM_CLUSTER_MAX_ATTEMPTS = 100;
-const RANDOM_CLUSTER_MIN_MASS = 0.5;
-const RANDOM_CLUSTER_MASS_RANGE = 7.5;
+const RANDOM_CLUSTER_MIN_MASS = 0.05;
+const RANDOM_CLUSTER_MASS_RANGE = 119.95;
 const RANDOM_CLUSTER_MIN_SPEED = 0.3;
 const RANDOM_CLUSTER_SPEED_RANGE = 1.1;
 const RANDOM_CLUSTER_VELOCITY_JITTER = 0.25;
@@ -155,6 +156,10 @@ function createBinaryOrbitBodies() {
   ];
 }
 
+function createSampleBodies() {
+  return Array.from({ length: DEFAULT_BODY_SEED_DATA.length }, (_, index) => createBody(index));
+}
+
 function createRandomClusterBodies(bodyCount, seed) {
   const random = createPrng(seed);
   const positions = createRandomClusterPositions(bodyCount, random);
@@ -199,6 +204,15 @@ export function generatePresetBodies({ presetId, bodyCount, seed }) {
       seed: null,
       bodyCount: 2,
       bodies: createBinaryOrbitBodies()
+    };
+  }
+
+  if (normalizedPresetId === "sample") {
+    return {
+      presetId: normalizedPresetId,
+      seed: null,
+      bodyCount: DEFAULT_BODY_SEED_DATA.length,
+      bodies: createSampleBodies()
     };
   }
 

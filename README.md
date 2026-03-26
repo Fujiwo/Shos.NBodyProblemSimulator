@@ -12,8 +12,9 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 - If Three.js cannot initialize, the app stays usable in 2D fallback mode and the status message explains that texture-backed bodies are unavailable.
 - The default startup state uses Count 8 and a bundled body dataset from Sources/data/default-bodies.js derived from Data/nbodies.csv rather than reading the CSV at runtime.
 - The Target option `System Center` tracks the center of mass of all bodies and falls back to the average position only when the total mass is zero.
-- The current baseline preset list is limited to `binary-orbit` and `random-cluster`.
-- `random-cluster` now uses a wider generation range: mass `0.50` to `8.00`, radius `6.00`, minimum body distance `0.80`, tangent speed `0.30` to `1.40`, and per-axis velocity jitter up to `0.25`.
+- The current baseline preset list includes `binary-orbit`, `sample`, and `random-cluster`.
+- The `sample` preset applies the bundled fixed dataset from Sources/data/default-bodies.js.
+- `random-cluster` now uses a wider generation range: mass `0.05` to `120.00`, radius `6.00`, minimum body distance `0.80`, tangent speed `0.30` to `1.40`, and per-axis velocity jitter up to `0.25`.
 
 ## Persistence policy
 

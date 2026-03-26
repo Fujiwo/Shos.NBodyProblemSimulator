@@ -8,9 +8,11 @@ import {
   createSimulationConfig
 } from "./defaults.js";
 import { createCommittedInitialState } from "./committed-state.js";
+import { DEFAULT_BODY_SEED_DATA } from "../data/default-bodies.js";
 
 const PRESET_RULES = {
   "binary-orbit": { min: 2, max: 2 },
+  sample: { min: DEFAULT_BODY_SEED_DATA.length, max: DEFAULT_BODY_SEED_DATA.length },
   "random-cluster": { min: 3, max: 10 }
 };
 

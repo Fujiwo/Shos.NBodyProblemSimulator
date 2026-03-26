@@ -1,6 +1,26 @@
 import assert from "node:assert/strict";
 
 import { generatePresetBodies } from "../Sources/app/preset-generator.js";
+import { DEFAULT_BODY_SEED_DATA } from "../Sources/data/default-bodies.js";
+
+function testSamplePresetUsesBundledDefaultBodies() {
+  const generated = generatePresetBodies({
+    presetId: "sample",
+    bodyCount: 3,
+    seed: 1001
+  });
+
+  assert.equal(generated.presetId, "sample");
+  assert.equal(generated.seed, null);
+  assert.equal(generated.bodyCount, DEFAULT_BODY_SEED_DATA.length);
+
+  DEFAULT_BODY_SEED_DATA.forEach((expectedBody, index) => {
+    assert.equal(generated.bodies[index].name, expectedBody.name);
+    assert.equal(generated.bodies[index].mass, expectedBody.mass);
+    assert.deepEqual(generated.bodies[index].position, expectedBody.position);
+    assert.deepEqual(generated.bodies[index].velocity, expectedBody.velocity);
+  });
+}
 
 function testRandomClusterIsDeterministicForSameSeedAndBodyCount() {
   const first = generatePresetBodies({
@@ -66,13 +86,14 @@ function testRandomClusterUsesExpandedVarianceRange() {
   const positionRadii = generated.bodies.map((body) => Math.hypot(body.position.x, body.position.y, body.position.z));
   const speeds = generated.bodies.map((body) => Math.hypot(body.velocity.x, body.velocity.y, body.velocity.z));
 
-  assert.ok(masses.every((mass) => mass >= 0.5 && mass <= 8));
+  assert.ok(masses.every((mass) => mass >= 0.05 && mass <= 120));
   assert.ok(positionRadii.every((radius) => radius <= 6));
   assert.ok(speeds.some((speed) => speed >= 0.3));
   assert.ok(positionRadii.some((radius) => radius >= 2));
-  assert.ok(masses.some((mass) => mass >= 4));
+  assert.ok(Math.max(...masses) - Math.min(...masses) >= 30);
 }
 
+testSamplePresetUsesBundledDefaultBodies();
 testRandomClusterIsDeterministicForSameSeedAndBodyCount();
 testRandomClusterOutputChangesWhenBodyCountChanges();
 testRandomClusterUsesTimeSeedWhenSeedIsMissing();

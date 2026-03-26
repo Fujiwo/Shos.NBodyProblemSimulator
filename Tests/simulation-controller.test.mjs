@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { AppStore } from "../Sources/app/app-store.js";
 import { createInitialModel } from "../Sources/app/defaults.js";
 import { SimulationController } from "../Sources/app/simulation-controller.js";
+import { DEFAULT_BODY_SEED_DATA } from "../Sources/data/default-bodies.js";
 
 function createControllerHarness() {
   const store = new AppStore(createInitialModel());
@@ -109,6 +110,21 @@ function testPresetChangeNormalizesBodyCollectionAndDrafts() {
   assert.equal(state.runtime.statusMessage, "binary-orbit selected. Body count is 2.");
 }
 
+function testSamplePresetNormalizesBodyCollectionToBundledDataset() {
+  const { store, controller } = createControllerHarness();
+
+  controller.updateBodyCount("10");
+  controller.updateSimulationConfig("presetId", "sample");
+
+  const state = store.getState();
+
+  assert.equal(state.appState.bodyCount, DEFAULT_BODY_SEED_DATA.length);
+  assert.equal(state.appState.bodies.length, DEFAULT_BODY_SEED_DATA.length);
+  assert.equal(state.appState.simulationConfig.presetId, "sample");
+  assert.equal(state.appState.simulationConfig.seed, null);
+  assert.equal(state.runtime.statusMessage, `sample selected. Body count is ${DEFAULT_BODY_SEED_DATA.length}.`);
+}
+
 function testBodyPanelStateSupportsIndependentOpenAndClose() {
   const { store, controller } = createControllerHarness();
 
@@ -202,6 +218,30 @@ function testGenerateUsesAutoSeedWhenRandomClusterSeedDraftIsBlank() {
   }
 }
 
+function testGenerateAppliesBundledSamplePreset() {
+  const { store, controller, loopCalls } = createControllerHarness();
+
+  controller.updateSimulationConfig("presetId", "sample");
+  controller.generate();
+
+  const state = store.getState();
+
+  assert.equal(state.appState.simulationConfig.presetId, "sample");
+  assert.equal(state.appState.simulationConfig.seed, null);
+  assert.equal(state.appState.bodyCount, DEFAULT_BODY_SEED_DATA.length);
+  assert.deepEqual(
+    state.appState.bodies.map((body) => ({
+      name: body.name,
+      mass: body.mass,
+      position: body.position,
+      velocity: body.velocity
+    })),
+    DEFAULT_BODY_SEED_DATA
+  );
+  assert.equal(state.runtime.statusMessage, "Preset initial conditions generated for sample.");
+  assert.deepEqual(loopCalls, ["reset"]);
+}
+
 function testGenerateRejectsInvalidRandomClusterSeedDraft() {
   const { store, controller, loopCalls } = createControllerHarness();
   const beforeState = store.getState();
@@ -263,11 +303,13 @@ testTransitionGuards();
 testCameraTargetNormalization();
 testGenerateResetsRuntimeAndCommitsState();
 testPresetChangeNormalizesBodyCollectionAndDrafts();
+testSamplePresetNormalizesBodyCollectionToBundledDataset();
 testBodyPanelStateSupportsIndependentOpenAndClose();
 testStartRejectsValidationErrorsAndSetsStatusMessage();
 testStartRejectsWhileRunningAndSetsStatusMessage();
 testStartRejectsWhilePausedAndSetsStatusMessage();
 testGenerateUsesAutoSeedWhenRandomClusterSeedDraftIsBlank();
+testGenerateAppliesBundledSamplePreset();
 testGenerateRejectsInvalidRandomClusterSeedDraft();
 testResetRestoresLatestCommittedGeneratedSnapshot();
 

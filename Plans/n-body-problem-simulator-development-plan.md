@@ -82,6 +82,7 @@
 - `random-cluster` の Seed 入力欄に非空値を入れる場合は 32-bit 符号なし整数のみ許容し、不正な非空値が残っている間は Generate を失敗として扱う
 - 再現キーは preset ごとに以下で定義する
   - `binary-orbit`: `presetId`
+  - `sample`: `presetId`
   - `random-cluster`: `presetId`, `seed`, `bodyCount`
 - Generate 実行時のリセット対象は以下とする
   - simulationTime を 0 に戻す
@@ -102,10 +103,14 @@
   - 2 体
   - 固定データセット
   - seed は使わない
+- `sample`
+  - 8 体
+  - `Sources/data/default-bodies.js` をそのまま適用する固定データセット
+  - seed は使わない
 - `random-cluster`
   - 3 体から 10 体
   - preset ルールと seed で決定する生成方式
-  - 各 Body の質量は 0.50 以上 8.00 以下で生成する
+  - 各 Body の質量は 0.05 以上 120.00 以下で生成する
   - 各 Body の初期位置は原点から半径 6.00 以内に配置する
   - Body 間の最小初期距離は 0.80 とする
   - 接線方向速度は 0.30 以上 1.40 以下を基準とし、各軸に最大 0.25 の jitter を加える
@@ -754,7 +759,7 @@ UiState {
 
 - 計画書保存先は `Plans/` で確定しているか
 - Phase 4 以降で Worker を有効化するか、現行 baseline のメインスレッド版を維持するか
-- 現行 baseline の preset を `binary-orbit` と `random-cluster` の 2 件で確定する
+- 現行 baseline の preset を `binary-orbit`、`sample`、`random-cluster` の 3 件で確定する
 - 既定 `dt = 0.005`、`softening = 0.01`、`G = 1.0` で開始するか
 - エネルギー誤差の許容範囲を preset 別に持つか
 - trail の既定表示本数をいくつにするか

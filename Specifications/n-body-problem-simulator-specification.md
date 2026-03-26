@@ -135,6 +135,7 @@
 再現キーは以下で定義する。
 
 - `binary-orbit`: `presetId`
+- `sample`: `presetId`
 - `random-cluster`: `presetId`, `seed`, `bodyCount`
 
 ### 5.3.2 現行 baseline で用意する Preset
@@ -142,11 +143,12 @@
 | presetId | Body 数 | 説明 | Seed 利用 |
 | --- | --- | --- | --- |
 | `binary-orbit` | 2 | 近似円軌道の二体設定 | No |
+| `sample` | 8 | `Sources/data/default-bodies.js` をそのまま適用する固定データセット | No |
 | `random-cluster` | 3 から 10 | 指定 Body 数でランダムクラスタを生成 | Yes |
 
 `random-cluster` の生成制約は以下とする。
 
-- 質量は 0.50 以上 8.00 以下の範囲で生成する。
+- 質量は 0.05 以上 120.00 以下の範囲で生成する。
 - 初期位置は原点から半径 6.00 以内に配置する。
 - Body 間の最小初期距離は 0.80 とする。
 - 生成失敗時は最大 100 回まで再試行する。
@@ -157,7 +159,7 @@
 ### 5.3.3 Seed 仕様
 
 - Seed は 32-bit 符号なし整数とする。
-- `binary-orbit` は既定値を使うため Seed を参照しないが、保存値としては `null` を許容する。
+- `binary-orbit` と `sample` は既定値を使うため Seed を参照しないが、保存値としては `null` を許容する。
 - `random-cluster` では Seed 入力欄の空欄を許容し、空欄は「次回 Generate 実行時に auto seed を採番する」指示として扱う。
 - `random-cluster` で Seed に非空値を入力する場合は、32-bit 符号なし整数でなければならない。
 - Seed 入力欄が空欄のまま `random-cluster` を実行する場合は現在時刻由来の整数を生成し、その値を保存する。
@@ -420,6 +422,7 @@ UI 文言は英語とし、accessible name は正式名称を保持する。visi
   - Body card fields: `Name`, `Mass`, `Position`, `Velocity`, `Color`
 - Preset option visible text
   - `binary-orbit` -> `Binary`
+  - `sample` -> `Sample`
   - `random-cluster` -> `Random`
 - UI に表示する実数値は小数点以下 2 桁までとする
   - metrics overlay の数値
