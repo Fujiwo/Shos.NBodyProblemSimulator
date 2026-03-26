@@ -80,6 +80,33 @@ class FakeWorker {
   terminate() {}
 }
 
+class ErroringWorker {
+  constructor() {
+    this.listeners = {
+      message: new Set(),
+      error: new Set()
+    };
+  }
+
+  addEventListener(type, listener) {
+    this.listeners[type].add(listener);
+  }
+
+  removeEventListener(type, listener) {
+    this.listeners[type].delete(listener);
+  }
+
+  postMessage() {
+    queueMicrotask(() => {
+      for (const listener of this.listeners.error) {
+        listener(new Error("worker failure"));
+      }
+    });
+  }
+
+  terminate() {}
+}
+
 function flushPromises() {
   return new Promise((resolve) => setTimeout(resolve, 0));
 }
@@ -135,6 +162,37 @@ async function testMainThreadAndWorkerExecutorsProduceEquivalentResults() {
   workerExecutor.dispose();
 }
 
+async function testCreateExecutorFallsBackToMainThreadAfterWorkerRuntimeError() {
+  globalThis.Worker = class {};
+  const { createSimulationExecutor } = await import("../Sources/app/simulation-execution.js");
+  const executor = createSimulationExecutor({
+    requestedMode: "worker",
+    workerFactory: () => new ErroringWorker(),
+    now: (() => {
+      let value = 0;
+      return () => (value += 1);
+    })()
+  });
+
+  const referenceEnergy = computeTotalEnergy(createBodies(), createConfig("velocity-verlet"));
+  const result = await executor.submit({
+    bodies: createBodies(),
+    simulationConfig: createConfig("velocity-verlet"),
+    stepCount: 2,
+    referenceEnergy,
+    initialStepCount: 0,
+    runId: 1,
+    sequence: 1
+  });
+
+  assert.equal(executor.getStatus().mode, "main");
+  assert.equal(result.mode, "main");
+  assert.equal(result.statusMessage, "Worker runtime error detected. Automatically switched to main-thread simulation.");
+  executor.dispose();
+  delete globalThis.Worker;
+}
+
 await testMainThreadAndWorkerExecutorsProduceEquivalentResults();
+await testCreateExecutorFallsBackToMainThreadAfterWorkerRuntimeError();
 
 console.log("simulation-execution.test.mjs ok");

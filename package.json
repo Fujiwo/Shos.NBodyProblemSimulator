@@ -8,6 +8,7 @@
     "test": "node ./Tests/phase3-smoke.mjs",
     "test:ui": "playwright test --config=playwright.config.mjs",
     "test:ui:install": "playwright install chromium",
+    "benchmark:phase4": "node ./Tests/benchmark-phase4.mjs",
     "vendor:three": "node -e \"const fs=require('fs');fs.copyFileSync('node_modules/three/build/three.module.min.js','Sources/vendor/three.module.min.js');fs.copyFileSync('node_modules/three/build/three.core.min.js','Sources/vendor/three.core.min.js');console.log('three vendor bundles refreshed');\"",
     "vendor:three:verify": "node -e \"const fs=require('fs');const files=['Sources/vendor/three.module.min.js','Sources/vendor/three.core.min.js'];const missing=files.filter((file)=>!fs.existsSync(file));if(missing.length){console.error('Missing vendor files:', missing.join(', '));process.exit(1);}console.log('three vendor bundles verified');\"",
     "three:update": "npm install three@latest && npm run vendor:three && npm run vendor:three:verify && npm test"

@@ -162,9 +162,6 @@ export class SimulationLoop {
       .then(this.handleExecutionResult)
       .catch(() => {
         this.pendingRequest = null;
-        this.store.update((model) => {
-          model.runtime.statusMessage = "Worker backend unavailable. Falling back to main-thread simulation.";
-        });
       });
   }
 
@@ -187,6 +184,10 @@ export class SimulationLoop {
       model.runtime.simulationTime = result.simulationTime;
       model.runtime.metrics.energyError = formatEnergyError(result.energyError);
       model.runtime.metrics.pipelineTime = formatPipelineTime(result.pipelineTimeMs);
+
+      if (result.statusMessage) {
+        model.runtime.statusMessage = result.statusMessage;
+      }
     });
   }
 

@@ -81,10 +81,15 @@ export class WorkerSimulationExecutor {
 
     return new Promise((resolve, reject) => {
       this.pending.set(requestKey, { resolve, reject, startedAt });
-      this.worker.postMessage({
-        type: "simulate-batch",
-        payload: job
-      });
+      try {
+        this.worker.postMessage({
+          type: "simulate-batch",
+          payload: job
+        });
+      } catch (error) {
+        this.pending.delete(requestKey);
+        reject(error);
+      }
     });
   }
 
@@ -130,9 +135,56 @@ export function createSimulationExecutor({ requestedMode = "auto", workerFactory
   const workerSupported = typeof workerFactory === "function" && typeof Worker !== "undefined";
   const selectedMode = chooseExecutionMode({ requestedMode, workerSupported });
 
+  class ResilientSimulationExecutor {
+    constructor(primaryExecutor, fallbackFactory) {
+      this.executor = primaryExecutor;
+      this.fallbackFactory = fallbackFactory;
+      this.lastStatusMessage = primaryExecutor.getStatus().message;
+    }
+
+    getStatus() {
+      return {
+        mode: this.executor.mode,
+        message: this.lastStatusMessage
+      };
+    }
+
+    async submit(job) {
+      try {
+        const result = await this.executor.submit(job);
+        return {
+          ...result,
+          statusMessage: this.lastStatusMessage
+        };
+      } catch {
+        if (this.executor.mode !== "worker") {
+          throw new Error("Simulation execution failed.");
+        }
+
+        this.executor.dispose();
+        this.executor = this.fallbackFactory();
+        this.lastStatusMessage = "Worker runtime error detected. Automatically switched to main-thread simulation.";
+
+        const retryResult = await this.executor.submit(job);
+
+        return {
+          ...retryResult,
+          statusMessage: this.lastStatusMessage
+        };
+      }
+    }
+
+    dispose() {
+      this.executor.dispose();
+    }
+  }
+
   if (selectedMode === "worker") {
     try {
-      return new WorkerSimulationExecutor({ workerFactory, now });
+      return new ResilientSimulationExecutor(
+        new WorkerSimulationExecutor({ workerFactory, now }),
+        () => new MainThreadSimulationExecutor({ now })
+      );
     } catch {
       const fallback = new MainThreadSimulationExecutor({ now });
       fallback.getStatus = () => ({
