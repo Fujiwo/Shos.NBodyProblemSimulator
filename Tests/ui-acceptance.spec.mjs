@@ -19,6 +19,7 @@ test("compact controls keep short visible text and full accessible names", async
 
   await expect(page.getByLabel("Body Count")).toBeVisible();
   await expect(page.getByLabel("Preset")).toBeVisible();
+  await expect(page.getByLabel("Preset").locator("option")).toHaveCount(2);
   await expect(page.getByLabel("Seed")).toBeVisible();
   await expect(page.getByLabel("Seed")).toHaveAttribute("placeholder", "auto on Gen");
   await expect(page.getByLabel("Time Step")).toBeVisible();
@@ -37,6 +38,15 @@ test("compact controls keep short visible text and full accessible names", async
   await expect(page.locator('[data-role="execution-notice"]')).toBeHidden();
   await expect(page.locator('[data-role="metric-integrator"]')).toHaveText("velocity-verlet");
   await expect(page.locator('[data-role="metric-lifecycle"]')).toContainText("Restart initial-load #1 @");
+});
+
+test("displayed real numbers stay within two decimal places", async ({ page }) => {
+  await expect(page.getByLabel("Time Step")).toHaveValue("0.01");
+  await expect(page.getByLabel("Softening")).toHaveValue("0.01");
+  await expect(page.locator('[data-role="metric-simulation-time"]')).toHaveText("0.00");
+
+  const firstMassInput = page.locator('[data-body-card="body-1"] input[data-field="mass"]');
+  await expect(firstMassInput).toHaveValue(/^-?\d+(\.\d{1,2})?$/);
 });
 
 test("header stays compact while visualization keeps a tall viewport", async ({ page }) => {

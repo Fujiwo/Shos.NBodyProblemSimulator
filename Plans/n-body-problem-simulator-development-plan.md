@@ -82,7 +82,6 @@
 - `random-cluster` の Seed 入力欄に非空値を入れる場合は 32-bit 符号なし整数のみ許容し、不正な非空値が残っている間は Generate を失敗として扱う
 - 再現キーは preset ごとに以下で定義する
   - `binary-orbit`: `presetId`
-  - `three-body-figure-eight`: `presetId`
   - `random-cluster`: `presetId`, `seed`, `bodyCount`
 - Generate 実行時のリセット対象は以下とする
   - simulationTime を 0 に戻す
@@ -103,15 +102,14 @@
   - 2 体
   - 固定データセット
   - seed は使わない
-- `three-body-figure-eight`
-  - 3 体
-  - 固定データセット
-  - seed は使わない
 - `random-cluster`
   - 3 体から 10 体
   - preset ルールと seed で決定する生成方式
-  - 各 Body の初期位置は原点から半径 1.2 以内に配置する
-  - Body 間の最小初期距離は 0.2 とする
+  - 各 Body の質量は 0.50 以上 8.00 以下で生成する
+  - 各 Body の初期位置は原点から半径 6.00 以内に配置する
+  - Body 間の最小初期距離は 0.80 とする
+  - 接線方向速度は 0.30 以上 1.40 以下を基準とし、各軸に最大 0.25 の jitter を加える
+  - 生成後は重心速度を 0 へ補正する
   - 生成失敗時は最大 100 回まで再試行し、それでも満たせない場合は Body 数を維持したまま最終候補から最小距離が最大の組を採用する
 
 ### 2.4 シミュレーション制御要件
@@ -262,6 +260,12 @@ Large レイアウトの受け入れ基準は以下とする。
 - Simulation metrics overlay は padding と文字サイズを縮小しても、全項目名と値が視認できること
 
 現行 UI の compact controls は、表示文言を短縮した上で `title` または `aria-label` に正式名称を保持する。
+
+- UI に表示する実数値は小数点以下 2 桁までとする
+  - controls の数値 input に表示する同期値
+  - Body settings の数値 input に表示する同期値
+  - Body card summary の質量、位置、速度
+  - metrics overlay の数値
 
 - 表示ラベル例
   - `Body Count` -> `Count`
@@ -750,7 +754,7 @@ UiState {
 
 - 計画書保存先は `Plans/` で確定しているか
 - Phase 4 以降で Worker を有効化するか、現行 baseline のメインスレッド版を維持するか
-- 現行 baseline の preset を `binary-orbit`、`three-body-figure-eight`、`random-cluster` の 3 件で確定するか
+- 現行 baseline の preset を `binary-orbit` と `random-cluster` の 2 件で確定する
 - 既定 `dt = 0.005`、`softening = 0.01`、`G = 1.0` で開始するか
 - エネルギー誤差の許容範囲を preset 別に持つか
 - trail の既定表示本数をいくつにするか

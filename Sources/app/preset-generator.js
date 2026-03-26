@@ -1,9 +1,14 @@
 import { createBody } from "./defaults.js";
 import { normalizeBodyCountForPreset, normalizePresetId } from "./state-rules.js";
 
-const RANDOM_CLUSTER_RADIUS = 1.2;
-const RANDOM_CLUSTER_MIN_DISTANCE = 0.2;
+const RANDOM_CLUSTER_RADIUS = 6;
+const RANDOM_CLUSTER_MIN_DISTANCE = 0.8;
 const RANDOM_CLUSTER_MAX_ATTEMPTS = 100;
+const RANDOM_CLUSTER_MIN_MASS = 0.5;
+const RANDOM_CLUSTER_MASS_RANGE = 7.5;
+const RANDOM_CLUSTER_MIN_SPEED = 0.3;
+const RANDOM_CLUSTER_SPEED_RANGE = 1.1;
+const RANDOM_CLUSTER_VELOCITY_JITTER = 0.25;
 
 function createPrng(seed) {
   let state = seed >>> 0;
@@ -150,31 +155,6 @@ function createBinaryOrbitBodies() {
   ];
 }
 
-function createFigureEightBodies() {
-  const template = [
-    {
-      mass: 1,
-      position: { x: -0.97000436, y: 0.24308753, z: 0 },
-      velocity: { x: 0.466203685, y: 0.43236573, z: 0 }
-    },
-    {
-      mass: 1,
-      position: { x: 0.97000436, y: -0.24308753, z: 0 },
-      velocity: { x: 0.466203685, y: 0.43236573, z: 0 }
-    },
-    {
-      mass: 1,
-      position: { x: 0, y: 0, z: 0 },
-      velocity: { x: -0.93240737, y: -0.86473146, z: 0 }
-    }
-  ];
-
-  return template.map((entry, index) => ({
-    ...createBody(index),
-    ...entry
-  }));
-}
-
 function createRandomClusterBodies(bodyCount, seed) {
   const random = createPrng(seed);
   const positions = createRandomClusterPositions(bodyCount, random);
@@ -184,25 +164,25 @@ function createRandomClusterBodies(bodyCount, seed) {
       ? { x: -position.y, y: position.x, z: 0 }
       : { x: 0, y: 1, z: 0 };
     const tangentLength = Math.hypot(tangent.x, tangent.y, tangent.z) || 1;
-    const speed = 0.05 + random() * 0.14;
+    const speed = RANDOM_CLUSTER_MIN_SPEED + random() * RANDOM_CLUSTER_SPEED_RANGE;
     const radialJitter = {
-      x: (random() * 2 - 1) * 0.04,
-      y: (random() * 2 - 1) * 0.04,
-      z: (random() * 2 - 1) * 0.04
+      x: (random() * 2 - 1) * RANDOM_CLUSTER_VELOCITY_JITTER,
+      y: (random() * 2 - 1) * RANDOM_CLUSTER_VELOCITY_JITTER,
+      z: (random() * 2 - 1) * RANDOM_CLUSTER_VELOCITY_JITTER
     };
 
     return {
       ...baseBody,
-      mass: Number((0.8 + random() * 1.4).toFixed(3)),
+      mass: Number((RANDOM_CLUSTER_MIN_MASS + random() * RANDOM_CLUSTER_MASS_RANGE).toFixed(2)),
       position: {
-        x: Number(position.x.toFixed(6)),
-        y: Number(position.y.toFixed(6)),
-        z: Number(position.z.toFixed(6))
+        x: Number(position.x.toFixed(2)),
+        y: Number(position.y.toFixed(2)),
+        z: Number(position.z.toFixed(2))
       },
       velocity: {
-        x: Number(((tangent.x / tangentLength) * speed + radialJitter.x).toFixed(6)),
-        y: Number(((tangent.y / tangentLength) * speed + radialJitter.y).toFixed(6)),
-        z: Number(radialJitter.z.toFixed(6))
+        x: Number(((tangent.x / tangentLength) * speed + radialJitter.x).toFixed(2)),
+        y: Number(((tangent.y / tangentLength) * speed + radialJitter.y).toFixed(2)),
+        z: Number(radialJitter.z.toFixed(2))
       }
     };
   });
@@ -219,15 +199,6 @@ export function generatePresetBodies({ presetId, bodyCount, seed }) {
       seed: null,
       bodyCount: 2,
       bodies: createBinaryOrbitBodies()
-    };
-  }
-
-  if (normalizedPresetId === "three-body-figure-eight") {
-    return {
-      presetId: normalizedPresetId,
-      seed: null,
-      bodyCount: 3,
-      bodies: createFigureEightBodies()
     };
   }
 

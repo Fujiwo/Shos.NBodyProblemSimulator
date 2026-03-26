@@ -135,7 +135,6 @@
 再現キーは以下で定義する。
 
 - `binary-orbit`: `presetId`
-- `three-body-figure-eight`: `presetId`
 - `random-cluster`: `presetId`, `seed`, `bodyCount`
 
 ### 5.3.2 現行 baseline で用意する Preset
@@ -143,20 +142,22 @@
 | presetId | Body 数 | 説明 | Seed 利用 |
 | --- | --- | --- | --- |
 | `binary-orbit` | 2 | 近似円軌道の二体設定 | No |
-| `three-body-figure-eight` | 3 | 8 の字軌道に近い三体設定 | No |
 | `random-cluster` | 3 から 10 | 指定 Body 数でランダムクラスタを生成 | Yes |
 
 `random-cluster` の生成制約は以下とする。
 
-- 初期位置は原点から半径 1.2 以内に配置する。
-- Body 間の最小初期距離は 0.2 とする。
+- 質量は 0.50 以上 8.00 以下の範囲で生成する。
+- 初期位置は原点から半径 6.00 以内に配置する。
+- Body 間の最小初期距離は 0.80 とする。
 - 生成失敗時は最大 100 回まで再試行する。
 - 再試行上限到達時は、Body 数を維持したまま最小距離が最大となる候補を採用する。
+- 接線方向速度は 0.30 以上 1.40 以下を基準とし、各軸に最大 0.25 の jitter を加える。
+- 生成後は重心速度を 0 へ補正する。
 
 ### 5.3.3 Seed 仕様
 
 - Seed は 32-bit 符号なし整数とする。
-- `binary-orbit` と `three-body-figure-eight` は既定値を使うため Seed を参照しないが、保存値としては `null` を許容する。
+- `binary-orbit` は既定値を使うため Seed を参照しないが、保存値としては `null` を許容する。
 - `random-cluster` では Seed 入力欄の空欄を許容し、空欄は「次回 Generate 実行時に auto seed を採番する」指示として扱う。
 - `random-cluster` で Seed に非空値を入力する場合は、32-bit 符号なし整数でなければならない。
 - Seed 入力欄が空欄のまま `random-cluster` を実行する場合は現在時刻由来の整数を生成し、その値を保存する。
@@ -419,8 +420,11 @@ UI 文言は英語とし、accessible name は正式名称を保持する。visi
   - Body card fields: `Name`, `Mass`, `Position`, `Velocity`, `Color`
 - Preset option visible text
   - `binary-orbit` -> `Binary`
-  - `three-body-figure-eight` -> `Figure-8`
   - `random-cluster` -> `Random`
+- UI に表示する実数値は小数点以下 2 桁までとする
+  - metrics overlay の数値
+  - Body card summary の質量、位置、速度
+  - Body editor と controls の数値 input に表示する既定値および同期値
 - Validation panel
   - title: `Errors`
   - hidden when no validation errors exist

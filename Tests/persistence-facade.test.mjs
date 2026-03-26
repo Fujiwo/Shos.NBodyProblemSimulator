@@ -242,6 +242,8 @@ function testHydrationNormalizesPresetConstraintsAndSelection() {
 
   assert.equal(hydrated.bodyCount, 3);
   assert.equal(hydrated.bodies.length, 3);
+  assert.equal(hydrated.simulationConfig.presetId, "random-cluster");
+  assert.equal(hydrated.simulationConfig.seed, null);
   assert.equal(hydrated.uiState.playbackState, "idle");
   assert.equal(hydrated.uiState.selectedBodyId, null);
   assert.equal(hydrated.uiState.cameraTarget, "system-center");

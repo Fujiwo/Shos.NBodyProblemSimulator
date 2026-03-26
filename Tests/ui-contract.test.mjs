@@ -42,7 +42,6 @@ function testCompactControlsMarkup() {
   assert.match(indexHtml, /<button data-action="reset" type="button" title="Reset" aria-label="Reset">Reset<\/button>/);
 
   assert.match(indexHtml, /<option value="binary-orbit">Binary<\/option>/);
-  assert.match(indexHtml, /<option value="three-body-figure-eight">Figure-8<\/option>/);
   assert.match(indexHtml, /<option value="random-cluster">Random<\/option>/);
   assert.match(indexHtml, /<dt>Pipeline Time<\/dt>/);
   assert.match(indexHtml, /<dt>Integrator<\/dt>/);
@@ -87,6 +86,8 @@ function testCompactControlsCssContract() {
   assert.match(uiShellSource, /data-open="\$\{isExpanded \? "true" : "false"\}"/);
   assert.match(uiShellSource, /role="switch"/);
   assert.match(uiShellSource, /this\.elements\.seed\.placeholder = appState\.simulationConfig\.presetId === "random-cluster"/);
+  assert.match(uiShellSource, /function formatDisplayFloat\(value\)/);
+  assert.match(uiShellSource, /numeric\.toFixed\(2\)/);
 }
 
 testCompactControlsMarkup();

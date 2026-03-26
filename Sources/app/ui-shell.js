@@ -57,9 +57,23 @@ function formatCompactNumber(value) {
     return "--";
   }
 
-  const rounded = Math.round(numeric * 10) / 10;
+  const rounded = Math.round(numeric * 100) / 100;
 
   return Object.is(rounded, -0) ? "0" : String(rounded);
+}
+
+function formatDisplayFloat(value) {
+  const numeric = Number(value);
+
+  if (!Number.isFinite(numeric)) {
+    return "";
+  }
+
+  return numeric.toFixed(2);
+}
+
+function formatNumericInputValue(value, draftValue) {
+  return draftValue ?? formatDisplayFloat(value);
 }
 
 function formatVectorSummary(vector) {
@@ -88,7 +102,7 @@ function vectorFieldGroupTemplate(body, runtime, vectorKey, label, disabledAttri
           return `
             <label class="field field--axis${runtime.fieldErrors[fieldKey] ? " field--error" : ""}">
               <span>${axis.toUpperCase()}</span>
-              <input data-body-id="${body.id}" data-field="${fieldPath}" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, fieldPath, body[vectorKey][axis]))}"${disabledAttribute}>
+              <input data-body-id="${body.id}" data-field="${fieldPath}" type="number" step="0.1" value="${escapeHtml(formatNumericInputValue(body[vectorKey][axis], runtime.fieldDrafts[fieldKey]))}"${disabledAttribute}>
               ${renderFieldError(runtime.fieldErrors, fieldKey)}
             </label>
           `;
@@ -141,7 +155,7 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
           </label>
           <label class="field${fieldErrors[getFieldKey(body.id, "mass")] ? " field--error" : ""}">
             <span>Mass</span>
-            <input data-body-id="${body.id}" data-field="mass" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "mass", body.mass))}"${disabledAttribute}>
+            <input data-body-id="${body.id}" data-field="mass" type="number" step="0.1" value="${escapeHtml(formatNumericInputValue(body.mass, runtime.fieldDrafts[getFieldKey(body.id, "mass")]))}"${disabledAttribute}>
             ${renderFieldError(fieldErrors, getFieldKey(body.id, "mass"))}
           </label>
           ${vectorFieldGroupTemplate(body, runtime, "position", "Position", disabledAttribute)}
@@ -305,8 +319,8 @@ export class UiShell {
     this.elements.seed.placeholder = appState.simulationConfig.presetId === "random-cluster"
       ? "auto on Gen"
       : "Preset fixed";
-    this.elements.timeStep.value = runtime.fieldDrafts.timeStep ?? String(appState.simulationConfig.timeStep);
-    this.elements.softening.value = runtime.fieldDrafts.softening ?? String(appState.simulationConfig.softening);
+    this.elements.timeStep.value = formatNumericInputValue(appState.simulationConfig.timeStep, runtime.fieldDrafts.timeStep);
+    this.elements.softening.value = formatNumericInputValue(appState.simulationConfig.softening, runtime.fieldDrafts.softening);
     this.elements.integrator.value = appState.simulationConfig.integrator;
     this.elements.cameraTarget.innerHTML = renderCameraTargetOptions(appState);
     this.elements.showTrails.checked = appState.uiState.showTrails;
@@ -348,7 +362,7 @@ export class UiShell {
       .join("");
 
     this.elements.metricFps.textContent = runtime.metrics.fps;
-    this.elements.metricSimulationTime.textContent = runtime.simulationTime.toFixed(3);
+    this.elements.metricSimulationTime.textContent = formatDisplayFloat(runtime.simulationTime) || "--";
     this.elements.metricEnergyError.textContent = runtime.metrics.energyError;
     this.elements.metricPipelineTime.textContent = runtime.metrics.pipelineTime;
     this.elements.metricIntegrator.textContent = appState.simulationConfig.integrator;

@@ -55,8 +55,27 @@ function testRandomClusterUsesTimeSeedWhenSeedIsMissing() {
   }
 }
 
+function testRandomClusterUsesExpandedVarianceRange() {
+  const generated = generatePresetBodies({
+    presetId: "random-cluster",
+    bodyCount: 8,
+    seed: 1001
+  });
+
+  const masses = generated.bodies.map((body) => body.mass);
+  const positionRadii = generated.bodies.map((body) => Math.hypot(body.position.x, body.position.y, body.position.z));
+  const speeds = generated.bodies.map((body) => Math.hypot(body.velocity.x, body.velocity.y, body.velocity.z));
+
+  assert.ok(masses.every((mass) => mass >= 0.5 && mass <= 8));
+  assert.ok(positionRadii.every((radius) => radius <= 6));
+  assert.ok(speeds.some((speed) => speed >= 0.3));
+  assert.ok(positionRadii.some((radius) => radius >= 2));
+  assert.ok(masses.some((mass) => mass >= 4));
+}
+
 testRandomClusterIsDeterministicForSameSeedAndBodyCount();
 testRandomClusterOutputChangesWhenBodyCountChanges();
 testRandomClusterUsesTimeSeedWhenSeedIsMissing();
+testRandomClusterUsesExpandedVarianceRange();
 
 console.log("preset-generator.test.mjs ok");

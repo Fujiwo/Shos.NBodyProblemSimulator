@@ -1,7 +1,7 @@
 import { formatPipelineTime } from "./simulation-execution.js";
 
 export function formatFps(value) {
-  return Number.isFinite(value) ? value.toFixed(1) : "--";
+  return Number.isFinite(value) ? value.toFixed(2) : "--";
 }
 
 export function formatEnergyError(value) {

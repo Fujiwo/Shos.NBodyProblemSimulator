@@ -100,7 +100,7 @@ function testFpsWindowUpdatesAfterThreshold() {
 
   loop.updateFps(650);
 
-  assert.equal(store.getState().runtime.metrics.fps, "3.6");
+  assert.equal(store.getState().runtime.metrics.fps, "3.64");
   assert.equal(loop.framesInWindow, 0);
   assert.equal(loop.fpsWindowStart, 650);
 }

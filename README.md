@@ -12,6 +12,8 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 - If Three.js cannot initialize, the app stays usable in 2D fallback mode and the status message explains that texture-backed bodies are unavailable.
 - The default startup state uses Count 8 and a bundled body dataset from Sources/data/default-bodies.js derived from Data/nbodies.csv rather than reading the CSV at runtime.
 - The Target option `System Center` tracks the center of mass of all bodies and falls back to the average position only when the total mass is zero.
+- The current baseline preset list is limited to `binary-orbit` and `random-cluster`.
+- `random-cluster` now uses a wider generation range: mass `0.50` to `8.00`, radius `6.00`, minimum body distance `0.80`, tangent speed `0.30` to `1.40`, and per-axis velocity jitter up to `0.25`.
 
 ## Persistence policy
 
@@ -61,6 +63,7 @@ Non-persisted fields:
 - The helper copy in the header is hidden on small and medium layouts and reappears only on wide desktop layouts.
 - The controls panel sits directly below the header at every breakpoint, and on large layouts it becomes a compact full-width strip above the body editor and viewport row.
 - The controls panel uses compact visible labels such as Count, dt, Soft, Target, and Trail while keeping full accessible names via title or aria-label.
+- Real numbers displayed in the UI are rounded to at most two decimal places.
 - The Seed field shows `auto on Gen` while blank for `random-cluster`, so the next Generate action is understood to assign an automatic seed.
 - The playback buttons use compact visible text such as Gen, Run, Hold, Go, and Reset.
 - Validation is hidden when there are no errors and is emphasized only when invalid input exists.
