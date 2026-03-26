@@ -23,8 +23,8 @@
     <main class="app-layout">
       <section class="panel control-panel" aria-labelledby="controls-heading">
         <div class="panel-heading">
-          <p class="eyebrow">Controls</p>
-          <h2 id="controls-heading">Simulation controls</h2>
+          <p class="eyebrow">Setup</p>
+          <h2 id="controls-heading">Controls</h2>
         </div>
 
         <div class="control-grid">
@@ -80,8 +80,8 @@
           <button data-action="reset" type="button">Reset</button>
         </div>
 
-        <div class="validation-panel" aria-live="polite">
-          <p class="validation-title">Validation</p>
+        <div class="validation-panel" data-role="validation-panel" aria-live="polite" hidden>
+          <p class="validation-title">Errors</p>
           <ul class="validation-list" data-role="validation-list"></ul>
         </div>
       </section>

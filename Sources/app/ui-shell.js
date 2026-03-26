@@ -162,6 +162,7 @@ export class UiShell {
       cameraTarget: rootElement.querySelector('[data-role="camera-target"]'),
       showTrails: rootElement.querySelector('[data-role="show-trails"]'),
       bodyCardList: rootElement.querySelector('[data-role="body-card-list"]'),
+      validationPanel: rootElement.querySelector('[data-role="validation-panel"]'),
       validationList: rootElement.querySelector('[data-role="validation-list"]'),
       metricFps: rootElement.querySelector('[data-role="metric-fps"]'),
       metricSimulationTime: rootElement.querySelector('[data-role="metric-simulation-time"]'),
@@ -280,9 +281,13 @@ export class UiShell {
     this.rootElement.querySelector('[data-action="resume"]').disabled = !canResume;
     this.rootElement.querySelector('[data-action="reset"]').disabled = !canReset;
 
+    const hasValidationErrors = runtime.validationErrors.length > 0;
+
     this.elements.validationList.innerHTML = runtime.validationErrors
       .map((error) => `<li>${escapeHtml(error)}</li>`)
       .join("");
+    this.elements.validationPanel.hidden = !hasValidationErrors;
+    this.elements.validationPanel.dataset.state = hasValidationErrors ? "invalid" : "valid";
 
     for (const key of ["bodyCount", "seed", "timeStep", "softening"]) {
       const errorMessage = runtime.fieldErrors[key] ?? "";
