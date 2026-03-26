@@ -266,6 +266,7 @@ button:disabled {
   gap: 10px;
 }
 
+  position: relative;
 .body-card {
   border: 1px solid rgba(19, 43, 58, 0.12);
   border-radius: var(--radius-lg);
@@ -273,10 +274,10 @@ button:disabled {
   overflow: clip;
 }
 
-.body-card summary {
+  grid-template-columns: auto 1fr;
   align-items: start;
   cursor: pointer;
-  display: grid;
+  padding: 12px 108px 12px 14px;
   gap: 4px;
   grid-template-columns: auto 1fr auto;
   list-style: none;
@@ -303,7 +304,7 @@ button:disabled {
 
 .body-card-summary {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -311,13 +312,13 @@ button:disabled {
   align-items: baseline;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
 }
 
 .body-card-chip-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
 }
 
 .body-card-chip {
@@ -325,11 +326,68 @@ button:disabled {
   border-radius: 999px;
   color: var(--text-body);
   display: inline-flex;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
   line-height: 1.2;
   max-width: 100%;
-  padding: 4px 8px;
+  padding: 3px 7px;
+}
+
+.body-card-inline-tools {
+  align-items: end;
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+  position: absolute;
+  right: 14px;
+  top: 10px;
+}
+
+.body-card-color-control {
+  align-items: center;
+  background: rgba(19, 43, 58, 0.08);
+  border-radius: 999px;
+  display: inline-flex;
+  gap: 6px;
+  padding: 3px 7px 3px 5px;
+}
+
+.body-card-color-control.field--error {
+  background: rgba(141, 61, 46, 0.12);
+}
+
+.body-card-color-control input {
+  appearance: none;
+  background: none;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  height: 18px;
+  min-height: 18px;
+  padding: 0;
+  width: 18px;
+}
+
+.body-card-color-control input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.body-card-color-control input::-webkit-color-swatch {
+  border: 1px solid rgba(19, 43, 58, 0.16);
+  border-radius: 999px;
+}
+
+.body-card-color-code {
+  color: var(--text-body);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.body-card-inline-tools .field-error {
+  font-size: 0.68rem;
+  min-height: 0;
+  text-align: right;
 }
 
 .body-card-body {
@@ -340,7 +398,7 @@ button:disabled {
 
 .body-grid {
   align-items: start;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -491,7 +549,7 @@ dd {
   }
 
   .body-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .viewport-panel {

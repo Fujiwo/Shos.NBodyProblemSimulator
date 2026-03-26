@@ -53,11 +53,17 @@ function formatCompactNumber(value) {
     return "--";
   }
 
-  return numeric.toFixed(2);
+  const rounded = Math.round(numeric * 10) / 10;
+
+  return Object.is(rounded, -0) ? "0" : String(rounded);
 }
 
 function formatVectorSummary(vector) {
   return `${formatCompactNumber(vector.x)}, ${formatCompactNumber(vector.y)}, ${formatCompactNumber(vector.z)}`;
+}
+
+function formatColorSummary(value) {
+  return typeof value === "string" && value.length > 0 ? value.toUpperCase() : "--";
 }
 
 function vectorFieldGroupTemplate(body, runtime, vectorKey, label, disabledAttribute) {
@@ -88,6 +94,7 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
   const disabledAttribute = disabled ? " disabled" : "";
   const openAttribute = isExpanded ? " open" : "";
   const fieldErrors = runtime.fieldErrors;
+  const colorValue = resolveFieldValue(runtime, body.id, "color", body.color);
 
   return `
     <details class="body-card" data-body-card="${body.id}"${openAttribute}>
@@ -99,13 +106,20 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
             <span class="body-card-meta">${escapeHtml(body.id)}${isSelected ? " · Selected" : ""}</span>
           </span>
           <span class="body-card-chip-row">
-            <span class="body-card-chip">Mass ${formatCompactNumber(body.mass)}</span>
-            <span class="body-card-chip">Pos ${escapeHtml(formatVectorSummary(body.position))}</span>
-            <span class="body-card-chip">Vel ${escapeHtml(formatVectorSummary(body.velocity))}</span>
+            <span class="body-card-chip">M ${formatCompactNumber(body.mass)}</span>
+            <span class="body-card-chip">P ${escapeHtml(formatVectorSummary(body.position))}</span>
+            <span class="body-card-chip">V ${escapeHtml(formatVectorSummary(body.velocity))}</span>
+            <span class="body-card-chip">C ${escapeHtml(formatColorSummary(colorValue))}</span>
           </span>
         </span>
-        <span class="body-card-meta">${isExpanded ? "Open" : "Closed"}</span>
       </summary>
+      <div class="body-card-inline-tools">
+        <label class="body-card-color-control${fieldErrors[getFieldKey(body.id, "color")] ? " field--error" : ""}">
+          <input aria-label="Color for ${escapeHtml(body.name)}" data-body-id="${body.id}" data-field="color" type="color" value="${escapeHtml(colorValue)}"${disabledAttribute}>
+          <span class="body-card-color-code">${escapeHtml(formatColorSummary(colorValue))}</span>
+        </label>
+        ${renderFieldError(fieldErrors, getFieldKey(body.id, "color"))}
+      </div>
       <div class="body-card-body">
         <div class="body-grid">
           <label class="field${fieldErrors[getFieldKey(body.id, "name")] ? " field--error" : ""}">
@@ -117,11 +131,6 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
             <span>Mass</span>
             <input data-body-id="${body.id}" data-field="mass" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "mass", body.mass))}"${disabledAttribute}>
             ${renderFieldError(fieldErrors, getFieldKey(body.id, "mass"))}
-          </label>
-          <label class="field${fieldErrors[getFieldKey(body.id, "color")] ? " field--error" : ""}">
-            <span>Color</span>
-            <input data-body-id="${body.id}" data-field="color" type="color" value="${escapeHtml(resolveFieldValue(runtime, body.id, "color", body.color))}"${disabledAttribute}>
-            ${renderFieldError(fieldErrors, getFieldKey(body.id, "color"))}
           </label>
           ${vectorFieldGroupTemplate(body, runtime, "position", "Position", disabledAttribute)}
           ${vectorFieldGroupTemplate(body, runtime, "velocity", "Velocity", disabledAttribute)}
