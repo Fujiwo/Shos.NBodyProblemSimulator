@@ -1,5 +1,4 @@
 :root {
-  /* Shared theme and layout tokens are centralized here so compact and large layouts stay visually aligned. */
   --app-height: 100vh;
   --page-bg: linear-gradient(180deg, #f3efe7 0%, #d8e4eb 48%, #eef4f7 100%);
   --panel-bg: rgba(255, 252, 247, 0.82);

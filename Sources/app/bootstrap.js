@@ -230,7 +230,6 @@ export function bootstrapApp(documentRef, options = {}) {
       simulationLoop,
       renderer
     });
-    // Validate the caller-provided destroyable graph before exposing the runtime.
     const destroyablePlan = buildDestroyableDisposePlan(destroyables);
 
     const statusParts = [];
