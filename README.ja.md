@@ -149,7 +149,14 @@ flowchart TD
 - `npm run build:min` を実行すると、worker を維持した最小化済み runtime を生成します。
 - 生成物は [Dist/index.html](Dist/index.html)、[Dist/main.min.js](Dist/main.min.js)、[Dist/physics-worker.min.js](Dist/physics-worker.min.js)、[Dist/style.css](Dist/style.css)、[Dist/images](Dist/images) です。
 - source entry files を変更せず、配布専用 directory として bundle 済み runtime を使いたい場合は [Dist/index.html](Dist/index.html) を利用します。
-- `npm run build:min:clean` を実行すると、生成された Dist directory と、以前 Sources 配下に出力していた旧最小化ファイルを削除します。
+- `npm run build:min:clean` を実行すると、生成済みの Dist 出力と、以前 Sources 配下に出力していた旧最小化ファイルを削除します。
+
+### Dist の再生成
+
+1. Sources 配下の source files や Dist にコピーされる assets を更新します。
+2. `npm run build:min` を再実行します。
+3. 再生成された [Dist/index.html](Dist/index.html)、[Dist/main.min.js](Dist/main.min.js)、[Dist/physics-worker.min.js](Dist/physics-worker.min.js)、[Dist/style.css](Dist/style.css)、[Dist/images](Dist/images) を利用します。
+4. 先に前回の生成物を消したい場合は、`npm run build:min:clean` を実行してから `npm run build:min` を再実行します。
 
 ### Dist の配信
 

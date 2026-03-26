@@ -149,7 +149,14 @@ Non-persisted fields:
 - Run `npm run build:min` to generate the worker-preserving minified runtime.
 - This creates [Dist/index.html](Dist/index.html), [Dist/main.min.js](Dist/main.min.js), [Dist/physics-worker.min.js](Dist/physics-worker.min.js), [Dist/style.css](Dist/style.css), and [Dist/images](Dist/images).
 - Use [Dist/index.html](Dist/index.html) when you want the bundled runtime in a distribution-only directory without changing the source entry files.
-- Run `npm run build:min:clean` to remove the generated Dist directory and legacy minified files previously emitted under Sources.
+- Run `npm run build:min:clean` to remove the generated Dist outputs and legacy minified files previously emitted under Sources.
+
+### Regenerating Dist
+
+1. Update the source files under Sources or any assets copied into Dist.
+2. Run `npm run build:min` again.
+3. Use the regenerated files under [Dist/index.html](Dist/index.html), [Dist/main.min.js](Dist/main.min.js), [Dist/physics-worker.min.js](Dist/physics-worker.min.js), [Dist/style.css](Dist/style.css), and [Dist/images](Dist/images).
+4. If you want to clear the previous generated outputs first, run `npm run build:min:clean` and then rerun `npm run build:min`.
 
 ### Serving Dist
 
