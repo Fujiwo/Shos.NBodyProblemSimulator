@@ -66,6 +66,10 @@ function formatColorSummary(value) {
   return typeof value === "string" && value.length > 0 ? value.toUpperCase() : "--";
 }
 
+function formatBodyCardId(bodyId) {
+  return bodyId.startsWith("body-") ? `#${bodyId.slice(5)}` : bodyId;
+}
+
 function vectorFieldGroupTemplate(body, runtime, vectorKey, label, disabledAttribute) {
   const axes = ["x", "y", "z"];
 
@@ -95,6 +99,9 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
   const openAttribute = isExpanded ? " open" : "";
   const fieldErrors = runtime.fieldErrors;
   const colorValue = resolveFieldValue(runtime, body.id, "color", body.color);
+  const bodyMeta = isSelected
+    ? `<span class="body-card-meta"><span class="body-card-id">${escapeHtml(formatBodyCardId(body.id))}</span><span class="body-card-selected">Sel</span></span>`
+    : `<span class="body-card-meta"><span class="body-card-id">${escapeHtml(formatBodyCardId(body.id))}</span></span>`;
 
   return `
     <details class="body-card" data-body-card="${body.id}"${openAttribute}>
@@ -103,13 +110,13 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
         <span class="body-card-summary">
           <span class="body-card-title-row">
             <strong>${escapeHtml(body.name)}</strong>
-            <span class="body-card-meta">${escapeHtml(body.id)}${isSelected ? " · Selected" : ""}</span>
+            ${bodyMeta}
           </span>
           <span class="body-card-chip-row">
-            <span class="body-card-chip">M ${formatCompactNumber(body.mass)}</span>
-            <span class="body-card-chip">P ${escapeHtml(formatVectorSummary(body.position))}</span>
-            <span class="body-card-chip">V ${escapeHtml(formatVectorSummary(body.velocity))}</span>
-            <span class="body-card-chip">C ${escapeHtml(formatColorSummary(colorValue))}</span>
+            <span class="body-card-chip"><span class="body-card-chip-label body-card-chip-label--mass">M</span><span class="body-card-chip-value">${formatCompactNumber(body.mass)}</span></span>
+            <span class="body-card-chip"><span class="body-card-chip-label body-card-chip-label--position">P</span><span class="body-card-chip-value">${escapeHtml(formatVectorSummary(body.position))}</span></span>
+            <span class="body-card-chip"><span class="body-card-chip-label body-card-chip-label--velocity">V</span><span class="body-card-chip-value">${escapeHtml(formatVectorSummary(body.velocity))}</span></span>
+            <span class="body-card-chip"><span class="body-card-chip-label body-card-chip-label--color">C</span><span class="body-card-chip-value">${escapeHtml(formatColorSummary(colorValue))}</span></span>
           </span>
         </span>
       </summary>

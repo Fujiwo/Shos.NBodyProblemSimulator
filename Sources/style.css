@@ -140,6 +140,11 @@ h2 {
   padding: 20px;
 }
 
+.control-panel {
+  gap: 10px;
+  padding: 16px;
+}
+
 .body-panel {
   display: grid;
   gap: 12px;
@@ -151,12 +156,22 @@ h2 {
   margin-bottom: 16px;
 }
 
+.control-panel .panel-heading {
+  gap: 2px;
+  margin-bottom: 10px;
+}
+
 .control-grid,
 .button-grid,
 .metrics-grid,
 .body-grid {
   display: grid;
   gap: 12px;
+}
+
+.control-panel .control-grid,
+.control-panel .button-grid {
+  gap: 8px;
 }
 
 .control-grid {
@@ -168,9 +183,17 @@ h2 {
   margin-top: 16px;
 }
 
+.control-panel .button-grid {
+  margin-top: 10px;
+}
+
 .field {
   display: grid;
   gap: 8px;
+}
+
+.control-panel .field {
+  gap: 5px;
 }
 
 .field.field--error input,
@@ -187,6 +210,11 @@ h2 {
   line-height: 1.3;
 }
 
+.control-panel .field-error {
+  font-size: 0.7rem;
+  min-height: 0.9em;
+}
+
 .field span,
 .validation-title,
 dt {
@@ -194,6 +222,11 @@ dt {
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.03em;
+}
+
+.control-panel .field span,
+.control-panel .validation-title {
+  font-size: 0.74rem;
 }
 
 .field input,
@@ -208,14 +241,32 @@ dt {
   padding: 0 12px;
 }
 
+.control-panel .field input,
+.control-panel .field select {
+  min-height: 36px;
+  padding: 0 9px;
+}
+
 .toggle-field {
   align-content: end;
+}
+
+.control-panel .toggle-field {
+  align-items: center;
+  align-content: center;
+  display: grid;
+  gap: 4px;
 }
 
 .toggle-field input {
   width: 22px;
   height: 22px;
   padding: 0;
+}
+
+.control-panel .toggle-field input {
+  width: 18px;
+  height: 18px;
 }
 
 button {
@@ -227,6 +278,11 @@ button {
   cursor: pointer;
   font-weight: 700;
   padding: 10px 14px;
+}
+
+.control-panel button {
+  min-height: 36px;
+  padding: 8px 10px;
 }
 
 button:disabled {
@@ -241,9 +297,19 @@ button:disabled {
   padding: 14px;
 }
 
+.control-panel .validation-panel {
+  margin-top: 10px;
+  padding: 10px 12px;
+}
+
 .validation-list {
   margin: 10px 0 0;
   padding-left: 18px;
+}
+
+.control-panel .validation-list {
+  margin-top: 6px;
+  padding-left: 16px;
 }
 
 .validation-list:empty::before {
@@ -300,7 +366,9 @@ button:disabled {
 
 .body-card-meta {
   color: var(--text-muted);
+  display: inline-flex;
   font-size: 0.78rem;
+  gap: 4px;
 }
 
 .body-card-summary {
@@ -327,11 +395,21 @@ button:disabled {
   border-radius: 999px;
   color: var(--text-body);
   display: inline-flex;
+  gap: 4px;
   font-size: 0.68rem;
   font-weight: 600;
   line-height: 1.2;
   max-width: 100%;
   padding: 3px 7px;
+}
+
+.body-card-chip-label,
+.body-card-chip-value {
+  display: inline-flex;
+}
+
+.body-card-selected {
+  font-weight: 700;
 }
 
 .body-card-inline-tools {
@@ -524,7 +602,47 @@ dd {
 
   .body-card-chip {
     font-size: 0.62rem;
+    gap: 3px;
     padding: 2px 6px;
+  }
+
+  .body-card-chip-label {
+    font-size: 0;
+  }
+
+  .body-card-chip-label::before {
+    font-size: 0.62rem;
+    line-height: 1;
+  }
+
+  .body-card-chip-label--mass::before {
+    content: "●";
+  }
+
+  .body-card-chip-label--position::before {
+    content: "◎";
+  }
+
+  .body-card-chip-label--velocity::before {
+    content: "↗";
+  }
+
+  .body-card-chip-label--color::before {
+    content: "◼";
+  }
+
+  .body-card-meta {
+    gap: 3px;
+  }
+
+  .body-card-selected {
+    font-size: 0;
+  }
+
+  .body-card-selected::before {
+    content: "●";
+    font-size: 0.6rem;
+    line-height: 1;
   }
 
   .body-card-inline-tools {
@@ -560,7 +678,7 @@ dd {
 @media (min-width: 1024px) {
   .app-layout {
     align-items: start;
-    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+    grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
     grid-template-areas:
       "controls viewport"
       "bodies viewport";
