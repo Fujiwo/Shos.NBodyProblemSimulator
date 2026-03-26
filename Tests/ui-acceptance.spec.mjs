@@ -224,6 +224,24 @@ test("seed input shows auto generation hint and generate applies an auto seed in
   await expect(page.locator('[data-role="metric-reproducibility-key"]')).toContainText("seed=1234567890");
 });
 
+test("random preset generate keeps the first body much heavier than the rest", async ({ page }) => {
+  await page.getByLabel("Preset").selectOption("random-cluster");
+  await page.getByRole("button", { name: "Generate" }).click();
+
+  const masses = await page.locator('[data-body-card] input[data-field="mass"]').evaluateAll((inputs) => {
+    return inputs.map((input) => Number(input.value));
+  });
+
+  expect(masses[0]).toBeGreaterThanOrEqual(48);
+  expect(masses[0]).toBeLessThanOrEqual(120);
+
+  for (const mass of masses.slice(1)) {
+    expect(mass).toBeGreaterThanOrEqual(0.05);
+    expect(mass).toBeLessThanOrEqual(6);
+    expect(masses[0]).toBeGreaterThan(mass);
+  }
+});
+
 test("invalid random-cluster seed stays blocked in the browser", async ({ page }) => {
   const seedInput = page.getByLabel("Seed");
 

@@ -5,8 +5,10 @@ import { DEFAULT_BODY_SEED_DATA } from "../data/default-bodies.js";
 const RANDOM_CLUSTER_RADIUS = 6;
 const RANDOM_CLUSTER_MIN_DISTANCE = 0.8;
 const RANDOM_CLUSTER_MAX_ATTEMPTS = 100;
-const RANDOM_CLUSTER_MIN_MASS = 0.05;
-const RANDOM_CLUSTER_MASS_RANGE = 119.95;
+const RANDOM_CLUSTER_PRIMARY_MIN_MASS = 48;
+const RANDOM_CLUSTER_PRIMARY_MASS_RANGE = 72;
+const RANDOM_CLUSTER_SECONDARY_MIN_MASS = 0.05;
+const RANDOM_CLUSTER_SECONDARY_MASS_RANGE = 5.95;
 const RANDOM_CLUSTER_MIN_SPEED = 0.3;
 const RANDOM_CLUSTER_SPEED_RANGE = 1.1;
 const RANDOM_CLUSTER_VELOCITY_JITTER = 0.25;
@@ -160,6 +162,14 @@ function createSampleBodies() {
   return Array.from({ length: DEFAULT_BODY_SEED_DATA.length }, (_, index) => createBody(index));
 }
 
+function createRandomClusterMass(index, random) {
+  if (index === 0) {
+    return Number((RANDOM_CLUSTER_PRIMARY_MIN_MASS + random() * RANDOM_CLUSTER_PRIMARY_MASS_RANGE).toFixed(2));
+  }
+
+  return Number((RANDOM_CLUSTER_SECONDARY_MIN_MASS + random() * RANDOM_CLUSTER_SECONDARY_MASS_RANGE).toFixed(2));
+}
+
 function createRandomClusterBodies(bodyCount, seed) {
   const random = createPrng(seed);
   const positions = createRandomClusterPositions(bodyCount, random);
@@ -178,7 +188,7 @@ function createRandomClusterBodies(bodyCount, seed) {
 
     return {
       ...baseBody,
-      mass: Number((RANDOM_CLUSTER_MIN_MASS + random() * RANDOM_CLUSTER_MASS_RANGE).toFixed(2)),
+      mass: createRandomClusterMass(index, random),
       position: {
         x: Number(position.x.toFixed(2)),
         y: Number(position.y.toFixed(2)),

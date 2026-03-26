@@ -75,7 +75,7 @@ function testRandomClusterUsesTimeSeedWhenSeedIsMissing() {
   }
 }
 
-function testRandomClusterUsesExpandedVarianceRange() {
+function testRandomClusterUsesPrimaryHeavyMassDistribution() {
   const generated = generatePresetBodies({
     presetId: "random-cluster",
     bodyCount: 8,
@@ -85,18 +85,21 @@ function testRandomClusterUsesExpandedVarianceRange() {
   const masses = generated.bodies.map((body) => body.mass);
   const positionRadii = generated.bodies.map((body) => Math.hypot(body.position.x, body.position.y, body.position.z));
   const speeds = generated.bodies.map((body) => Math.hypot(body.velocity.x, body.velocity.y, body.velocity.z));
+  const secondaryMasses = masses.slice(1);
 
-  assert.ok(masses.every((mass) => mass >= 0.05 && mass <= 120));
+  assert.ok(masses[0] >= 48 && masses[0] <= 120);
+  assert.ok(secondaryMasses.every((mass) => mass >= 0.05 && mass <= 6));
+  assert.ok(secondaryMasses.every((mass) => masses[0] > mass));
   assert.ok(positionRadii.every((radius) => radius <= 6));
   assert.ok(speeds.some((speed) => speed >= 0.3));
   assert.ok(positionRadii.some((radius) => radius >= 2));
-  assert.ok(Math.max(...masses) - Math.min(...masses) >= 30);
+  assert.ok(masses[0] / Math.max(...secondaryMasses) >= 8);
 }
 
 testSamplePresetUsesBundledDefaultBodies();
 testRandomClusterIsDeterministicForSameSeedAndBodyCount();
 testRandomClusterOutputChangesWhenBodyCountChanges();
 testRandomClusterUsesTimeSeedWhenSeedIsMissing();
-testRandomClusterUsesExpandedVarianceRange();
+testRandomClusterUsesPrimaryHeavyMassDistribution();
 
 console.log("preset-generator.test.mjs ok");
