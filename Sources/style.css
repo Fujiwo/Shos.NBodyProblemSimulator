@@ -316,8 +316,31 @@ button:disabled {
   grid-column: 1 / -1;
 }
 
+.vector-field-group {
+  display: grid;
+  gap: 6px;
+  grid-column: 1 / -1;
+}
+
+.vector-field-label {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.vector-field-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .body-grid .field {
   gap: 6px;
+}
+
+.body-grid .field--axis {
+  min-width: 0;
 }
 
 .body-grid .field span {
@@ -437,16 +460,10 @@ dd {
 
   .body-panel {
     grid-area: bodies;
-    max-height: min(46vh, 560px);
-  }
-
-  .body-card-list {
-    overflow: auto;
-    padding-right: 4px;
   }
 
   .body-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .viewport-panel {

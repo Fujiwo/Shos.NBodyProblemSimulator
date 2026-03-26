@@ -79,6 +79,26 @@ function testGenerateResetsRuntimeAndCommitsState() {
     state.appState.committedInitialState.bodies.map((body) => body.name),
     state.appState.bodies.map((body) => body.name)
   );
+  assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-1"]);
+}
+
+function testBodyPanelStateKeepsSingleExpandedCard() {
+  const { store, controller } = createControllerHarness();
+
+  controller.toggleBodyPanel("body-2", true);
+
+  let state = store.getState();
+  assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-2"]);
+
+  controller.toggleBodyPanel("body-3", true);
+
+  state = store.getState();
+  assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-3"]);
+
+  controller.toggleBodyPanel("body-3", false);
+
+  state = store.getState();
+  assert.deepEqual(state.appState.uiState.expandedBodyPanels, ["body-1"]);
 }
 
 function testStartRejectsValidationErrorsAndSetsStatusMessage() {
@@ -127,6 +147,7 @@ function testStartRejectsWhilePausedAndSetsStatusMessage() {
 testTransitionGuards();
 testCameraTargetNormalization();
 testGenerateResetsRuntimeAndCommitsState();
+testBodyPanelStateKeepsSingleExpandedCard();
 testStartRejectsValidationErrorsAndSetsStatusMessage();
 testStartRejectsWhileRunningAndSetsStatusMessage();
 testStartRejectsWhilePausedAndSetsStatusMessage();

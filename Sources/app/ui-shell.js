@@ -46,6 +46,30 @@ function renderCameraTargetOptions(appState) {
   return `${systemCenterOption}${bodyOptions}`;
 }
 
+function vectorFieldGroupTemplate(body, runtime, vectorKey, label, disabledAttribute) {
+  const axes = ["x", "y", "z"];
+
+  return `
+    <div class="vector-field-group">
+      <span class="vector-field-label">${label}</span>
+      <div class="vector-field-row">
+        ${axes.map((axis) => {
+          const fieldPath = `${vectorKey}.${axis}`;
+          const fieldKey = getFieldKey(body.id, fieldPath);
+
+          return `
+            <label class="field field--axis${runtime.fieldErrors[fieldKey] ? " field--error" : ""}">
+              <span>${axis.toUpperCase()}</span>
+              <input data-body-id="${body.id}" data-field="${fieldPath}" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, fieldPath, body[vectorKey][axis]))}"${disabledAttribute}>
+              ${renderFieldError(runtime.fieldErrors, fieldKey)}
+            </label>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
 function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
   const disabledAttribute = disabled ? " disabled" : "";
   const openAttribute = isExpanded ? " open" : "";
@@ -78,36 +102,8 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
             <input data-body-id="${body.id}" data-field="color" type="color" value="${escapeHtml(resolveFieldValue(runtime, body.id, "color", body.color))}"${disabledAttribute}>
             ${renderFieldError(fieldErrors, getFieldKey(body.id, "color"))}
           </label>
-          <label class="field${fieldErrors[getFieldKey(body.id, "position.x")] ? " field--error" : ""}">
-            <span>Position X</span>
-            <input data-body-id="${body.id}" data-field="position.x" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "position.x", body.position.x))}"${disabledAttribute}>
-            ${renderFieldError(fieldErrors, getFieldKey(body.id, "position.x"))}
-          </label>
-          <label class="field${fieldErrors[getFieldKey(body.id, "position.y")] ? " field--error" : ""}">
-            <span>Position Y</span>
-            <input data-body-id="${body.id}" data-field="position.y" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "position.y", body.position.y))}"${disabledAttribute}>
-            ${renderFieldError(fieldErrors, getFieldKey(body.id, "position.y"))}
-          </label>
-          <label class="field${fieldErrors[getFieldKey(body.id, "position.z")] ? " field--error" : ""}">
-            <span>Position Z</span>
-            <input data-body-id="${body.id}" data-field="position.z" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "position.z", body.position.z))}"${disabledAttribute}>
-            ${renderFieldError(fieldErrors, getFieldKey(body.id, "position.z"))}
-          </label>
-          <label class="field${fieldErrors[getFieldKey(body.id, "velocity.x")] ? " field--error" : ""}">
-            <span>Velocity X</span>
-            <input data-body-id="${body.id}" data-field="velocity.x" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "velocity.x", body.velocity.x))}"${disabledAttribute}>
-            ${renderFieldError(fieldErrors, getFieldKey(body.id, "velocity.x"))}
-          </label>
-          <label class="field${fieldErrors[getFieldKey(body.id, "velocity.y")] ? " field--error" : ""}">
-            <span>Velocity Y</span>
-            <input data-body-id="${body.id}" data-field="velocity.y" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "velocity.y", body.velocity.y))}"${disabledAttribute}>
-            ${renderFieldError(fieldErrors, getFieldKey(body.id, "velocity.y"))}
-          </label>
-          <label class="field${fieldErrors[getFieldKey(body.id, "velocity.z")] ? " field--error" : ""}">
-            <span>Velocity Z</span>
-            <input data-body-id="${body.id}" data-field="velocity.z" type="number" step="0.1" value="${escapeHtml(resolveFieldValue(runtime, body.id, "velocity.z", body.velocity.z))}"${disabledAttribute}>
-            ${renderFieldError(fieldErrors, getFieldKey(body.id, "velocity.z"))}
-          </label>
+          ${vectorFieldGroupTemplate(body, runtime, "position", "Position", disabledAttribute)}
+          ${vectorFieldGroupTemplate(body, runtime, "velocity", "Velocity", disabledAttribute)}
         </div>
       </div>
     </details>

@@ -80,13 +80,13 @@ export function createBodies(bodyCount) {
 
 export function normalizeExpandedPanels(expandedBodyPanels, bodies) {
   const bodyIds = new Set(bodies.map((body) => body.id));
-  const normalized = expandedBodyPanels.filter((bodyId) => bodyIds.has(bodyId)).slice(0, 2);
+  const normalized = expandedBodyPanels.filter((bodyId) => bodyIds.has(bodyId)).slice(0, 1);
 
   if (normalized.length > 0) {
     return normalized;
   }
 
-  return bodies.slice(0, Math.min(2, bodies.length)).map((body) => body.id);
+  return bodies.slice(0, 1).map((body) => body.id);
 }
 
 export function createSimulationConfig() {
