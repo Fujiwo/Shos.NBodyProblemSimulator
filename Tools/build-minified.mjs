@@ -1,5 +1,5 @@
 import { build } from "esbuild";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,9 +7,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repositoryRoot = path.resolve(__dirname, "..");
 const sourcesDir = path.join(repositoryRoot, "Sources");
-const outputMainPath = path.join(sourcesDir, "main.min.js");
-const outputWorkerPath = path.join(sourcesDir, "physics-worker.min.js");
-const outputHtmlPath = path.join(sourcesDir, "index.min.html");
+const distDir = path.join(repositoryRoot, "Dist");
+const outputMainPath = path.join(distDir, "main.min.js");
+const outputWorkerPath = path.join(distDir, "physics-worker.min.js");
+const outputHtmlPath = path.join(distDir, "index.html");
+const outputStylePath = path.join(distDir, "style.css");
+const outputImagesPath = path.join(distDir, "images");
+const legacyOutputPaths = [
+  path.join(sourcesDir, "main.min.js"),
+  path.join(sourcesDir, "physics-worker.min.js"),
+  path.join(sourcesDir, "index.min.html")
+];
 
 const bootstrapWorkerImport = "../workers/physics-worker.js";
 const bundledWorkerImport = "./physics-worker.min.js";
@@ -71,30 +79,38 @@ async function writeBundledHtml() {
   await writeFile(outputHtmlPath, replacedHtml, "utf8");
 }
 
+async function copyStaticAssets() {
+  await cp(path.join(sourcesDir, "style.css"), outputStylePath);
+  await cp(path.join(sourcesDir, "images"), outputImagesPath, { recursive: true });
+}
+
 async function cleanOutputs() {
   await Promise.all([
+    rm(distDir, { force: true, recursive: true }),
     rm(outputMainPath, { force: true }),
     rm(outputWorkerPath, { force: true }),
-    rm(outputHtmlPath, { force: true })
+    rm(outputHtmlPath, { force: true }),
+    ...legacyOutputPaths.map((outputPath) => rm(outputPath, { force: true }))
   ]);
 }
 
 async function main() {
   const cleanOnly = process.argv.includes("--clean");
 
-  await mkdir(sourcesDir, { recursive: true });
-
   if (cleanOnly) {
     await cleanOutputs();
-    console.log("Removed Sources/main.min.js, Sources/physics-worker.min.js, and Sources/index.min.html");
+    console.log("Removed Dist output and legacy Sources minified files");
     return;
   }
 
+  await cleanOutputs();
+  await mkdir(distDir, { recursive: true });
   await buildWorker();
   await buildMain();
   await writeBundledHtml();
+  await copyStaticAssets();
 
-  console.log("Generated Sources/main.min.js, Sources/physics-worker.min.js, and Sources/index.min.html");
+  console.log("Generated Dist/index.html, Dist/main.min.js, Dist/physics-worker.min.js, Dist/style.css, and Dist/images");
 }
 
 main().catch((error) => {

@@ -83,9 +83,9 @@ Non-persisted fields:
 ## Minified bundle build
 
 - Run `npm run build:min` to generate the worker-preserving minified runtime.
-- This creates [Sources/main.min.js](Sources/main.min.js), [Sources/physics-worker.min.js](Sources/physics-worker.min.js), and [Sources/index.min.html](Sources/index.min.html).
-- Use [Sources/index.min.html](Sources/index.min.html) when you want the bundled runtime without changing the source entry files.
-- Run `npm run build:min:clean` to remove the generated minified files.
+- This creates [Dist/index.html](Dist/index.html), [Dist/main.min.js](Dist/main.min.js), [Dist/physics-worker.min.js](Dist/physics-worker.min.js), [Dist/style.css](Dist/style.css), and [Dist/images](Dist/images).
+- Use [Dist/index.html](Dist/index.html) when you want the bundled runtime in a distribution-only directory without changing the source entry files.
+- Run `npm run build:min:clean` to remove the generated Dist directory and legacy minified files previously emitted under Sources.
 
 ## Testing
 
