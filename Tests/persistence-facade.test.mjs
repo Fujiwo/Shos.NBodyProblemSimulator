@@ -91,6 +91,18 @@ function testSerializeExcludesTransientPlaybackState() {
   assert.equal(serialized.bodies.length, 3);
 }
 
+function testSerializeNormalizesExpandedPanelsAndRestorePolicy() {
+  const facade = new PersistenceFacade();
+  const appState = createInitialAppState(3);
+  appState.uiState.expandedBodyPanels = ["body-3", "missing", "body-1", "body-1"];
+  appState.playbackRestorePolicy = "unexpected-policy";
+
+  const serialized = facade.serialize(appState);
+
+  assert.deepEqual(serialized.uiState.expandedBodyPanels, ["body-1", "body-3"]);
+  assert.equal(serialized.playbackRestorePolicy, "restore-as-idle");
+}
+
 function testLoadMigratesLegacyNamesAndVersion() {
   installStorage(createLegacyPersistedState());
 
@@ -492,6 +504,7 @@ function testHydrationRejectsOutOfRangeSeedValues() {
 }
 
 testSerializeExcludesTransientPlaybackState();
+testSerializeNormalizesExpandedPanelsAndRestorePolicy();
 testLoadMigratesLegacyNamesAndVersion();
 testLoadFallsBackForInvalidJson();
 testLoadFallsBackForValidJsonWithInvalidShape();

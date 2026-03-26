@@ -1,12 +1,12 @@
 import {
   APP_VERSION,
+  PLAYBACK_RESTORE_POLICY,
   clone,
   createBodies,
   createCommittedInitialState,
   createDefaultExpandedPanels,
   createInitialAppState,
-  createSimulationConfig,
-  normalizeExpandedPanels
+  createSimulationConfig
 } from "./defaults.js";
 
 const PRESET_RULES = {
@@ -27,6 +27,12 @@ function isValidPersistedSeed(seed) {
   return seed === null || (Number.isInteger(seed) && seed >= 0 && seed <= 4294967295);
 }
 
+function normalizePlaybackRestorePolicy(playbackRestorePolicy) {
+  return playbackRestorePolicy === PLAYBACK_RESTORE_POLICY
+    ? playbackRestorePolicy
+    : PLAYBACK_RESTORE_POLICY;
+}
+
 export function getPresetRule(presetId) {
   return PRESET_RULES[presetId] ?? PRESET_RULES["random-cluster"];
 }
@@ -41,6 +47,15 @@ export function normalizeBodyCountForPreset(presetId, bodyCount) {
   const fallback = rule.min;
   const normalized = Number.isFinite(numeric) ? numeric : fallback;
   return Math.min(rule.max, Math.max(rule.min, normalized));
+}
+
+export function normalizeExpandedPanels(expandedBodyPanels, bodies) {
+  const expanded = Array.isArray(expandedBodyPanels) ? expandedBodyPanels : [];
+  const expandedSet = new Set(expanded.filter((bodyId) => typeof bodyId === "string" && bodyId.length > 0));
+
+  return bodies
+    .map((body) => body.id)
+    .filter((bodyId) => expandedSet.has(bodyId));
 }
 
 function normalizeBody(rawBody, index) {
@@ -161,7 +176,7 @@ export function normalizeAppState(rawAppState) {
     simulationConfig,
     uiState: normalizeUiState(input.uiState, bodies),
     committedInitialState: null,
-    playbackRestorePolicy: "restore-as-idle"
+    playbackRestorePolicy: normalizePlaybackRestorePolicy(input.playbackRestorePolicy)
   };
 
   appState.committedInitialState = normalizeCommittedSnapshot(input.committedInitialState, appState);
@@ -171,4 +186,21 @@ export function normalizeAppState(rawAppState) {
 
 export function createHydratedAppState(rawAppState) {
   return normalizeAppState(clone(rawAppState));
+}
+
+export function serializePersistedAppState(appState) {
+  return clone({
+    appVersion: appState.appVersion,
+    bodyCount: appState.bodyCount,
+    bodies: appState.bodies,
+    simulationConfig: appState.simulationConfig,
+    uiState: {
+      selectedBodyId: appState.uiState.selectedBodyId,
+      cameraTarget: appState.uiState.cameraTarget,
+      showTrails: appState.uiState.showTrails,
+      expandedBodyPanels: normalizeExpandedPanels(appState.uiState.expandedBodyPanels, appState.bodies)
+    },
+    committedInitialState: appState.committedInitialState,
+    playbackRestorePolicy: normalizePlaybackRestorePolicy(appState.playbackRestorePolicy)
+  });
 }

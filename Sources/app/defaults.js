@@ -2,6 +2,7 @@ import { DEFAULT_BODY_SEED_DATA } from "../data/default-bodies.js";
 
 export const APP_VERSION = "0.4.0-phase4";
 export const STORAGE_KEY = "nbody-simulator.state";
+export const PLAYBACK_RESTORE_POLICY = "restore-as-idle";
 
 const BODY_COLORS = [
   "#52b7ff",
@@ -81,15 +82,6 @@ export function createDefaultExpandedPanels(bodies) {
   return bodies.length > 0 ? [bodies[0].id] : [];
 }
 
-export function normalizeExpandedPanels(expandedBodyPanels, bodies) {
-  const expanded = Array.isArray(expandedBodyPanels) ? expandedBodyPanels : [];
-  const expandedSet = new Set(expanded.filter((bodyId) => typeof bodyId === "string" && bodyId.length > 0));
-
-  return bodies
-    .map((body) => body.id)
-    .filter((bodyId) => expandedSet.has(bodyId));
-}
-
 export function createSimulationConfig() {
   return {
     gravitationalConstant: 1.0,
@@ -135,7 +127,7 @@ export function createInitialAppState(bodyCount = DEFAULT_BODY_SEED_DATA.length)
     simulationConfig: createSimulationConfig(),
     uiState: createUiState(bodies),
     committedInitialState: null,
-    playbackRestorePolicy: "restore-as-idle"
+    playbackRestorePolicy: PLAYBACK_RESTORE_POLICY
   };
 
   appState.committedInitialState = createCommittedInitialState(appState);

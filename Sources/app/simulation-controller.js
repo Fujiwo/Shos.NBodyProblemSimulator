@@ -2,11 +2,10 @@ import {
   clone,
   createBody,
   createCommittedInitialState,
-  createDefaultExpandedPanels,
-  normalizeExpandedPanels
+  createDefaultExpandedPanels
 } from "./defaults.js";
 import { generatePresetBodies } from "./preset-generator.js";
-import { getPresetRule, normalizeBodyCountForPreset } from "./state-rules.js";
+import { getPresetRule, normalizeBodyCountForPreset, normalizeExpandedPanels } from "./state-rules.js";
 
 function isFiniteNumber(value) {
   return Number.isFinite(Number(value));

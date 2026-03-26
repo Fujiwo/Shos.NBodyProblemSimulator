@@ -1,5 +1,5 @@
 import { STORAGE_KEY, clone, createInitialAppState } from "./defaults.js";
-import { createHydratedAppState } from "./state-rules.js";
+import { createHydratedAppState, serializePersistedAppState } from "./state-rules.js";
 
 const LEGACY_BODY_NAME_MAP = new Map([
   ["primary", "sun"],
@@ -100,6 +100,16 @@ function isPersistedStateShape(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+function parsePersistedState(rawValue) {
+  const parsed = JSON.parse(rawValue);
+
+  if (!isPersistedStateShape(parsed)) {
+    throw new Error("Persisted state shape is invalid.");
+  }
+
+  return parsed;
+}
+
 export class PersistenceFacade {
   constructor(storageKey = STORAGE_KEY) {
     this.storageKey = storageKey;
@@ -127,14 +137,7 @@ export class PersistenceFacade {
         };
       }
 
-      const parsed = JSON.parse(rawValue);
-
-      if (!isPersistedStateShape(parsed)) {
-        return {
-          appState: fallbackAppState,
-          statusMessage: "Failed to restore saved state. Defaults were applied."
-        };
-      }
+      const parsed = parsePersistedState(rawValue);
 
       const migration = migratePersistedState(parsed, fallbackAppState.appVersion);
 
@@ -153,7 +156,7 @@ export class PersistenceFacade {
   }
 
   stage(appState) {
-    this.lastSerializedState = this.serialize(appState);
+    this.lastSerializedState = serializePersistedAppState(appState);
 
     const storage = this.getStorage();
 
@@ -169,20 +172,7 @@ export class PersistenceFacade {
   }
 
   serialize(appState) {
-    return clone({
-      appVersion: appState.appVersion,
-      bodyCount: appState.bodyCount,
-      bodies: appState.bodies,
-      simulationConfig: appState.simulationConfig,
-      uiState: {
-        selectedBodyId: appState.uiState.selectedBodyId,
-        cameraTarget: appState.uiState.cameraTarget,
-        showTrails: appState.uiState.showTrails,
-        expandedBodyPanels: appState.uiState.expandedBodyPanels
-      },
-      committedInitialState: appState.committedInitialState,
-      playbackRestorePolicy: appState.playbackRestorePolicy
-    });
+    return serializePersistedAppState(appState);
   }
 
   getStorage() {
