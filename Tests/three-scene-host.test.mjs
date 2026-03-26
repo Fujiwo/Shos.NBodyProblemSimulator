@@ -99,6 +99,12 @@ class RendererStub {
   }
 }
 
+class ThrowingRendererStub {
+  constructor() {
+    throw new Error("WebGL context creation failed.");
+  }
+}
+
 class GeometryStub {
   constructor() {
     this.disposed = false;
@@ -271,6 +277,24 @@ function testInitializationStatusReportsFallbackReason() {
   );
 }
 
+function testInitializationStatusReportsRendererConstructionFailure() {
+  globalThis.THREE = {
+    ...createThreeStub(),
+    WebGLRenderer: ThrowingRendererStub
+  };
+  globalThis.window = { devicePixelRatio: 1 };
+
+  const host = new ThreeSceneHost(createCanvasStub(), {});
+  const status = host.getInitializationStatus();
+
+  assert.equal(host.ready, false);
+  assert.equal(status.modeLabel, "2D fallback mode");
+  assert.equal(
+    status.message,
+    "Renderer initialized in 2D fallback mode. Texture-backed bodies are unavailable because Three.js failed to initialize (WebGL context creation failed.)."
+  );
+}
+
 function testTrailResetAndCameraTarget() {
   globalThis.THREE = createThreeStub();
   globalThis.window = { devicePixelRatio: 1 };
@@ -386,6 +410,7 @@ function testMeshRemovalDisposesMeshAndTrailResources() {
 
 testTextureFallbackAndLoadedTexture();
 testInitializationStatusReportsFallbackReason();
+testInitializationStatusReportsRendererConstructionFailure();
 testTrailResetAndCameraTarget();
 testResizeUpdatesRendererAndCamera();
 testSystemCenterCameraTracksCenterOfMass();

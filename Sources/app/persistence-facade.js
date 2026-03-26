@@ -96,6 +96,10 @@ function migratePersistedState(rawState, fallbackVersion) {
   };
 }
 
+function isPersistedStateShape(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
 export class PersistenceFacade {
   constructor(storageKey = STORAGE_KEY) {
     this.storageKey = storageKey;
@@ -124,6 +128,14 @@ export class PersistenceFacade {
       }
 
       const parsed = JSON.parse(rawValue);
+
+      if (!isPersistedStateShape(parsed)) {
+        return {
+          appState: fallbackAppState,
+          statusMessage: "Failed to restore saved state. Defaults were applied."
+        };
+      }
+
       const migration = migratePersistedState(parsed, fallbackAppState.appVersion);
 
       return {

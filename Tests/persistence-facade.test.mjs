@@ -106,6 +106,17 @@ function testLoadFallsBackForInvalidJson() {
   assert.ok(result.appState.bodyCount >= 2);
 }
 
+function testLoadFallsBackForValidJsonWithInvalidShape() {
+  installStorage("42");
+
+  const facade = new PersistenceFacade();
+  const result = facade.load();
+
+  assert.equal(result.statusMessage, "Failed to restore saved state. Defaults were applied.");
+  assert.equal(result.appState.uiState.playbackState, "idle");
+  assert.equal(result.appState.simulationConfig.seed, 1001);
+}
+
 function testHydrationNormalizesPresetConstraintsAndSelection() {
   const hydrated = createHydratedAppState({
     appVersion: "0.4.0-phase4",
@@ -240,6 +251,7 @@ function testHydrationRejectsOutOfRangeSeedValues() {
 testSerializeExcludesTransientPlaybackState();
 testLoadMigratesLegacyNamesAndVersion();
 testLoadFallsBackForInvalidJson();
+testLoadFallsBackForValidJsonWithInvalidShape();
 testHydrationNormalizesPresetConstraintsAndSelection();
 testHydrationRetainsRk4Integrator();
 testHydrationNormalizesExpandedPanelsToValidUniqueBodyOrder();
