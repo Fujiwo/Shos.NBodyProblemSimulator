@@ -1,6 +1,6 @@
 import { ThreeSceneHost } from "./three-scene-host.js";
 import { renderFallbackScene } from "./renderer-fallback.js";
-import { syncTrailHistoryEntries } from "./renderer-helpers.js";
+import { createFallbackTrailHistory, reduceFallbackTrailHistory } from "./renderer-fallback-state.js";
 import { measureCanvasBufferSize } from "./viewport-layout.js";
 
 export class RendererFacade {
@@ -9,7 +9,7 @@ export class RendererFacade {
     this.canvasElement = canvasElement;
     this.pixelRatio = Math.max(1, window.devicePixelRatio || 1);
     this.latestModel = null;
-    this.trailHistory = new Map();
+    this.trailHistory = createFallbackTrailHistory();
     this.threeSceneHost = new ThreeSceneHost(canvasElement, {
       three,
       onInvalidate: () => {
@@ -41,19 +41,16 @@ export class RendererFacade {
   }
 
   resetTrailHistory() {
-    this.trailHistory.clear();
+    this.trailHistory = createFallbackTrailHistory();
   }
 
   syncTrailHistory(model) {
-    const { appState, runtime } = model;
-    this.trailHistory = syncTrailHistoryEntries({
-      trailHistory: this.trailHistory,
-      bodies: appState.bodies,
-      showTrails: appState.uiState.showTrails,
-      simulationTime: runtime.simulationTime,
-      maxTrailPoints: appState.simulationConfig.maxTrailPoints,
-      selectPoint: (body) => ({ x: body.position.x, y: body.position.y, z: 0 })
-    });
+    this.trailHistory = reduceFallbackTrailHistory(this.trailHistory, model);
+  }
+
+  dispose() {
+    this.resetTrailHistory();
+    this.threeSceneHost.dispose();
   }
 
   render(model) {

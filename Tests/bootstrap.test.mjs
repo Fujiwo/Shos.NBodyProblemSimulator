@@ -138,19 +138,25 @@ function installStorage(initialValue) {
 
 function installWindowStubs() {
   const registeredListeners = [];
+  const cancelledFrames = [];
 
   globalThis.window = {
     devicePixelRatio: 1,
     innerHeight: 720,
     addEventListener(type, listener) {
       registeredListeners.push({ type, listener });
+    },
+    removeEventListener(type, listener) {
+      registeredListeners.push({ action: "remove", type, listener });
     }
   };
 
   globalThis.requestAnimationFrame = () => 1;
-  globalThis.cancelAnimationFrame = () => {};
+  globalThis.cancelAnimationFrame = (id) => {
+    cancelledFrames.push(id);
+  };
 
-  return registeredListeners;
+  return { registeredListeners, cancelledFrames };
 }
 
 function createLegacyPersistedState() {
@@ -217,7 +223,7 @@ function createBootstrapHarness(initialStorageValue, options = {}) {
   }
 
   const storage = installStorage(initialStorageValue);
-  const listeners = installWindowStubs();
+  const { registeredListeners: listeners, cancelledFrames } = installWindowStubs();
   const rootElement = createRootStub();
   const canvasElement = createCanvasStub();
   const documentRef = {
@@ -245,6 +251,7 @@ function createBootstrapHarness(initialStorageValue, options = {}) {
   return {
     storage,
     listeners,
+    cancelledFrames,
     rootElement,
     canvasElement,
     documentRef
@@ -254,7 +261,7 @@ function createBootstrapHarness(initialStorageValue, options = {}) {
 function testBootstrapOverwritesCorruptedStorageWithFallbackState() {
   const { storage, listeners, rootElement, canvasElement, documentRef } = createBootstrapHarness("{invalid json");
 
-  bootstrapApp(documentRef);
+  const app = bootstrapApp(documentRef);
 
   const persisted = JSON.parse(storage.get("nbody-simulator.state"));
   const statusMessage = rootElement.elements.get('[data-role="status-message"]').textContent;
@@ -270,6 +277,7 @@ function testBootstrapOverwritesCorruptedStorageWithFallbackState() {
   assert.equal(listeners.some((entry) => entry.type === "resize"), true);
   assert.equal(canvasElement.width, 640);
   assert.equal(canvasElement.height, 360);
+  assert.equal(typeof app.dispose, "function");
 }
 
 function testBootstrapComposesMigrationStatusAndStagesNormalizedState() {
@@ -332,9 +340,21 @@ function testBootstrapComposesWorkerUnavailableFallbackStatus() {
   assert.equal(executionNotice.hidden, true);
 }
 
+function testBootstrapDisposeStopsResizeBindingAndLoop() {
+  const { listeners, cancelledFrames, documentRef } = createBootstrapHarness(undefined);
+
+  const app = bootstrapApp(documentRef);
+  app.dispose();
+  app.dispose();
+
+  assert.equal(listeners.some((entry) => entry.action === "remove" && entry.type === "resize"), true);
+  assert.deepEqual(cancelledFrames, [1]);
+}
+
 testBootstrapOverwritesCorruptedStorageWithFallbackState();
 testBootstrapComposesMigrationStatusAndStagesNormalizedState();
 testBootstrapComposesNoSavedStateStatusWithoutRestorePrefix();
 testBootstrapComposesWorkerUnavailableFallbackStatus();
+testBootstrapDisposeStopsResizeBindingAndLoop();
 
 console.log("bootstrap.test.mjs ok");

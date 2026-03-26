@@ -45,7 +45,7 @@ export function bootstrapApp(documentRef, options = {}) {
   controller.refreshValidation();
   uiShell.bindEvents();
 
-  store.subscribe((model) => {
+  const unsubscribe = store.subscribe((model) => {
     uiShell.render(model);
     renderer.render(model);
   });
@@ -67,4 +67,20 @@ export function bootstrapApp(documentRef, options = {}) {
   persistence.stage(initialModel.appState);
   uiShell.render(initialModel);
   renderer.render(initialModel);
+
+  let disposed = false;
+
+  return {
+    dispose() {
+      if (disposed) {
+        return;
+      }
+
+      disposed = true;
+      unsubscribe();
+      layoutService.stop();
+      simulationLoop.dispose();
+      renderer.dispose();
+    }
+  };
 }

@@ -9,6 +9,15 @@ import {
   createTrailPoints,
   resolveSceneCameraFrame
 } from "./three-scene-runtime.js";
+import {
+  applyBodyMaterialVisual,
+  applyBodyMeshTransform,
+  createBodyMesh,
+  createStandardBodyMaterial,
+  disposeBodyMesh,
+  disposeThreeResource,
+  syncBodyMeshes
+} from "./three-scene-meshes.js";
 import { measureViewportDisplaySize } from "./viewport-layout.js";
 
 export class ThreeSceneHost {
@@ -103,33 +112,16 @@ export class ThreeSceneHost {
   }
 
   syncMeshes(bodies) {
-    const activeIds = new Set(bodies.map((body) => body.id));
-
-    for (const [bodyId, mesh] of this.meshes.entries()) {
-      if (!activeIds.has(bodyId)) {
-        this.scene.remove(mesh);
-        mesh.geometry.dispose();
-        mesh.material.dispose();
-        this.meshes.delete(bodyId);
+    syncBodyMeshes({
+      scene: this.scene,
+      meshes: this.meshes,
+      bodies,
+      createMesh: (body) => this.createBodyMesh(body),
+      updateMesh: (mesh, body) => this.updateBodyMesh(mesh, body),
+      removeBody: (bodyId) => {
         this.removeTrail(bodyId);
       }
-    }
-
-    for (const body of bodies) {
-      if (!this.meshes.has(body.id)) {
-        const geometry = new this.three.SphereGeometry(0.16, 24, 24);
-        const material = this.createBodyMaterial(body);
-        const mesh = new this.three.Mesh(geometry, material);
-        this.meshes.set(body.id, mesh);
-        this.scene.add(mesh);
-      }
-
-      const mesh = this.meshes.get(body.id);
-      const scale = Math.max(0.65, Math.sqrt(body.mass) * 0.45);
-      mesh.position.set(body.position.x, body.position.y, body.position.z);
-      mesh.scale.setScalar(scale);
-      this.updateBodyMaterial(mesh.material, body);
-    }
+    });
   }
 
   removeTrail(bodyId) {
@@ -137,8 +129,8 @@ export class ThreeSceneHost {
 
     if (trailLine) {
       this.scene.remove(trailLine);
-      trailLine.geometry.dispose();
-      trailLine.material.dispose();
+      disposeThreeResource(trailLine.geometry);
+      disposeThreeResource(trailLine.material);
       this.trailLines.delete(bodyId);
     }
 
@@ -151,32 +143,25 @@ export class ThreeSceneHost {
     }
   }
 
-  createBodyMaterial(body) {
-    const texture = this.resolveTexture(body.name);
-    const visual = createBodyMaterialVisual(body.color, texture);
+  resolveBodyMaterialVisual(body) {
+    return createBodyMaterialVisual(body.color, this.resolveTexture(body.name));
+  }
 
-    return new this.three.MeshStandardMaterial({
-      map: visual.map,
-      color: visual.color,
-      emissive: visual.emissive,
-      emissiveIntensity: visual.emissiveIntensity,
-      metalness: 0.18,
-      roughness: 0.36
-    });
+  createBodyMaterial(body) {
+    return createStandardBodyMaterial(this.three, this.resolveBodyMaterialVisual(body));
+  }
+
+  createBodyMesh(body) {
+    return createBodyMesh(this.three, body, this.createBodyMaterial(body));
   }
 
   updateBodyMaterial(material, body) {
-    const texture = this.resolveTexture(body.name);
-    const visual = createBodyMaterialVisual(body.color, texture);
+    applyBodyMaterialVisual(material, this.resolveBodyMaterialVisual(body));
+  }
 
-    if (material.map !== texture) {
-      material.map = texture;
-      material.needsUpdate = true;
-    }
-
-    material.color.set(visual.color);
-    material.emissive.set(visual.emissive);
-    material.emissiveIntensity = visual.emissiveIntensity;
+  updateBodyMesh(mesh, body) {
+    applyBodyMeshTransform(mesh, body);
+    this.updateBodyMaterial(mesh.material, body);
   }
 
   resolveTexture(bodyName) {
@@ -222,6 +207,19 @@ export class ThreeSceneHost {
     if (this.onInvalidate) {
       this.onInvalidate();
     }
+  }
+
+  dispose() {
+    this.resetTrails();
+
+    for (const mesh of this.meshes.values()) {
+      this.scene.remove(mesh);
+      disposeBodyMesh(mesh);
+    }
+
+    this.meshes.clear();
+    this.textureCache.clear();
+    this.renderer?.dispose?.();
   }
 
   syncTrails(model) {

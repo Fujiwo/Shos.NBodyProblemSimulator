@@ -82,6 +82,7 @@ class RendererStub {
     this.size = null;
     this.pixelRatio = null;
     this.renderCalls = 0;
+    this.disposed = false;
   }
 
   setClearColor() {}
@@ -96,6 +97,10 @@ class RendererStub {
 
   render() {
     this.renderCalls += 1;
+  }
+
+  dispose() {
+    this.disposed = true;
   }
 }
 
@@ -410,6 +415,37 @@ function testMeshRemovalDisposesMeshAndTrailResources() {
   assert.equal(removedTrail.material.disposed, true);
 }
 
+function testDisposeReleasesMeshesTrailsAndRenderer() {
+  delete globalThis.THREE;
+  globalThis.window = { devicePixelRatio: 1 };
+
+  const host = new ThreeSceneHost(createCanvasStub(), { three: createThreeStub() });
+  const bodies = [
+    { id: "body-1", name: "earth", mass: 1, position: { x: 0, y: 0, z: 0 }, color: "#3366ff" }
+  ];
+
+  host.render(createModel({ bodies, simulationTime: 1, showTrails: true }));
+  host.render(createModel({
+    bodies: [{ ...bodies[0], position: { x: 1, y: 0, z: 0 } }],
+    simulationTime: 2,
+    showTrails: true
+  }));
+
+  const mesh = host.meshes.get("body-1");
+  const trail = host.trailLines.get("body-1");
+
+  host.dispose();
+
+  assert.equal(host.meshes.size, 0);
+  assert.equal(host.trailLines.size, 0);
+  assert.equal(host.trailHistory.size, 0);
+  assert.equal(mesh.geometry.disposed, true);
+  assert.equal(mesh.material.disposed, true);
+  assert.equal(trail.geometry.disposed, true);
+  assert.equal(trail.material.disposed, true);
+  assert.equal(host.renderer.disposed, true);
+}
+
 testTextureFallbackAndLoadedTexture();
 testInitializationStatusReportsFallbackReason();
 testInitializationStatusReportsRendererConstructionFailure();
@@ -418,5 +454,6 @@ testResizeUpdatesRendererAndCamera();
 testSystemCenterCameraTracksCenterOfMass();
 testSystemCenterFallsBackToPositionAverageWhenTotalMassIsZero();
 testMeshRemovalDisposesMeshAndTrailResources();
+testDisposeReleasesMeshesTrailsAndRenderer();
 
 console.log("three-scene-host.test.mjs ok");

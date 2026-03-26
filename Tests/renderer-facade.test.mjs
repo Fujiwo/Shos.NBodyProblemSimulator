@@ -120,6 +120,22 @@ function testRendererFacadeFallsBackTo2dWhenThreeRendererFails() {
   assert.equal(canvas.height, 360);
 }
 
+function testRendererFacadeDisposeResetsFallbackTrailHistory() {
+  delete globalThis.THREE;
+  globalThis.window = { devicePixelRatio: 1 };
+
+  const { canvas } = createCanvasAndContext();
+  const facade = new RendererFacade(canvas, { three: createFailingThreeStub() });
+
+  facade.render(createModel());
+  assert.equal(facade.trailHistory.size, 1);
+
+  facade.dispose();
+
+  assert.equal(facade.trailHistory.size, 0);
+}
+
 testRendererFacadeFallsBackTo2dWhenThreeRendererFails();
+testRendererFacadeDisposeResetsFallbackTrailHistory();
 
 console.log("renderer-facade.test.mjs ok");
