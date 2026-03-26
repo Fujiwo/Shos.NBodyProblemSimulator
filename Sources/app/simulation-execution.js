@@ -1,3 +1,5 @@
+// Encodes simulation jobs for main-thread or worker execution and rebuilds results from compact numeric buffers.
+
 import { simulateBatch } from "./physics-engine.js";
 
 export const BODY_STATE_STRIDE = 7;
@@ -26,6 +28,7 @@ export function encodeBodyStateBuffer(bodies) {
     const body = bodies[index];
     const offset = index * BODY_STATE_STRIDE;
 
+    // Keep the worker payload flat so transfers only carry the numeric state needed to advance the simulation.
     buffer[offset] = body.mass;
     buffer[offset + 1] = body.position.x;
     buffer[offset + 2] = body.position.y;
@@ -62,6 +65,7 @@ export function decodeBodyStateBuffer(bodyStateBuffer, templateBodies = null) {
     };
 
     if (templateBodies && templateBodies[index]) {
+      // Restore stable metadata such as ids and colors from the original bodies while replacing dynamic state.
       bodies.push({
         ...templateBodies[index],
         ...dynamicState
@@ -200,6 +204,7 @@ export class WorkerSimulationExecutor {
     return new Promise((resolve, reject) => {
       try {
         if (this.lastSimulationConfigKey !== simulationConfigKey) {
+          // Sync worker-side integration parameters only when they change to avoid resending them with every batch.
           this.worker.postMessage({
             type: "sync-simulation-config",
             payload: {

@@ -1,3 +1,5 @@
+// Wires the application runtime together and enforces a safe startup and shutdown order for shared services.
+
 import { AppStore } from "./app-store.js";
 import {
   createStartupCleanupRegistry,
@@ -154,6 +156,7 @@ export function buildDestroyableDisposePlan(destroyableCategories) {
       );
     }
 
+    // Resolve categories in dependency order so listeners stop before producers and renderers are disposed.
     for (const readyCategory of readyCategories) {
       disposePlan.push(readyCategory);
       resolvedCategories.add(readyCategory.category);
@@ -227,6 +230,7 @@ export function bootstrapApp(documentRef, options = {}) {
       simulationLoop,
       renderer
     });
+    // Validate the caller-provided destroyable graph before exposing the runtime.
     const destroyablePlan = buildDestroyableDisposePlan(destroyables);
 
     const statusParts = [];

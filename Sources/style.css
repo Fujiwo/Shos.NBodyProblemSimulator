@@ -1,4 +1,5 @@
 :root {
+  /* Shared theme and layout tokens are centralized here so compact and large layouts stay visually aligned. */
   --app-height: 100vh;
   --page-bg: linear-gradient(180deg, #f3efe7 0%, #d8e4eb 48%, #eef4f7 100%);
   --panel-bg: rgba(255, 252, 247, 0.82);
@@ -235,6 +236,7 @@ h2 {
 }
 
 .control-panel .field--compact {
+  /* Compact fields keep the visible label short while reserving most width for editable controls. */
   align-items: center;
   display: grid;
   gap: 4px 8px;

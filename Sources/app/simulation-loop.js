@@ -1,3 +1,5 @@
+// Owns the requestAnimationFrame loop, simulation step budgeting, and execution result application.
+
 import { computeTotalEnergy } from "./physics-engine.js";
 import { createSimulationJob, formatPipelineTime } from "./simulation-execution.js";
 import { applyExecutionResultToModel, formatFps, shouldApplyExecutionResult } from "./runtime-state.js";
@@ -121,6 +123,7 @@ export class SimulationLoop {
       return;
     }
 
+    // Cap catch-up work so a long frame does not explode into an unbounded number of simulation steps.
     const stepCount = Math.min(MAX_STEPS_PER_FRAME, Math.floor(this.accumulator / dt));
 
     if (stepCount <= 0) {
@@ -159,6 +162,7 @@ export class SimulationLoop {
   handleExecutionResult(result) {
     this.pendingRequest = null;
 
+    // Ignore stale worker results after a pause, reset, or newer request has advanced the active run session.
     if (!shouldApplyExecutionResult(result, {
       runId: this.runId,
       appliedSequence: this.appliedSequence

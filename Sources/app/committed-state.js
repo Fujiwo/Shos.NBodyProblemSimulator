@@ -1,3 +1,5 @@
+// Creates and restores committed initial-state snapshots used by reset and persistence flows.
+
 function cloneValue(value) {
   if (typeof structuredClone === "function") {
     return structuredClone(value);

@@ -1,3 +1,5 @@
+// Maintains fallback-only trail history in plain data structures that mirror the current app model.
+
 import { syncTrailHistoryEntries } from "./renderer-helpers.js";
 
 export function createFallbackTrailHistory() {

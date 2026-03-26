@@ -1,3 +1,5 @@
+// Resolves camera framing and trail reset rules from app state without depending on renderer-specific objects.
+
 function createVector(x = 0, y = 0, z = 0) {
   return { x, y, z };
 }
@@ -34,6 +36,7 @@ export function resolveSceneCameraTarget(appState) {
   });
 
   if (weightedCenter.totalMass > 0) {
+    // Prefer a mass-weighted center so the default camera follows the physical center of the current system.
     return createVector(
       weightedCenter.x / weightedCenter.totalMass,
       weightedCenter.y / weightedCenter.totalMass,
@@ -69,6 +72,7 @@ export function resolveSceneCameraFrame(appState, simulationTime) {
 
 export function buildSceneTrailPlan({ trailHistory, appState, simulationTime }) {
   if (!appState.uiState.showTrails || simulationTime === 0) {
+    // Reset trail state when trails are hidden or a fresh simulation run starts from time zero.
     return {
       nextTrailHistory: new Map(),
       shouldReset: true,

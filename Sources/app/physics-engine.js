@@ -1,3 +1,5 @@
+// Provides pure N-body integration and energy calculations for main-thread and worker execution.
+
 function createZeroVector() {
   return { x: 0, y: 0, z: 0 };
 }
@@ -31,6 +33,7 @@ export function computeAccelerations(bodies, simulationConfig) {
       const softenedDistanceSquared = squaredMagnitude(delta) + softeningSquared;
       const softenedDistance = Math.sqrt(softenedDistanceSquared);
       const inverseDistanceCubed = 1 / (softenedDistanceSquared * softenedDistance);
+      // Apply the shared distance term once, then scale separately by the opposite body's mass.
       const sourceScale = gravitationalConstant * targetBody.mass * inverseDistanceCubed;
       const targetScale = gravitationalConstant * sourceBody.mass * inverseDistanceCubed;
 
@@ -68,6 +71,7 @@ export function stepVelocityVerlet(bodies, simulationConfig) {
     const initialAcceleration = initialAccelerations[index];
     const nextAcceleration = nextAccelerations[index];
 
+    // Velocity Verlet uses the average of the previous and updated accelerations for the velocity step.
     body.velocity.x += 0.5 * (initialAcceleration.x + nextAcceleration.x) * dt;
     body.velocity.y += 0.5 * (initialAcceleration.y + nextAcceleration.y) * dt;
     body.velocity.z += 0.5 * (initialAcceleration.z + nextAcceleration.z) * dt;

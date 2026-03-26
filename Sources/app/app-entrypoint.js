@@ -1,3 +1,5 @@
+// Creates a reinitializable app entrypoint that records lifecycle metadata across restarts.
+
 import { replaceActiveApp } from "./app-lifecycle.js";
 
 function annotateReinitializeLifecycle(app, metadata) {

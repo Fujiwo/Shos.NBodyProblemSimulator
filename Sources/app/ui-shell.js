@@ -1,6 +1,9 @@
+// Builds the control panel DOM, keeps form fields in sync with runtime drafts, and renders compact status feedback.
+
 import { formatPlaybackState } from "./defaults.js";
 
 function escapeHtml(value) {
+  // Template strings render user-editable values directly into HTML, so field text is always escaped first.
   return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -214,6 +217,7 @@ export class UiShell {
       validationKey: null,
       bodyCardKey: null
     };
+    // Cache heavyweight template regions so metrics updates do not rebuild the full body-card tree every frame.
     this.elements = {
       playbackState: rootElement.querySelector('[data-role="playback-state"]'),
       statusMessage: rootElement.querySelector('[data-role="status-message"]'),

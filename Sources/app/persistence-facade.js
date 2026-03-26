@@ -1,3 +1,5 @@
+// Wraps localStorage persistence, legacy migration, and normalized hydration for saved app state.
+
 import { STORAGE_KEY, clone, createInitialAppState } from "./defaults.js";
 import { createHydratedAppState, serializePersistedAppState } from "./state-rules.js";
 
@@ -74,6 +76,7 @@ function migratePersistedState(rawState, fallbackVersion) {
   const previousVersion = typeof input.appVersion === "string" ? input.appVersion : null;
   let migrationApplied = previousVersion !== fallbackVersion;
 
+  // Migrate both live bodies and the committed snapshot so reset stays consistent after restore.
   const migratedBodies = migrateBodies(input.bodies);
   input.bodies = migratedBodies.bodies;
   migrationApplied ||= migratedBodies.changed;

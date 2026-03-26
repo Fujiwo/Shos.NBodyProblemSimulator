@@ -1,3 +1,5 @@
+// Draws the 2D canvas fallback scene when Three.js initialization is unavailable.
+
 export function createFallbackViewport(width, height) {
   return {
     width,

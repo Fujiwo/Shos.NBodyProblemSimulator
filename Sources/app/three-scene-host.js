@@ -1,3 +1,5 @@
+// Hosts the Three.js scene graph, textured body meshes, and trail geometry while preserving fallback-safe initialization.
+
 import {
   createBodyMaterialVisual,
   getTexturePath,
@@ -37,6 +39,7 @@ export class ThreeSceneHost {
     }
 
     try {
+      // Keep renderer setup isolated so WebGL failures can fall back without breaking the rest of the UI.
       this.scene = new this.three.Scene();
       this.scene.fog = new this.three.Fog(0x081622, 8, 26);
 
@@ -182,6 +185,7 @@ export class ThreeSceneHost {
     trailState.displayBuffer[offset + 1] = point.y;
     trailState.displayBuffer[offset + 2] = point.z;
 
+    // Mirror each point into the second half of the display buffer so wrapped draw ranges stay contiguous.
     const duplicateOffset = (trailState.nextIndex + trailState.maxPoints) * 3;
     trailState.displayBuffer[duplicateOffset] = point.x;
     trailState.displayBuffer[duplicateOffset + 1] = point.y;

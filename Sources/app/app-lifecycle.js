@@ -1,3 +1,5 @@
+// Stores the active app instance on a shared global holder and disposes the previous instance during replacement.
+
 const APP_HOLDER_KEY = "__N_BODY_APP__";
 
 export function getActiveApp(globalRef = globalThis) {

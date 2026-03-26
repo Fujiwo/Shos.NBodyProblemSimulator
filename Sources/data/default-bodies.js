@@ -1,3 +1,5 @@
+// Defines the bundled sample preset body data used for default app state and the fixed sample preset.
+
 export const DEFAULT_BODY_SEED_DATA = [
   {
     name: "sun",

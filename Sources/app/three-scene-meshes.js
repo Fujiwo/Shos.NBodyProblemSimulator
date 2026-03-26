@@ -1,3 +1,5 @@
+// Creates, updates, and disposes Three.js body meshes while keeping material and transform sync separate.
+
 export function disposeThreeResource(resource) {
   resource?.dispose?.();
 }

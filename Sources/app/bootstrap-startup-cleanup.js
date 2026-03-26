@@ -1,3 +1,5 @@
+// Tracks startup cleanup steps so partial boot failures can unwind services in reverse registration order.
+
 export function createStartupCleanupRegistry() {
   return [];
 }

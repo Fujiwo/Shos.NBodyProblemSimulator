@@ -1,3 +1,5 @@
+// Generates built-in body presets, including deterministic random-cluster data from a reproducible PRNG seed.
+
 import { createBody } from "./defaults.js";
 import { normalizeBodyCountForPreset, normalizePresetId } from "./state-rules.js";
 import { DEFAULT_BODY_SEED_DATA } from "../data/default-bodies.js";
@@ -17,6 +19,7 @@ function createPrng(seed) {
   let state = seed >>> 0;
 
   return () => {
+    // Keep the preset generator deterministic across runs by advancing a local 32-bit state only from the provided seed.
     state = (state + 0x6D2B79F5) >>> 0;
     let value = Math.imul(state ^ (state >>> 15), 1 | state);
     value ^= value + Math.imul(value ^ (value >>> 7), 61 | value);
@@ -114,6 +117,7 @@ function createRandomClusterPositions(bodyCount, random) {
     }
   }
 
+  // Fall back to the best spread candidate found within the attempt budget instead of failing generation.
   return recenterPoints(bestCandidate ?? Array.from({ length: bodyCount }, () => ({ x: 0, y: 0, z: 0 })));
 }
 
@@ -167,6 +171,7 @@ function createRandomClusterMass(index, random) {
     return Number((RANDOM_CLUSTER_PRIMARY_MIN_MASS + random() * RANDOM_CLUSTER_PRIMARY_MASS_RANGE).toFixed(2));
   }
 
+  // Keep the first body dominant and clamp the remaining bodies to a much lighter mass range.
   return Number((RANDOM_CLUSTER_SECONDARY_MIN_MASS + random() * RANDOM_CLUSTER_SECONDARY_MASS_RANGE).toFixed(2));
 }
 

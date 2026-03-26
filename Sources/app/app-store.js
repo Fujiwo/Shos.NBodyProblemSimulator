@@ -1,3 +1,5 @@
+// Provides a minimal mutable model store with safe clone reads and subscription-based updates.
+
 import { clone } from "./defaults.js";
 
 export class AppStore {

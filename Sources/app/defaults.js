@@ -1,3 +1,5 @@
+// Defines default app factories, seeded body templates, and shared formatting helpers for initial state creation.
+
 import { DEFAULT_BODY_SEED_DATA } from "../data/default-bodies.js";
 import { createCommittedInitialState } from "./committed-state.js";
 

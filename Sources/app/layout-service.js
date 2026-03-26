@@ -1,3 +1,5 @@
+// Connects resize events to layout orchestration so viewport CSS variables and renderer sizes stay in sync.
+
 import { LayoutOrchestrator } from "./layout-orchestrator.js";
 import { WindowResizeBinding } from "./window-resize-binding.js";
 

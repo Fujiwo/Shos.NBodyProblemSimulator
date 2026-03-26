@@ -1,3 +1,5 @@
+// Measures canvas display and buffer dimensions and writes the responsive app-height CSS variable.
+
 export function measureViewportDisplaySize(canvasElement) {
   const bounds = canvasElement.getBoundingClientRect();
 

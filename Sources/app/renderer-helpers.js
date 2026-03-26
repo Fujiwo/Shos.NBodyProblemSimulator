@@ -1,3 +1,5 @@
+// Shares renderer-side helpers for texture lookup and bounded trail-history updates.
+
 export const TEXTURE_ROOT = "./images";
 
 export function normalizeTextureKey(name) {

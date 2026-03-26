@@ -1,3 +1,5 @@
+// Selects Three.js rendering when available and falls back to the 2D canvas renderer when WebGL setup is unavailable.
+
 import { ThreeSceneHost } from "./three-scene-host.js";
 import { renderFallbackScene } from "./renderer-fallback.js";
 import { createFallbackTrailHistory, reduceFallbackTrailHistory } from "./renderer-fallback-state.js";
@@ -66,6 +68,7 @@ export class RendererFacade {
 
     this.syncTrailHistory(model);
 
+    // The fallback path keeps its own trail history because Three.js-only scene state is not available in 2D mode.
     renderFallbackScene({
       context: this.context,
       width: this.canvasElement.width,

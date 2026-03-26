@@ -1,3 +1,5 @@
+// Normalizes persisted and live app state, including preset rules, UI selections, and serialization boundaries.
+
 import {
   APP_VERSION,
   PLAYBACK_RESTORE_POLICY,
@@ -73,6 +75,7 @@ export function normalizeBodyCountForPreset(presetId, bodyCount) {
   const numeric = Number.parseInt(bodyCount, 10);
   const fallback = rule.min;
   const normalized = Number.isFinite(numeric) ? numeric : fallback;
+  // Fixed presets clamp body count to their exact supported size before bodies and UI state are rebuilt.
   return Math.min(rule.max, Math.max(rule.min, normalized));
 }
 
@@ -165,6 +168,7 @@ function normalizeCommittedSnapshot(rawSnapshot, fallbackAppState) {
     return createCommittedInitialState(fallbackAppState);
   }
 
+  // Normalize the committed snapshot with the same preset and UI rules as the live app state.
   const simulationConfig = normalizeSimulationConfig(rawSnapshot.simulationConfig ?? fallbackAppState.simulationConfig);
   const bodyCount = normalizeBodyCountForPreset(
     simulationConfig.presetId,

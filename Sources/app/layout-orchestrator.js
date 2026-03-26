@@ -1,3 +1,5 @@
+// Synchronizes viewport sizing, renderer resize, and rerender requests when the available layout changes.
+
 import { applyViewportHeight } from "./viewport-layout.js";
 
 export class LayoutOrchestrator {

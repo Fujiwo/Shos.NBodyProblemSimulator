@@ -8,6 +8,7 @@
 </head>
 <body>
   <div class="app-shell" data-role="app-root">
+    <!-- Header status and summary stay outside the main grid so lifecycle and playback state remain visible on narrow screens. -->
     <header class="app-header panel">
       <div>
         <p class="eyebrow">Phase 4 Simulation</p>
@@ -22,6 +23,7 @@
     </header>
 
     <main class="app-layout">
+      <!-- Controls keep generation, simulation settings, and playback actions grouped in one compact panel. -->
       <section class="panel control-panel" aria-labelledby="controls-heading">
         <div class="panel-heading">
           <p class="eyebrow">Setup</p>
@@ -96,6 +98,7 @@
         </div>
       </section>
 
+  <!-- Body settings remain separate from controls so multiple body cards can expand without collapsing the setup area. -->
       <section class="panel body-panel" aria-labelledby="body-settings-heading">
         <div class="panel-heading">
           <p class="eyebrow">Bodies</p>
@@ -104,6 +107,7 @@
         <div class="body-card-list" data-role="body-card-list"></div>
       </section>
 
+  <!-- The viewport panel hosts the renderer surface and overlays runtime metrics on the same visual stage. -->
       <section class="panel viewport-panel" aria-labelledby="viewport-heading">
         <div class="panel-heading viewport-heading">
           <div>

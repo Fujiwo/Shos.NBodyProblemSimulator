@@ -1,3 +1,5 @@
+// Runs simulation batches off the main thread and reuses synced integration settings between worker jobs.
+
 import { simulateBatch } from "../app/physics-engine.js";
 import { decodeBodyStateBuffer, encodeBodyStateBuffer } from "../app/simulation-execution.js";
 
@@ -13,6 +15,7 @@ self.addEventListener("message", (event) => {
   const message = event.data;
 
   if (message?.type === "sync-simulation-config") {
+    // Keep the latest simulation config in worker memory so batch messages only need dynamic body state.
     activeSimulationConfig = message.payload?.simulationConfig ?? null;
     return;
   }

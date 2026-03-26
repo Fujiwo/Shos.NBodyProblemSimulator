@@ -1,3 +1,5 @@
+// Wraps a resize listener with explicit start and stop control for layout services.
+
 export class WindowResizeBinding {
   constructor(resizeTarget, onResize) {
     this.resizeTarget = resizeTarget;

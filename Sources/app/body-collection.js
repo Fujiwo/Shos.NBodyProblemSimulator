@@ -1,3 +1,5 @@
+// Normalizes body arrays and related UI state when preset rules change the allowed body-count range.
+
 import { createBody } from "./defaults.js";
 import { normalizeBodyCountForPreset, normalizeExpandedPanels } from "./state-rules.js";
 

@@ -1,3 +1,5 @@
+// Formats runtime metrics and applies execution results to the mutable model state.
+
 import { formatPipelineTime } from "./simulation-execution.js";
 
 export function formatFps(value) {

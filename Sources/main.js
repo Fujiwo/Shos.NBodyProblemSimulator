@@ -1,3 +1,5 @@
+// Bootstraps the browser app with the vendored Three.js runtime and exposes controlled reinitialization hooks.
+
 import * as THREE from "./vendor/three.module.min.js";
 import { createReinitializeApp } from "./app/app-entrypoint.js";
 import { bootstrapApp } from "./app/bootstrap.js";

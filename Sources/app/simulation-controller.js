@@ -1,3 +1,5 @@
+// Validates editable state and translates UI actions into normalized app-state mutations.
+
 import {
   clone,
   createDefaultExpandedPanels
@@ -51,6 +53,7 @@ export class SimulationController {
   computeValidation(appState, fieldDrafts = {}) {
     const fieldErrors = {};
 
+    // Preset rules can constrain body count independently of the generic 2-10 UI limit.
     const bodyCountRule = getPresetRule(appState.simulationConfig.presetId);
 
     if (!Number.isInteger(appState.bodyCount) || appState.bodyCount < 2 || appState.bodyCount > 10) {
@@ -89,6 +92,7 @@ export class SimulationController {
       }
     }
 
+    // Simulation-level validation is kept separate from per-body field validation so the UI can surface both scopes.
     if (!isFiniteNumber(appState.simulationConfig.timeStep) || Number(appState.simulationConfig.timeStep) <= 0) {
       fieldErrors.timeStep = "Time Step must be greater than 0.";
     }
@@ -228,6 +232,7 @@ export class SimulationController {
         if (appState.simulationConfig.presetId !== "random-cluster") {
           appState.simulationConfig.seed = null;
         }
+        // Preset changes can replace both the allowed body-count range and the active body-card collection.
         const normalizedCollection = normalizePresetBodyCollection({
           presetId: appState.simulationConfig.presetId,
           bodyCount: appState.bodyCount,
