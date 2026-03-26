@@ -1,4 +1,5 @@
 import { DEFAULT_BODY_SEED_DATA } from "../data/default-bodies.js";
+import { createCommittedInitialState } from "./committed-state.js";
 
 export const APP_VERSION = "0.4.0-phase4";
 export const STORAGE_KEY = "nbody-simulator.state";
@@ -101,19 +102,6 @@ export function createUiState(bodies) {
     cameraTarget: "system-center",
     showTrails: true,
     expandedBodyPanels: createDefaultExpandedPanels(bodies)
-  };
-}
-
-export function createCommittedInitialState(appState) {
-  return {
-    bodyCount: appState.bodyCount,
-    bodies: clone(appState.bodies),
-    simulationConfig: clone(appState.simulationConfig),
-    uiState: {
-      selectedBodyId: appState.uiState.selectedBodyId,
-      cameraTarget: appState.uiState.cameraTarget,
-      showTrails: appState.uiState.showTrails
-    }
   };
 }
 

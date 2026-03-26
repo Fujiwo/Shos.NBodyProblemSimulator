@@ -3,11 +3,11 @@ import {
   PLAYBACK_RESTORE_POLICY,
   clone,
   createBodies,
-  createCommittedInitialState,
   createDefaultExpandedPanels,
   createInitialAppState,
   createSimulationConfig
 } from "./defaults.js";
+import { createCommittedInitialState } from "./committed-state.js";
 
 const PRESET_RULES = {
   "binary-orbit": { min: 2, max: 2 },

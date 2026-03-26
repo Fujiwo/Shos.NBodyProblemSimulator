@@ -1,9 +1,9 @@
 import {
   clone,
   createBody,
-  createCommittedInitialState,
   createDefaultExpandedPanels
 } from "./defaults.js";
+import { createCommittedInitialState, restoreCommittedInitialState } from "./committed-state.js";
 import { generatePresetBodies } from "./preset-generator.js";
 import { getPresetRule, normalizeBodyCountForPreset, normalizeExpandedPanels } from "./state-rules.js";
 
@@ -483,16 +483,21 @@ export class SimulationController {
       }
 
       didStart = true;
-      nextAppState.bodyCount = snapshot.bodyCount;
-      nextAppState.bodies = clone(snapshot.bodies);
-      nextAppState.simulationConfig = clone(snapshot.simulationConfig);
-      nextAppState.uiState.playbackState = "running";
-      nextAppState.uiState.selectedBodyId = snapshot.uiState.selectedBodyId;
-      nextAppState.uiState.cameraTarget = snapshot.uiState.cameraTarget;
-      nextAppState.uiState.showTrails = snapshot.uiState.showTrails;
-      nextAppState.uiState.expandedBodyPanels = nextAppState.uiState.expandedBodyPanels.length > 0
-        ? normalizeExpandedPanels(nextAppState.uiState.expandedBodyPanels, nextAppState.bodies)
-        : createDefaultExpandedPanels(nextAppState.bodies);
+      const expandedBodyPanels = nextAppState.uiState.expandedBodyPanels.length > 0
+        ? normalizeExpandedPanels(nextAppState.uiState.expandedBodyPanels, snapshot.bodies)
+        : createDefaultExpandedPanels(snapshot.bodies);
+      const restoredAppState = restoreCommittedInitialState(snapshot, {
+        playbackState: "running",
+        expandedBodyPanels
+      });
+
+      nextAppState.bodyCount = restoredAppState.bodyCount;
+      nextAppState.bodies = restoredAppState.bodies;
+      nextAppState.simulationConfig = restoredAppState.simulationConfig;
+      nextAppState.uiState = {
+        ...nextAppState.uiState,
+        ...restoredAppState.uiState
+      };
       nextRuntime.simulationTime = 0;
       nextRuntime.metrics.fps = "--";
       nextRuntime.metrics.energyError = "0.00e+0";
@@ -561,14 +566,18 @@ export class SimulationController {
         return;
       }
 
-      appState.bodyCount = snapshot.bodyCount;
-      appState.bodies = clone(snapshot.bodies);
-      appState.simulationConfig = clone(snapshot.simulationConfig);
-      appState.uiState.playbackState = "idle";
-      appState.uiState.selectedBodyId = snapshot.uiState.selectedBodyId;
-      appState.uiState.cameraTarget = snapshot.uiState.cameraTarget;
-      appState.uiState.showTrails = snapshot.uiState.showTrails;
-      appState.uiState.expandedBodyPanels = createDefaultExpandedPanels(appState.bodies);
+      const restoredAppState = restoreCommittedInitialState(snapshot, {
+        playbackState: "idle",
+        expandedBodyPanels: createDefaultExpandedPanels(snapshot.bodies)
+      });
+
+      appState.bodyCount = restoredAppState.bodyCount;
+      appState.bodies = restoredAppState.bodies;
+      appState.simulationConfig = restoredAppState.simulationConfig;
+      appState.uiState = {
+        ...appState.uiState,
+        ...restoredAppState.uiState
+      };
       runtime.simulationTime = 0;
       runtime.metrics.fps = "--";
       runtime.metrics.energyError = "--";

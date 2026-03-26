@@ -1,3 +1,4 @@
+import "./committed-state.test.mjs";
 import "./defaults.test.mjs";
 import "./physics-engine.test.mjs";
 import "./bootstrap.test.mjs";
