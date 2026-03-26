@@ -46,6 +46,20 @@ function renderCameraTargetOptions(appState) {
   return `${systemCenterOption}${bodyOptions}`;
 }
 
+function formatCompactNumber(value) {
+  const numeric = Number(value);
+
+  if (!Number.isFinite(numeric)) {
+    return "--";
+  }
+
+  return numeric.toFixed(2);
+}
+
+function formatVectorSummary(vector) {
+  return `${formatCompactNumber(vector.x)}, ${formatCompactNumber(vector.y)}, ${formatCompactNumber(vector.z)}`;
+}
+
 function vectorFieldGroupTemplate(body, runtime, vectorKey, label, disabledAttribute) {
   const axes = ["x", "y", "z"];
 
@@ -79,15 +93,22 @@ function bodyCardTemplate(body, isExpanded, disabled, runtime, isSelected) {
     <details class="body-card" data-body-card="${body.id}"${openAttribute}>
       <summary>
         <span class="body-card-badge" style="background:${escapeHtml(body.color)}"></span>
-        <span>
-          <strong>${escapeHtml(body.name)}</strong>
-          <span class="body-card-meta">${escapeHtml(body.id)} · Mass ${Number(body.mass).toFixed(2)}${isSelected ? " · Selected" : ""}</span>
+        <span class="body-card-summary">
+          <span class="body-card-title-row">
+            <strong>${escapeHtml(body.name)}</strong>
+            <span class="body-card-meta">${escapeHtml(body.id)}${isSelected ? " · Selected" : ""}</span>
+          </span>
+          <span class="body-card-chip-row">
+            <span class="body-card-chip">Mass ${formatCompactNumber(body.mass)}</span>
+            <span class="body-card-chip">Pos ${escapeHtml(formatVectorSummary(body.position))}</span>
+            <span class="body-card-chip">Vel ${escapeHtml(formatVectorSummary(body.velocity))}</span>
+          </span>
         </span>
         <span class="body-card-meta">${isExpanded ? "Open" : "Closed"}</span>
       </summary>
       <div class="body-card-body">
         <div class="body-grid">
-          <label class="field field--full${fieldErrors[getFieldKey(body.id, "name")] ? " field--error" : ""}">
+          <label class="field${fieldErrors[getFieldKey(body.id, "name")] ? " field--error" : ""}">
             <span>Name</span>
             <input data-body-id="${body.id}" data-field="name" type="text" value="${escapeHtml(resolveFieldValue(runtime, body.id, "name", body.name))}" maxlength="32"${disabledAttribute}>
             ${renderFieldError(fieldErrors, getFieldKey(body.id, "name"))}
