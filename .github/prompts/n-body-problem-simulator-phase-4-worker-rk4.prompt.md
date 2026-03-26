@@ -29,7 +29,7 @@ agent: agent
 - [.github/skills/n-body-threejs-rendering/SKILL.md](../skills/n-body-threejs-rendering/SKILL.md)
 - [.github/skills/n-body-testing-and-validation/SKILL.md](../skills/n-body-testing-and-validation/SKILL.md)
 
-# 現在の前提
+# 現行 baseline の前提
 このリポジトリには、すでに以下が実装済みです。
 
 - app bootstrap と store 初期化

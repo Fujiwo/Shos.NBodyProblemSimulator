@@ -7,7 +7,7 @@ agent: agent
 
 # 役割と目的
 あなたは、このリポジトリで 3D N-body problem simulator の Phase 1 を実装する担当エンジニアです。
-今回の目的は、将来の Phase 2 以降を安全に積み上げられるように、ブラウザアプリの基盤構造、初期化導線、レスポンシブレイアウト基盤、責務分離の骨格を `Sources/` 配下へ実装することです。
+今回の目的は、後続フェーズを安全に積み上げられるように、ブラウザアプリの基盤構造、初期化導線、レスポンシブレイアウト基盤、責務分離の骨格を `Sources/` 配下へ実装することです。
 
 関連する常設ルールは [.github/copilot-instructions.md](../copilot-instructions.md) を参照してください。
 関連ドキュメントは以下を参照してください。
@@ -29,12 +29,12 @@ agent: agent
 Phase 1 で目指す成果は以下です。
 
 - アプリ全体の初期化フローが存在すること
-- 将来の Physics、Renderer、UI、Persistence を分離して実装できるディレクトリ構造とモジュール境界があること
+- 後続フェーズの Physics、Renderer、UI、Persistence を分離して実装できるディレクトリ構造とモジュール境界があること
 - モバイルファーストのレイアウト骨格があること
 - 主要 UI 領域が英語文言で配置されていること
 - Three.js を後続フェーズで接続できる canvas / viewport の受け皿があること
 - 後続フェーズで `Sources/vendor/three.module.min.js` をローカル import できる初期化導線を邪魔しないこと
-- 将来の状態遷移実装を見据えたコントロール配置があること
+- 後続フェーズの状態遷移実装を見据えたコントロール配置があること
 
 # 今回は実装しないこと
 以下は Phase 1 のスコープ外とし、完成実装を行わないでください。
@@ -54,8 +54,8 @@ Phase 1 で目指す成果は以下です。
 - HTML5、CSS3、JavaScript ES6+ を使うこと
 - UI は Vanilla JavaScript で構築すること
 - React や外部状態管理ライブラリは導入しないこと
-- 将来 Three.js を採用する前提で構成すること
-- 将来 Web Worker へ物理演算を分離しやすい責務分割にすること
+- 後続フェーズで Three.js を採用する前提で構成すること
+- 後続フェーズで Web Worker へ物理演算を分離しやすい責務分割にすること
 
 # Phase 1 の実装要求
 ## 1. HTML 骨格
@@ -80,7 +80,7 @@ Phase 1 で目指す成果は以下です。
 
 ## 3. JavaScript 初期化基盤
 - `main.js` からアプリを起動すること
-- アプリ初期化、レイアウト管理、将来のシミュレーション制御を分離したモジュール構造にすること
+- アプリ初期化、レイアウト管理、後続フェーズのシミュレーション制御を分離したモジュール構造にすること
 - 状態の土台は [Specifications/n-body-problem-simulator-specification.md](../../Specifications/n-body-problem-simulator-specification.md) の `AppState`、`UiState`、`committedInitialState`、`playbackRestorePolicy` を前提に置くこと
 - 少なくとも以下の責務の受け皿を持つこと
   - app bootstrap
@@ -89,7 +89,7 @@ Phase 1 で目指す成果は以下です。
   - simulation controller stub
   - renderer stub
   - persistence stub
-- `persistence stub` は完全実装でなくてよいが、将来 `nbody-simulator.state` に保存する `appVersion`、`bodyCount`、`bodies`、`simulationConfig`、`uiState`、`committedInitialState`、`playbackRestorePolicy` を無理なく扱える入出力境界を持つこと
+- `persistence stub` は完全実装でなくてよいが、後続フェーズで `nbody-simulator.state` に保存する `appVersion`、`bodyCount`、`bodies`、`simulationConfig`、`uiState`、`committedInitialState`、`playbackRestorePolicy` を無理なく扱える入出力境界を持つこと
 - 後続フェーズで Start / Pause / Resume / Reset / Generate を接続しやすいイベント配線構造にすること
 
 ## 4. UI 骨格

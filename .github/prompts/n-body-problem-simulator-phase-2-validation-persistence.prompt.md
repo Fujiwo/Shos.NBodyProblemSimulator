@@ -124,7 +124,7 @@ agent: agent
 - アプリ設定変更時
 - Generate 実行時に相当する state 更新時
 
-Phase 2 時点では Generate 本実装が未完成でも、将来の Generate 更新内容を保存しやすい persistence 境界を持つこと。
+Phase 2 時点では Generate 本実装が未完成でも、後続フェーズの Generate 更新内容を保存しやすい persistence 境界を持つこと。
 
 ## 5. localStorage 復元仕様
 - アプリ起動時に `nbody-simulator.state` を読み込むこと
