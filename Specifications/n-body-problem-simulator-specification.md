@@ -133,7 +133,7 @@
 - `three-body-figure-eight`: `presetId`
 - `random-cluster`: `presetId`, `seed`, `bodyCount`
 
-### 5.3.2 初回実装で用意する Preset
+### 5.3.2 現行 baseline で用意する Preset
 
 | presetId | Body 数 | 説明 | Seed 利用 |
 | --- | --- | --- | --- |
@@ -550,7 +550,7 @@ Worker 導入有無の最終判断は以下で行う。
 
 - 一次判定は Desktop Chrome 最新安定版で行う。
 - 一次判定後、Android Chrome 最新安定版および iPadOS / iOS Safari 最新安定版でも同一条件を測定し、Worker 導入前後の FPS と操作遅延を比較する。
-- Desktop のみで Worker を有効化し、モバイルで無効化する構成は初回リリースでは採用しない。
+- Desktop のみで Worker を有効化し、モバイルで無効化する構成は Phase 4 以降の採用判断でも前提にしない。
 
 ## 12. エラー処理仕様
 

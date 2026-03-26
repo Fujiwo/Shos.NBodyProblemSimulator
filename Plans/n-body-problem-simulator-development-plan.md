@@ -75,7 +75,7 @@
   - preset から選択する方式
   - seed を使った擬似乱数方式
   - preset と seed の併用方式
-- 初回実装では preset と seed の併用を採用する
+- 現行 baseline では preset と seed の併用を採用する
   - preset は生成ルールのカテゴリ識別子
   - seed は同一 preset 内の具体的な初期値再現に使う
 - 再現キーは preset ごとに以下で定義する
@@ -92,7 +92,7 @@
 - `committedInitialState` を更新する
 - Generate 実行直後に localStorage を更新する
 
-初回実装で含める preset は以下で固定する。
+現行 baseline で含める preset は以下で固定する。
 
 - `binary-orbit`
   - 2 体
@@ -287,7 +287,7 @@ $$
 
 ### 4.2 採用方針
 
-- 初回実装は Velocity Verlet を採用する
+- 現行 baseline の採用積分法は Velocity Verlet とする
 - 採用理由
   - 本アプリは学習・可視化用途であり、長時間の軌道破綻抑制を重視するため
   - 最大 10 体では O($N^2$) の重力計算でも現実的な範囲であり、RK4 より安定性を優先する価値が高いため
@@ -295,10 +295,10 @@ $$
 
 ### 4.3 時間刻み方針
 
-- 初回実装は固定時間刻みを採用する
+- 現行 baseline では固定時間刻みを採用する
 - 既定値は `dt = 0.005` を候補とし、preset ごとに上書き可能とする
-- 将来拡張として可変時間刻みを比較対象に残すが、初回は未採用とする
-- 可変時間刻みを初回で見送る理由
+- Phase 4 以降の将来拡張として可変時間刻みを比較対象に残すが、現行 baseline では未採用とする
+- 可変時間刻みを現行 baseline で見送る理由
   - 実装複雑度が増す
   - シンプレクティック性が崩れやすい
   - UI 上の時間進行と検証の説明コストが増す
@@ -399,10 +399,10 @@ $$
 
 ### 6.2 スレッド分離方針
 
-- 初回設計時点で Web Worker 対応しやすい責務分割にする
+- 現行 baseline の設計時点で Web Worker 対応しやすい責務分割にする
 - 採用方針
   - 物理演算は Worker 移行可能な API で設計する
-  - 初回実装はメインスレッド版を先に作り、10 体構成で予算超過した場合に Worker 版を有効化する
+  - 現行 baseline はメインスレッド版を既定とし、Phase 4 以降で 10 体構成時の予算超過有無を基準に Worker 版の採用を判断する
 - 理由
   - 最大 10 体ならメインスレッドでも成立する可能性が高い
   - ただし将来の trail 更新や UI 同居負荷を考慮すると、演算 API を Worker 互換にしておく価値が高い
@@ -424,7 +424,7 @@ Worker 有効化判定は以下で行う。
 - Desktop Chrome 最新安定版で、Body 数 10、trail 有効、60 秒実行時に FPS または simulation pipeline time の目標を満たせない場合
 - Worker 導入後も同一条件で再計測し、round-trip を含む pipeline time が通常時 4ms、ピーク 8ms を超えないことを確認する
 - Worker 導入有無の最終判断では、Android Chrome 最新安定版および iPadOS / iOS Safari 最新安定版でも同一条件を測定する
-- Desktop のみで Worker を有効化し、モバイルで無効化する構成は初回リリースでは採用しない
+- Desktop のみで Worker を有効化し、モバイルで無効化する構成は Phase 4 以降の採用判断でも前提にしない
 
 ## 7. データ構造の方針
 
@@ -455,7 +455,7 @@ SimulationConfig {
 }
 ```
 
-初回実装の既定値は以下とする。
+現行 baseline の既定値は以下とする。
 
 - `gravitationalConstant = 1.0`
 - `timeStep = 0.005`
@@ -687,8 +687,8 @@ UiState {
 ## 14. 実装開始前の確認事項
 
 - 計画書保存先は `Plans/` で確定しているか
-- 初回実装で Worker を有効化するか、メインスレッド版を先行するか
-- 初回 preset を `binary-orbit`、`three-body-figure-eight`、`random-cluster` の 3 件で確定するか
+- Phase 4 以降で Worker を有効化するか、現行 baseline のメインスレッド版を維持するか
+- 現行 baseline の preset を `binary-orbit`、`three-body-figure-eight`、`random-cluster` の 3 件で確定するか
 - 既定 `dt = 0.005`、`softening = 0.01`、`G = 1.0` で開始するか
 - エネルギー誤差の許容範囲を preset 別に持つか
 - trail の既定表示本数をいくつにするか
