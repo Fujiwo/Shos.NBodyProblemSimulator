@@ -23,6 +23,10 @@ function toFiniteNumber(value, fallback) {
   return isFiniteNumber(value) ? Number(value) : fallback;
 }
 
+function isValidPersistedSeed(seed) {
+  return seed === null || (Number.isInteger(seed) && seed >= 0 && seed <= 4294967295);
+}
+
 export function getPresetRule(presetId) {
   return PRESET_RULES[presetId] ?? PRESET_RULES["random-cluster"];
 }
@@ -84,7 +88,7 @@ function normalizeSimulationConfig(rawConfig) {
     integrator: config.integrator === "velocity-verlet" || config.integrator === "rk4" ? config.integrator : fallback.integrator,
     maxTrailPoints: Number.isInteger(config.maxTrailPoints) && config.maxTrailPoints > 0 ? config.maxTrailPoints : fallback.maxTrailPoints,
     presetId,
-    seed: config.seed === null || (Number.isInteger(config.seed) && config.seed >= 0) ? config.seed : fallback.seed
+    seed: isValidPersistedSeed(config.seed) ? config.seed : fallback.seed
   };
 }
 

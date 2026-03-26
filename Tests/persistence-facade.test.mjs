@@ -190,11 +190,59 @@ function testHydrationNormalizesExpandedPanelsToValidUniqueBodyOrder() {
   assert.deepEqual(hydrated.uiState.expandedBodyPanels, ["body-1", "body-3"]);
 }
 
+function testHydrationRejectsOutOfRangeSeedValues() {
+  const fallbackSeed = createInitialAppState(3).simulationConfig.seed;
+  const hydrated = createHydratedAppState({
+    appVersion: "0.4.0-phase4",
+    bodyCount: 3,
+    bodies: createInitialAppState(3).bodies,
+    simulationConfig: {
+      presetId: "random-cluster",
+      timeStep: 0.005,
+      softening: 0.01,
+      gravitationalConstant: 1,
+      integrator: "velocity-verlet",
+      maxTrailPoints: 300,
+      seed: 4294967296
+    },
+    uiState: {
+      playbackState: "idle",
+      selectedBodyId: null,
+      cameraTarget: "system-center",
+      showTrails: true,
+      expandedBodyPanels: ["body-1"]
+    },
+    committedInitialState: {
+      bodyCount: 3,
+      bodies: createInitialAppState(3).bodies,
+      simulationConfig: {
+        presetId: "random-cluster",
+        timeStep: 0.005,
+        softening: 0.01,
+        gravitationalConstant: 1,
+        integrator: "velocity-verlet",
+        maxTrailPoints: 300,
+        seed: 9999999999
+      },
+      uiState: {
+        selectedBodyId: null,
+        cameraTarget: "system-center",
+        showTrails: true
+      }
+    },
+    playbackRestorePolicy: "restore-as-idle"
+  });
+
+  assert.equal(hydrated.simulationConfig.seed, fallbackSeed);
+  assert.equal(hydrated.committedInitialState.simulationConfig.seed, fallbackSeed);
+}
+
 testSerializeExcludesTransientPlaybackState();
 testLoadMigratesLegacyNamesAndVersion();
 testLoadFallsBackForInvalidJson();
 testHydrationNormalizesPresetConstraintsAndSelection();
 testHydrationRetainsRk4Integrator();
 testHydrationNormalizesExpandedPanelsToValidUniqueBodyOrder();
+testHydrationRejectsOutOfRangeSeedValues();
 
 console.log("persistence-facade.test.mjs ok");
