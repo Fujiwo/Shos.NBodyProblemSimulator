@@ -186,7 +186,7 @@ export class SimulationLoop {
       model.runtime.metrics.pipelineTime = formatPipelineTime(result.pipelineTimeMs);
 
       if (result.statusMessage) {
-        model.runtime.statusMessage = result.statusMessage;
+        model.runtime.executionNotice = result.statusMessage;
       }
     });
   }

@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-03-26T04:17:47.045Z",
+  "benchmarkDurationMs": 2000,
+  "scenarios": [
+    {
+      "executionMode": "main",
+      "playbackState": "Paused",
+      "fpsText": "4.7",
+      "fps": 4.7,
+      "simulationTimeText": "0.320",
+      "simulationTime": 0.32,
+      "energyErrorText": "2.41e-6",
+      "energyError": 0.00000241,
+      "pipelineTimeText": "0.10 ms",
+      "pipelineTime": 0.1,
+      "integrator": "velocity-verlet",
+      "statusMessage": "Simulation paused.",
+      "executionNotice": ""
+    },
+    {
+      "executionMode": "worker",
+      "playbackState": "Paused",
+      "fpsText": "7.7",
+      "fps": 7.7,
+      "simulationTimeText": "0.400",
+      "simulationTime": 0.4,
+      "energyErrorText": "9.73e-5",
+      "energyError": 0.0000973,
+      "pipelineTimeText": "21.50 ms",
+      "pipelineTime": 21.5,
+      "integrator": "velocity-verlet",
+      "statusMessage": "Simulation paused.",
+      "executionNotice": ""
+    }
+  ]
+}

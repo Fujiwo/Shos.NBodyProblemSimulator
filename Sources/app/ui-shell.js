@@ -154,6 +154,7 @@ export class UiShell {
     this.elements = {
       playbackState: rootElement.querySelector('[data-role="playback-state"]'),
       statusMessage: rootElement.querySelector('[data-role="status-message"]'),
+      executionNotice: rootElement.querySelector('[data-role="execution-notice"]'),
       bodyCount: rootElement.querySelector('[data-role="body-count"]'),
       presetId: rootElement.querySelector('[data-role="preset-id"]'),
       seed: rootElement.querySelector('[data-role="seed"]'),
@@ -272,6 +273,8 @@ export class UiShell {
 
     this.elements.playbackState.textContent = formatPlaybackState(appState.uiState.playbackState);
     this.elements.statusMessage.textContent = runtime.statusMessage;
+    this.elements.executionNotice.textContent = runtime.executionNotice;
+    this.elements.executionNotice.hidden = !runtime.executionNotice;
     this.elements.bodyCount.value = String(appState.bodyCount);
     this.elements.presetId.value = appState.simulationConfig.presetId || "random-cluster";
     this.elements.seed.value = runtime.fieldDrafts.seed ?? (appState.simulationConfig.seed ?? "");

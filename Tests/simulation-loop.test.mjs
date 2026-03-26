@@ -28,7 +28,10 @@ function createLoopHarness() {
         simulationTime: (job.initialStepCount + job.stepCount) * Number(job.simulationConfig.timeStep),
         runId: job.runId,
         sequence: job.sequence,
-        pipelineTimeMs: 1.5
+        pipelineTimeMs: 1.5,
+        statusMessage: job.sequence === 1
+          ? "Worker runtime error detected. Automatically switched to main-thread simulation."
+          : ""
       });
     },
     dispose() {}
@@ -64,6 +67,7 @@ async function testAccumulatorCapLimitsStepsPerFrame() {
   assert.equal(state.runtime.simulationTime, 0.02);
   assert.ok(Math.abs(loop.accumulator - 0.23) < 1e-12);
   assert.equal(state.runtime.metrics.pipelineTime, "1.50 ms");
+  assert.equal(state.runtime.executionNotice, "Worker runtime error detected. Automatically switched to main-thread simulation.");
 }
 
 function testPausedStateDoesNotAdvanceBodiesOrTime() {
@@ -188,6 +192,7 @@ async function testStaleAsyncResultsAreIgnoredAfterReset() {
   const state = store.getState();
   assert.equal(state.runtime.simulationTime, 0);
   assert.equal(state.runtime.metrics.pipelineTime, "--");
+  assert.equal(state.runtime.executionNotice, "");
 }
 
 await testAccumulatorCapLimitsStepsPerFrame();

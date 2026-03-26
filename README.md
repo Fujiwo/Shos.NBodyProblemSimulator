@@ -32,13 +32,14 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 - Run npm run test:ui:install once to install the Chromium browser used by Playwright.
 - Run npm run test:ui for real-browser UI acceptance coverage against a local static server.
 - Run npm run benchmark:phase4 to execute the 60-second comparison harness for `?execution=main` and `?execution=worker`.
+- Benchmark outputs are saved under Works/benchmarks/phase4/ as timestamped *.raw.json and *.ci.json files plus latest.raw.json and latest.ci.json.
 
 ### Phase 4 comparison workflow
 
 1. Run `npm run test` to validate the unit and integration suite before benchmarking.
 2. Run `npm run test:ui` to confirm the compact UI contract still holds in a real browser.
 3. Run `npm run benchmark:phase4` to launch the browser harness under the fixed benchmark condition.
-4. Compare the reported `fps`, `simulationTime`, `energyError`, `pipelineTime`, and `statusMessage` fields for `main` and `worker`.
+4. Use latest.raw.json for full per-scenario measurements and latest.ci.json for stable CI comparison keys.
 5. Repeat with `BENCHMARK_DURATION_MS` overridden only when a shorter smoke run is needed; keep the default 60000ms for acceptance measurement.
 
 ### execution=worker comparison steps
@@ -48,6 +49,7 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 3. Use `random-cluster`, `bodyCount = 10`, `Integrator = Verlet`, `Trail = on`, and no camera interaction for the acceptance condition.
 4. If the Worker backend fails at runtime, the app automatically switches to the main-thread backend and the status message reports the fallback.
 5. Treat the fallback message as a failed Worker benchmark run and investigate before using Worker as the preferred backend.
+6. In CI, consume latest.ci.json and evaluate summary.overallStatus, checks.workerFallbackDetected, and the metric comparison objects under comparison.
 
 ### Compact UI contract checks
 

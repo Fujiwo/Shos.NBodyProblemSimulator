@@ -110,6 +110,22 @@ h2 {
   color: var(--text-muted);
 }
 
+.status-notice {
+  margin-top: 2px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(179, 67, 49, 0.1);
+  border: 1px solid rgba(141, 61, 46, 0.22);
+  color: var(--danger);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.status-notice[hidden] {
+  display: none;
+}
+
 .header-status {
   display: grid;
   gap: 8px;

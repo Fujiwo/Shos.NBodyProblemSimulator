@@ -31,6 +31,7 @@ test("compact controls keep short visible text and full accessible names", async
   await expect(page.getByRole("button", { name: "Reset" })).toHaveText("Reset");
 
   await expect(page.locator('[data-role="validation-panel"]')).toBeHidden();
+  await expect(page.locator('[data-role="execution-notice"]')).toBeHidden();
   await expect(page.locator('[data-role="metric-integrator"]')).toHaveText("velocity-verlet");
 });
 

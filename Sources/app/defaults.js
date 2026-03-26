@@ -151,6 +151,7 @@ export function createInitialRuntimeState() {
       pipelineTime: "--"
     },
     statusMessage: "Phase 4 runtime ready. Generate a preset or start the current committed initial state.",
+    executionNotice: "",
     validationErrors: [],
     fieldErrors: {},
     fieldDrafts: {}

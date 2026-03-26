@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-03-26T04:20:27.698Z",
+  "benchmarkDurationMs": 60000,
+  "outputKind": "phase4-worker-vs-main-comparison",
+  "conditions": {
+    "browser": "chromium",
+    "presetId": "random-cluster",
+    "bodyCount": 10,
+    "integrator": "velocity-verlet",
+    "showTrails": true,
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    }
+  },
+  "baseline": {
+    "executionMode": "main",
+    "playbackState": "Paused",
+    "fpsText": "8.8",
+    "fps": 8.8,
+    "simulationTimeText": "8.740",
+    "simulationTime": 8.74,
+    "energyErrorText": "2.03e-2",
+    "energyError": 0.0203,
+    "pipelineTimeText": "0.10 ms",
+    "pipelineTime": 0.1,
+    "integrator": "velocity-verlet",
+    "statusMessage": "Simulation paused.",
+    "executionNotice": ""
+  },
+  "candidate": {
+    "executionMode": "worker",
+    "playbackState": "Paused",
+    "fpsText": "9.7",
+    "fps": 9.7,
+    "simulationTimeText": "11.360",
+    "simulationTime": 11.36,
+    "energyErrorText": "8.88e-3",
+    "energyError": 0.00888,
+    "pipelineTimeText": "26.10 ms",
+    "pipelineTime": 26.1,
+    "integrator": "velocity-verlet",
+    "statusMessage": "Simulation paused.",
+    "executionNotice": ""
+  },
+  "comparison": {
+    "fps": {
+      "metricName": "fps",
+      "preferredDirection": "higher",
+      "baseline": 8.8,
+      "candidate": 9.7,
+      "delta": 0.8999999999999986,
+      "ratio": 1.102272727272727,
+      "status": "improved"
+    },
+    "simulationTime": {
+      "metricName": "simulationTime",
+      "preferredDirection": "higher",
+      "baseline": 8.74,
+      "candidate": 11.36,
+      "delta": 2.619999999999999,
+      "ratio": 1.2997711670480547,
+      "status": "improved"
+    },
+    "energyError": {
+      "metricName": "energyError",
+      "preferredDirection": "lower",
+      "baseline": 0.0203,
+      "candidate": 0.00888,
+      "delta": -0.011419999999999998,
+      "ratio": 0.43743842364532026,
+      "status": "improved"
+    },
+    "pipelineTime": {
+      "metricName": "pipelineTime",
+      "preferredDirection": "lower",
+      "baseline": 0.1,
+      "candidate": 26.1,
+      "delta": 26,
+      "ratio": 261,
+      "status": "regressed"
+    }
+  },
+  "checks": {
+    "workerFallbackDetected": false,
+    "workerExecutionNotice": "",
+    "integratorMatched": true,
+    "playbackStateMatched": true
+  },
+  "summary": {
+    "overallStatus": "measured",
+    "notes": [
+      "Worker benchmark completed without fallback."
+    ]
+  }
+}

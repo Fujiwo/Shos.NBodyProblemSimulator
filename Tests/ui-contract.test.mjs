@@ -16,6 +16,7 @@ function testCompactControlsMarkup() {
 
   assert.match(indexHtml, /<p class="eyebrow">Setup<\/p>/);
   assert.match(indexHtml, /<h2 id="controls-heading">Controls<\/h2>/);
+  assert.match(indexHtml, /<p class="status-notice" data-role="execution-notice" hidden><\/p>/);
 
   assert.match(indexHtml, /<span title="Body Count">Count<\/span>/);
   assert.match(indexHtml, /<input data-role="body-count" type="number" min="2" max="10" step="1" inputmode="numeric" aria-label="Body Count">/);
@@ -60,6 +61,7 @@ function testCompactControlsCssContract() {
   assert.match(styleCss, /\.control-panel \.field input,\s*\n\.control-panel \.field select \{[\s\S]*?min-height: 36px;/);
   assert.match(styleCss, /\.control-panel button \{[\s\S]*?min-height: 36px;/);
   assert.match(styleCss, /\.validation-panel\[hidden\] \{[\s\S]*?display: none;/);
+  assert.match(styleCss, /\.status-notice\[hidden\] \{[\s\S]*?display: none;/);
   assert.match(styleCss, /grid-template-columns: minmax\(240px, 300px\) minmax\(0, 1fr\);/);
   assert.match(styleCss, /\.control-panel \.button-grid \{[\s\S]*?grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/);
 }

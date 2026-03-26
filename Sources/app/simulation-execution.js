@@ -140,6 +140,7 @@ export function createSimulationExecutor({ requestedMode = "auto", workerFactory
       this.executor = primaryExecutor;
       this.fallbackFactory = fallbackFactory;
       this.lastStatusMessage = primaryExecutor.getStatus().message;
+      this.fallbackNotice = "";
     }
 
     getStatus() {
@@ -152,10 +153,12 @@ export function createSimulationExecutor({ requestedMode = "auto", workerFactory
     async submit(job) {
       try {
         const result = await this.executor.submit(job);
-        return {
-          ...result,
-          statusMessage: this.lastStatusMessage
-        };
+        return this.fallbackNotice
+          ? {
+              ...result,
+              statusMessage: this.fallbackNotice
+            }
+          : result;
       } catch {
         if (this.executor.mode !== "worker") {
           throw new Error("Simulation execution failed.");
@@ -163,13 +166,14 @@ export function createSimulationExecutor({ requestedMode = "auto", workerFactory
 
         this.executor.dispose();
         this.executor = this.fallbackFactory();
-        this.lastStatusMessage = "Worker runtime error detected. Automatically switched to main-thread simulation.";
+        this.fallbackNotice = "Worker runtime error detected. Automatically switched to main-thread simulation.";
+        this.lastStatusMessage = this.fallbackNotice;
 
         const retryResult = await this.executor.submit(job);
 
         return {
           ...retryResult,
-          statusMessage: this.lastStatusMessage
+          statusMessage: this.fallbackNotice
         };
       }
     }
