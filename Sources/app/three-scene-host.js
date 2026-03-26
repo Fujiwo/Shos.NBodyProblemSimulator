@@ -9,6 +9,7 @@ import {
   resolveLoadedTexture,
   syncTrailHistoryEntries
 } from "./renderer-helpers.js";
+import { measureViewportDisplaySize } from "./viewport-layout.js";
 
 export class ThreeSceneHost {
   constructor(canvasElement, options = {}) {
@@ -93,9 +94,7 @@ export class ThreeSceneHost {
       return;
     }
 
-    const bounds = this.canvasElement.getBoundingClientRect();
-    const width = Math.max(1, Math.floor(bounds.width));
-    const height = Math.max(1, Math.floor(bounds.height));
+    const { width, height } = measureViewportDisplaySize(this.canvasElement);
 
     this.renderer.setPixelRatio(Math.max(1, window.devicePixelRatio || 1));
     this.renderer.setSize(width, height, false);

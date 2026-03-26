@@ -1,17 +1,10 @@
 import { computeTotalEnergy } from "./physics-engine.js";
 import { createSimulationJob, formatPipelineTime } from "./simulation-execution.js";
+import { applyExecutionResultToModel, formatFps, shouldApplyExecutionResult } from "./runtime-state.js";
 
 const MAX_STEPS_PER_FRAME = 4;
 const MAX_FRAME_DELTA_SECONDS = 0.25;
 const FPS_WINDOW_MS = 500;
-
-function formatFps(value) {
-  return Number.isFinite(value) ? value.toFixed(1) : "--";
-}
-
-function formatEnergyError(value) {
-  return Number.isFinite(value) ? value.toExponential(2) : "--";
-}
 
 export class SimulationLoop {
   constructor(store, executionBackend, options = {}) {
@@ -166,7 +159,10 @@ export class SimulationLoop {
   handleExecutionResult(result) {
     this.pendingRequest = null;
 
-    if (result.runId !== this.runId || result.sequence <= this.appliedSequence) {
+    if (!shouldApplyExecutionResult(result, {
+      runId: this.runId,
+      appliedSequence: this.appliedSequence
+    })) {
       return;
     }
 
@@ -178,14 +174,7 @@ export class SimulationLoop {
         return;
       }
 
-      model.appState.bodies = result.bodies;
-      model.runtime.simulationTime = result.simulationTime;
-      model.runtime.metrics.energyError = formatEnergyError(result.energyError);
-      model.runtime.metrics.pipelineTime = formatPipelineTime(result.pipelineTimeMs);
-
-      if (result.statusMessage) {
-        model.runtime.executionNotice = result.statusMessage;
-      }
+      applyExecutionResultToModel(model, result);
     });
   }
 

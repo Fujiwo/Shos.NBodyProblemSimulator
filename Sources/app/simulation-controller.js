@@ -5,6 +5,7 @@ import {
 import { normalizePresetBodyCollection } from "./body-collection.js";
 import { createCommittedInitialState, restoreCommittedInitialState } from "./committed-state.js";
 import { generatePresetBodies } from "./preset-generator.js";
+import { resetRuntimeForIdle, resetRuntimeForStart } from "./runtime-state.js";
 import { getPresetRule, normalizeBodyCountForPreset, normalizeExpandedPanels } from "./state-rules.js";
 
 function isFiniteNumber(value) {
@@ -461,10 +462,7 @@ export class SimulationController {
         ...nextAppState.uiState,
         ...restoredAppState.uiState
       };
-      nextRuntime.simulationTime = 0;
-      nextRuntime.metrics.fps = "--";
-      nextRuntime.metrics.energyError = "0.00e+0";
-      nextRuntime.metrics.pipelineTime = "--";
+      resetRuntimeForStart(nextRuntime);
     }, {
       shouldPersist: false,
       statusMessage: "Simulation running."
@@ -541,11 +539,7 @@ export class SimulationController {
         ...appState.uiState,
         ...restoredAppState.uiState
       };
-      runtime.simulationTime = 0;
-      runtime.metrics.fps = "--";
-      runtime.metrics.energyError = "--";
-      runtime.metrics.pipelineTime = "--";
-      runtime.fieldDrafts = {};
+      resetRuntimeForIdle(runtime, { clearFieldDrafts: true });
     }, {
       statusMessage: "Reset restored the committed initial state."
     });
@@ -576,11 +570,7 @@ export class SimulationController {
       appState.uiState.selectedBodyId = null;
       appState.uiState.cameraTarget = "system-center";
       appState.uiState.expandedBodyPanels = createDefaultExpandedPanels(appState.bodies);
-      runtime.simulationTime = 0;
-      runtime.metrics.fps = "--";
-      runtime.metrics.energyError = "--";
-      runtime.metrics.pipelineTime = "--";
-      runtime.fieldDrafts = {};
+      resetRuntimeForIdle(runtime, { clearFieldDrafts: true });
       runtime.statusMessage = generation.presetId === "random-cluster"
         ? `Random cluster generated with seed ${generation.seed}.`
         : `Preset initial conditions generated for ${generation.presetId}.`;

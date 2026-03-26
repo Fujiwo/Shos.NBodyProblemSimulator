@@ -1,3 +1,5 @@
+import { applyViewportHeight } from "./viewport-layout.js";
+
 export class LayoutService {
   constructor(documentRoot, renderer, onRender) {
     this.documentRoot = documentRoot;
@@ -12,7 +14,7 @@ export class LayoutService {
   }
 
   handleResize() {
-    this.documentRoot.style.setProperty("--app-height", `${window.innerHeight}px`);
+    applyViewportHeight(this.documentRoot, window.innerHeight);
     this.renderer.resize();
     this.onRender?.();
   }

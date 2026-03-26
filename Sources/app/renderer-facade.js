@@ -1,5 +1,6 @@
 import { ThreeSceneHost } from "./three-scene-host.js";
 import { syncTrailHistoryEntries } from "./renderer-helpers.js";
+import { measureCanvasBufferSize } from "./viewport-layout.js";
 
 export class RendererFacade {
   constructor(canvasElement, options = {}) {
@@ -28,9 +29,7 @@ export class RendererFacade {
   }
 
   resize() {
-    const bounds = this.canvasElement.getBoundingClientRect();
-    const width = Math.max(1, Math.floor(bounds.width * this.pixelRatio));
-    const height = Math.max(1, Math.floor(bounds.height * this.pixelRatio));
+    const { width, height } = measureCanvasBufferSize(this.canvasElement, this.pixelRatio);
 
     if (this.canvasElement.width !== width || this.canvasElement.height !== height) {
       this.canvasElement.width = width;
