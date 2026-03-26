@@ -1,5 +1,7 @@
 # Shos.NBodyProblemSimulator
 
+[Japanese README](README.ja.md)
+
 Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScript, and Three.js.
 
 ## Runtime
