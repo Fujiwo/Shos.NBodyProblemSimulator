@@ -4,6 +4,7 @@ import { APP_VERSION } from "../Sources/app/defaults.js";
 import { bootstrapApp } from "../Sources/app/bootstrap.js";
 
 const MAIN_THREAD_STATUS = "Main-thread simulation backend ready.";
+const WORKER_FALLBACK_STATUS = "Worker backend unavailable. Falling back to main-thread simulation.";
 const THREE_FALLBACK_STATUS = "Renderer initialized in 2D fallback mode. Texture-backed bodies are unavailable because Three.js failed to initialize (Three.js global is unavailable.).";
 
 function createElementStub() {
@@ -200,9 +201,20 @@ function createLegacyPersistedState() {
   });
 }
 
-function createBootstrapHarness(initialStorageValue) {
+function createBootstrapHarness(initialStorageValue, options = {}) {
   delete globalThis.THREE;
-  delete globalThis.Worker;
+
+  if (options.workerClass === undefined) {
+    delete globalThis.Worker;
+  } else {
+    globalThis.Worker = options.workerClass;
+  }
+
+  if (options.executionMode === undefined) {
+    delete globalThis.__N_BODY_EXECUTION_MODE__;
+  } else {
+    globalThis.__N_BODY_EXECUTION_MODE__ = options.executionMode;
+  }
 
   const storage = installStorage(initialStorageValue);
   const listeners = installWindowStubs();
@@ -277,7 +289,46 @@ function testBootstrapComposesMigrationStatusAndStagesNormalizedState() {
   );
 }
 
+function testBootstrapComposesNoSavedStateStatusWithoutRestorePrefix() {
+  const { storage, rootElement, documentRef } = createBootstrapHarness(undefined);
+
+  bootstrapApp(documentRef);
+
+  const persisted = JSON.parse(storage.get("nbody-simulator.state"));
+  const statusMessage = rootElement.elements.get('[data-role="status-message"]').textContent;
+
+  assert.equal(persisted.appVersion, APP_VERSION);
+  assert.equal(
+    statusMessage,
+    `${MAIN_THREAD_STATUS} ${THREE_FALLBACK_STATUS}`
+  );
+}
+
+function testBootstrapComposesWorkerUnavailableFallbackStatus() {
+  class ThrowingWorker {
+    constructor() {
+      throw new Error("worker unavailable");
+    }
+  }
+
+  const { rootElement, documentRef } = createBootstrapHarness(undefined, {
+    executionMode: "worker",
+    workerClass: ThrowingWorker
+  });
+
+  bootstrapApp(documentRef);
+
+  const statusMessage = rootElement.elements.get('[data-role="status-message"]').textContent;
+
+  assert.equal(
+    statusMessage,
+    `${WORKER_FALLBACK_STATUS} ${THREE_FALLBACK_STATUS}`
+  );
+}
+
 testBootstrapOverwritesCorruptedStorageWithFallbackState();
 testBootstrapComposesMigrationStatusAndStagesNormalizedState();
+testBootstrapComposesNoSavedStateStatusWithoutRestorePrefix();
+testBootstrapComposesWorkerUnavailableFallbackStatus();
 
 console.log("bootstrap.test.mjs ok");

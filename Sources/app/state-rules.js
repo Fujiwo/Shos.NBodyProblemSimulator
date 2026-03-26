@@ -46,11 +46,12 @@ export function normalizeBodyCountForPreset(presetId, bodyCount) {
 function normalizeBody(rawBody, index) {
   const fallbackBody = createBodies(index + 1)[index];
   const body = rawBody && typeof rawBody === "object" ? rawBody : {};
+  const mass = toFiniteNumber(body.mass, fallbackBody.mass);
 
   return {
     id: typeof body.id === "string" && body.id.length > 0 ? body.id : fallbackBody.id,
     name: typeof body.name === "string" && body.name.length > 0 ? body.name : fallbackBody.name,
-    mass: toFiniteNumber(body.mass, fallbackBody.mass),
+    mass: mass > 0 ? mass : fallbackBody.mass,
     position: {
       x: toFiniteNumber(body.position?.x, fallbackBody.position.x),
       y: toFiniteNumber(body.position?.y, fallbackBody.position.y),
