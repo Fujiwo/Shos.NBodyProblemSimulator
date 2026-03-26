@@ -4,6 +4,14 @@
 
 Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScript, and Three.js.
 
+## Published sample
+
+- [https://www2.shos.info/shosnbody/](https://www2.shos.info/shosnbody/)
+
+### Execution image
+
+![Execution image of the published sample](README-assets/shos-nbody.png)
+
 ## Runtime
 
 - The current baseline uses the main-thread simulation path with Velocity Verlet as the default integrator.
