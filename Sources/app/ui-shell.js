@@ -159,6 +159,7 @@ export class UiShell {
       seed: rootElement.querySelector('[data-role="seed"]'),
       timeStep: rootElement.querySelector('[data-role="time-step"]'),
       softening: rootElement.querySelector('[data-role="softening"]'),
+      integrator: rootElement.querySelector('[data-role="integrator"]'),
       cameraTarget: rootElement.querySelector('[data-role="camera-target"]'),
       showTrails: rootElement.querySelector('[data-role="show-trails"]'),
       bodyCardList: rootElement.querySelector('[data-role="body-card-list"]'),
@@ -167,6 +168,8 @@ export class UiShell {
       metricFps: rootElement.querySelector('[data-role="metric-fps"]'),
       metricSimulationTime: rootElement.querySelector('[data-role="metric-simulation-time"]'),
       metricEnergyError: rootElement.querySelector('[data-role="metric-energy-error"]'),
+      metricPipelineTime: rootElement.querySelector('[data-role="metric-pipeline-time"]'),
+      metricIntegrator: rootElement.querySelector('[data-role="metric-integrator"]'),
       metricActivePreset: rootElement.querySelector('[data-role="metric-active-preset"]'),
       metricCurrentSeed: rootElement.querySelector('[data-role="metric-current-seed"]'),
       metricBodyCount: rootElement.querySelector('[data-role="metric-body-count"]'),
@@ -175,13 +178,15 @@ export class UiShell {
         bodyCount: rootElement.querySelector('[data-field-wrapper="bodyCount"]'),
         seed: rootElement.querySelector('[data-field-wrapper="seed"]'),
         timeStep: rootElement.querySelector('[data-field-wrapper="timeStep"]'),
-        softening: rootElement.querySelector('[data-field-wrapper="softening"]')
+        softening: rootElement.querySelector('[data-field-wrapper="softening"]'),
+        integrator: rootElement.querySelector('[data-field-wrapper="integrator"]')
       },
       controlFieldErrors: {
         bodyCount: rootElement.querySelector('[data-field-error="bodyCount"]'),
         seed: rootElement.querySelector('[data-field-error="seed"]'),
         timeStep: rootElement.querySelector('[data-field-error="timeStep"]'),
-        softening: rootElement.querySelector('[data-field-error="softening"]')
+        softening: rootElement.querySelector('[data-field-error="softening"]'),
+        integrator: rootElement.querySelector('[data-field-error="integrator"]')
       }
     };
   }
@@ -222,6 +227,11 @@ export class UiShell {
 
       if (target.matches('[data-role="softening"]')) {
         this.controller.updateSimulationConfig("softening", target.value);
+        return;
+      }
+
+      if (target.matches('[data-role="integrator"]')) {
+        this.controller.updateSimulationConfig("integrator", target.value);
         return;
       }
 
@@ -267,6 +277,7 @@ export class UiShell {
     this.elements.seed.value = runtime.fieldDrafts.seed ?? (appState.simulationConfig.seed ?? "");
     this.elements.timeStep.value = runtime.fieldDrafts.timeStep ?? String(appState.simulationConfig.timeStep);
     this.elements.softening.value = runtime.fieldDrafts.softening ?? String(appState.simulationConfig.softening);
+    this.elements.integrator.value = appState.simulationConfig.integrator;
     this.elements.cameraTarget.innerHTML = renderCameraTargetOptions(appState);
     this.elements.showTrails.checked = appState.uiState.showTrails;
     this.elements.bodyCount.disabled = bodyInputsDisabled;
@@ -274,6 +285,7 @@ export class UiShell {
     this.elements.seed.disabled = bodyInputsDisabled;
     this.elements.timeStep.disabled = bodyInputsDisabled;
     this.elements.softening.disabled = bodyInputsDisabled;
+    this.elements.integrator.disabled = bodyInputsDisabled;
 
     this.rootElement.querySelector('[data-action="generate"]').disabled = false;
     this.rootElement.querySelector('[data-action="start"]').disabled = !canStart;
@@ -289,7 +301,7 @@ export class UiShell {
     this.elements.validationPanel.hidden = !hasValidationErrors;
     this.elements.validationPanel.dataset.state = hasValidationErrors ? "invalid" : "valid";
 
-    for (const key of ["bodyCount", "seed", "timeStep", "softening"]) {
+    for (const key of ["bodyCount", "seed", "timeStep", "softening", "integrator"]) {
       const errorMessage = runtime.fieldErrors[key] ?? "";
       this.elements.controlFieldWrappers[key]?.classList.toggle("field--error", Boolean(errorMessage));
       this.elements.controlFieldErrors[key].textContent = errorMessage;
@@ -308,6 +320,8 @@ export class UiShell {
     this.elements.metricFps.textContent = runtime.metrics.fps;
     this.elements.metricSimulationTime.textContent = runtime.simulationTime.toFixed(3);
     this.elements.metricEnergyError.textContent = runtime.metrics.energyError;
+    this.elements.metricPipelineTime.textContent = runtime.metrics.pipelineTime;
+    this.elements.metricIntegrator.textContent = appState.simulationConfig.integrator;
     this.elements.metricActivePreset.textContent = appState.simulationConfig.presetId || "none";
     this.elements.metricCurrentSeed.textContent = formatCurrentSeed(appState.simulationConfig.seed);
     this.elements.metricBodyCount.textContent = String(appState.bodyCount);

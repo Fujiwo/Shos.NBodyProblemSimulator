@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 
-import { computeAccelerations, computeTotalEnergy, stepVelocityVerlet } from "../Sources/app/physics-engine.js";
+import {
+  computeAccelerations,
+  computeTotalEnergy,
+  simulateBatch,
+  stepRungeKutta4,
+  stepVelocityVerlet
+} from "../Sources/app/physics-engine.js";
 
 function createTwoBodySystem() {
   return [
@@ -63,6 +69,22 @@ function testVelocityVerletAdvancesState() {
   );
 }
 
+function testRk4AdvancesState() {
+  const bodies = createTwoBodySystem();
+  const before = JSON.parse(JSON.stringify(bodies));
+
+  stepRungeKutta4(bodies, createSimulationConfig({ integrator: "rk4" }));
+
+  assert.notDeepEqual(
+    bodies.map((body) => body.position),
+    before.map((body) => body.position)
+  );
+  assert.notDeepEqual(
+    bodies.map((body) => body.velocity),
+    before.map((body) => body.velocity)
+  );
+}
+
 function testComputeTotalEnergyIsFinite() {
   const energy = computeTotalEnergy(createTwoBodySystem(), createSimulationConfig());
 
@@ -102,9 +124,37 @@ function testSofteningPreventsSingularity() {
   assert.ok(Number.isFinite(energy));
 }
 
+function testSimulateBatchReturnsFiniteEnergyErrorForBothIntegrators() {
+  const referenceBodies = createTwoBodySystem();
+  const referenceEnergy = computeTotalEnergy(referenceBodies, createSimulationConfig());
+
+  const verletResult = simulateBatch({
+    bodies: createTwoBodySystem(),
+    simulationConfig: createSimulationConfig({ integrator: "velocity-verlet" }),
+    stepCount: 10,
+    referenceEnergy,
+    initialStepCount: 0
+  });
+
+  const rk4Result = simulateBatch({
+    bodies: createTwoBodySystem(),
+    simulationConfig: createSimulationConfig({ integrator: "rk4" }),
+    stepCount: 10,
+    referenceEnergy,
+    initialStepCount: 0
+  });
+
+  assert.ok(Number.isFinite(verletResult.energyError));
+  assert.ok(Number.isFinite(rk4Result.energyError));
+  assert.equal(verletResult.totalStepCount, 10);
+  assert.equal(rk4Result.totalStepCount, 10);
+}
+
 testComputeAccelerationsIsSymmetric();
 testVelocityVerletAdvancesState();
+testRk4AdvancesState();
 testComputeTotalEnergyIsFinite();
 testSofteningPreventsSingularity();
+testSimulateBatchReturnsFiniteEnergyErrorForBothIntegrators();
 
 console.log("physics-engine.test.mjs ok");

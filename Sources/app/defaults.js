@@ -1,4 +1,4 @@
-export const APP_VERSION = "0.3.0-phase3";
+export const APP_VERSION = "0.4.0-phase4";
 export const STORAGE_KEY = "nbody-simulator.state";
 
 const BODY_COLORS = [
@@ -147,9 +147,10 @@ export function createInitialRuntimeState() {
     simulationTime: 0,
     metrics: {
       fps: "--",
-      energyError: "--"
+      energyError: "--",
+      pipelineTime: "--"
     },
-    statusMessage: "Phase 3 runtime ready. Generate a preset or start the current committed initial state.",
+    statusMessage: "Phase 4 runtime ready. Generate a preset or start the current committed initial state.",
     validationErrors: [],
     fieldErrors: {},
     fieldDrafts: {}

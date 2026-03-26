@@ -99,6 +99,10 @@ export class SimulationController {
       fieldErrors.softening = "Softening must be 0 or greater.";
     }
 
+    if (appState.simulationConfig.integrator !== "velocity-verlet" && appState.simulationConfig.integrator !== "rk4") {
+      fieldErrors.integrator = "Integrator must be Velocity Verlet or RK4.";
+    }
+
     if (appState.simulationConfig.presetId === "random-cluster") {
       const seed = appState.simulationConfig.seed;
 
@@ -467,6 +471,7 @@ export class SimulationController {
       nextRuntime.simulationTime = 0;
       nextRuntime.metrics.fps = "--";
       nextRuntime.metrics.energyError = "0.00e+0";
+      nextRuntime.metrics.pipelineTime = "--";
     }, {
       shouldPersist: false,
       statusMessage: "Simulation running."
@@ -542,6 +547,7 @@ export class SimulationController {
       runtime.simulationTime = 0;
       runtime.metrics.fps = "--";
       runtime.metrics.energyError = "--";
+      runtime.metrics.pipelineTime = "--";
       runtime.fieldDrafts = {};
     }, {
       statusMessage: "Reset restored the committed initial state."
@@ -569,6 +575,7 @@ export class SimulationController {
       runtime.simulationTime = 0;
       runtime.metrics.fps = "--";
       runtime.metrics.energyError = "--";
+      runtime.metrics.pipelineTime = "--";
       runtime.fieldDrafts = {};
       runtime.statusMessage = generation.presetId === "random-cluster"
         ? `Random cluster generated with seed ${generation.seed}.`

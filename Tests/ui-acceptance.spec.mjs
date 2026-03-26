@@ -20,6 +20,7 @@ test("compact controls keep short visible text and full accessible names", async
   await expect(page.getByLabel("Seed")).toBeVisible();
   await expect(page.getByLabel("Time Step")).toBeVisible();
   await expect(page.getByLabel("Softening")).toBeVisible();
+  await expect(page.getByLabel("Integrator")).toBeVisible();
   await expect(page.getByLabel("Camera Target")).toBeVisible();
   await expect(page.getByLabel("Trails")).toBeVisible();
 
@@ -30,6 +31,7 @@ test("compact controls keep short visible text and full accessible names", async
   await expect(page.getByRole("button", { name: "Reset" })).toHaveText("Reset");
 
   await expect(page.locator('[data-role="validation-panel"]')).toBeHidden();
+  await expect(page.locator('[data-role="metric-integrator"]')).toHaveText("velocity-verlet");
 });
 
 test("validation appears only while invalid and start stays blocked", async ({ page }) => {
@@ -69,6 +71,7 @@ test("body cards render single-expand and body inputs lock while running", async
 
   await expect(page.locator('[data-role="playback-state"]')).toHaveText("Running");
   await expect(page.getByLabel("Body Count")).toBeDisabled();
+  await expect(page.getByLabel("Integrator")).toBeDisabled();
   await expect(openBodyNameInput).toBeDisabled();
 
   await page.getByRole("button", { name: "Pause" }).click();

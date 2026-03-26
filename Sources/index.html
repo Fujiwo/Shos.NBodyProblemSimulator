@@ -10,9 +10,9 @@
   <div class="app-shell" data-role="app-root">
     <header class="app-header panel">
       <div>
-        <p class="eyebrow">Phase 3 Simulation</p>
+        <p class="eyebrow">Phase 4 Simulation</p>
         <h1>3D N-body problem simulator</h1>
-        <p class="header-copy">Interactive browser simulation with reproducible presets, persistence, runtime metrics, textures, and playback controls.</p>
+        <p class="header-copy">Interactive browser simulation with reproducible presets, persistence, runtime metrics, RK4 comparison, worker-ready execution, textures, and playback controls.</p>
       </div>
       <div class="header-status" aria-live="polite">
         <span class="status-pill" data-role="playback-state">Idle</span>
@@ -59,6 +59,15 @@
             <span title="Softening">Soft</span>
             <input data-role="softening" type="number" step="0.001" inputmode="decimal" aria-label="Softening">
             <span class="field-error" data-field-error="softening"></span>
+          </label>
+
+          <label class="field field--compact" data-field-wrapper="integrator">
+            <span title="Integrator">Int</span>
+            <select data-role="integrator" aria-label="Integrator">
+              <option value="velocity-verlet">Verlet</option>
+              <option value="rk4">RK4</option>
+            </select>
+            <span class="field-error" data-field-error="integrator"></span>
           </label>
 
           <label class="field field--compact">
@@ -119,6 +128,14 @@
               <div>
                 <dt>Energy Error</dt>
                 <dd data-role="metric-energy-error">--</dd>
+              </div>
+              <div>
+                <dt>Pipeline Time</dt>
+                <dd data-role="metric-pipeline-time">--</dd>
+              </div>
+              <div>
+                <dt>Integrator</dt>
+                <dd data-role="metric-integrator">velocity-verlet</dd>
               </div>
               <div>
                 <dt>Active Preset</dt>

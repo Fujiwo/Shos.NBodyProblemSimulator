@@ -25,6 +25,10 @@ function testCompactControlsMarkup() {
   assert.match(indexHtml, /<input data-role="time-step" type="number" step="0\.001" inputmode="decimal" aria-label="Time Step">/);
   assert.match(indexHtml, /<span title="Softening">Soft<\/span>/);
   assert.match(indexHtml, /<input data-role="softening" type="number" step="0\.001" inputmode="decimal" aria-label="Softening">/);
+  assert.match(indexHtml, /<span title="Integrator">Int<\/span>/);
+  assert.match(indexHtml, /<select data-role="integrator" aria-label="Integrator">/);
+  assert.match(indexHtml, /<option value="velocity-verlet">Verlet<\/option>/);
+  assert.match(indexHtml, /<option value="rk4">RK4<\/option>/);
   assert.match(indexHtml, /<span title="Camera Target">Target<\/span>/);
   assert.match(indexHtml, /<select data-role="camera-target" aria-label="Camera Target"><\/select>/);
   assert.match(indexHtml, /<span title="Trails">Trail<\/span>/);
@@ -39,6 +43,8 @@ function testCompactControlsMarkup() {
   assert.match(indexHtml, /<option value="binary-orbit">Binary<\/option>/);
   assert.match(indexHtml, /<option value="three-body-figure-eight">Figure-8<\/option>/);
   assert.match(indexHtml, /<option value="random-cluster">Random<\/option>/);
+  assert.match(indexHtml, /<dt>Pipeline Time<\/dt>/);
+  assert.match(indexHtml, /<dt>Integrator<\/dt>/);
 }
 
 function testValidationPanelDefaultsToHidden() {

@@ -89,7 +89,7 @@ function testLoadMigratesLegacyNamesAndVersion() {
   const facade = new PersistenceFacade();
   const result = facade.load();
 
-  assert.equal(result.appState.appVersion, "0.3.0-phase3");
+  assert.equal(result.appState.appVersion, "0.4.0-phase4");
   assert.equal(result.statusMessage, "Saved state restored after migration from 0.2.0-phase2.");
   assert.deepEqual(result.appState.bodies.map((body) => body.name), ["sun", "mercury"]);
   assert.deepEqual(result.appState.committedInitialState.bodies.map((body) => body.name), ["sun", "mercury"]);
@@ -108,7 +108,7 @@ function testLoadFallsBackForInvalidJson() {
 
 function testHydrationNormalizesPresetConstraintsAndSelection() {
   const hydrated = createHydratedAppState({
-    appVersion: "0.3.0-phase3",
+    appVersion: "0.4.0-phase4",
     bodyCount: 2,
     bodies: [
       { id: "body-1", name: "sun", mass: 1, position: { x: 0, y: 0, z: 0 }, velocity: { x: 0, y: 0, z: 0 }, color: "#ffffff" },
@@ -141,9 +141,38 @@ function testHydrationNormalizesPresetConstraintsAndSelection() {
   assert.equal(hydrated.uiState.cameraTarget, "system-center");
 }
 
+function testHydrationRetainsRk4Integrator() {
+  const hydrated = createHydratedAppState({
+    appVersion: "0.4.0-phase4",
+    bodyCount: 3,
+    bodies: createInitialAppState(3).bodies,
+    simulationConfig: {
+      presetId: "random-cluster",
+      timeStep: 0.005,
+      softening: 0.01,
+      gravitationalConstant: 1,
+      integrator: "rk4",
+      maxTrailPoints: 300,
+      seed: 1001
+    },
+    uiState: {
+      playbackState: "idle",
+      selectedBodyId: null,
+      cameraTarget: "system-center",
+      showTrails: true,
+      expandedBodyPanels: ["body-1"]
+    },
+    committedInitialState: null,
+    playbackRestorePolicy: "restore-as-idle"
+  });
+
+  assert.equal(hydrated.simulationConfig.integrator, "rk4");
+}
+
 testSerializeExcludesTransientPlaybackState();
 testLoadMigratesLegacyNamesAndVersion();
 testLoadFallsBackForInvalidJson();
 testHydrationNormalizesPresetConstraintsAndSelection();
+testHydrationRetainsRk4Integrator();
 
 console.log("persistence-facade.test.mjs ok");

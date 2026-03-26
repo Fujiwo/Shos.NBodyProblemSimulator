@@ -1,4 +1,5 @@
-import { computeTotalEnergy, stepVelocityVerlet } from "./physics-engine.js";
+import { computeTotalEnergy } from "./physics-engine.js";
+import { formatPipelineTime } from "./simulation-execution.js";
 
 const MAX_STEPS_PER_FRAME = 4;
 const MAX_FRAME_DELTA_SECONDS = 0.25;
@@ -13,8 +14,9 @@ function formatEnergyError(value) {
 }
 
 export class SimulationLoop {
-  constructor(store) {
+  constructor(store, executionBackend, options = {}) {
     this.store = store;
+    this.executionBackend = executionBackend;
     this.rafId = null;
     this.lastFrameTime = null;
     this.accumulator = 0;
@@ -22,7 +24,13 @@ export class SimulationLoop {
     this.stepCount = 0;
     this.fpsWindowStart = null;
     this.framesInWindow = 0;
+    this.runId = 0;
+    this.requestSequence = 0;
+    this.appliedSequence = 0;
+    this.pendingRequest = null;
+    this.now = options.now ?? ((value) => value);
     this.handleFrame = this.handleFrame.bind(this);
+    this.handleExecutionResult = this.handleExecutionResult.bind(this);
   }
 
   start() {
@@ -38,36 +46,52 @@ export class SimulationLoop {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
     }
+
+    this.executionBackend?.dispose?.();
   }
 
   prepareForStart() {
+    this.runId += 1;
     this.accumulator = 0;
     this.lastFrameTime = null;
     this.stepCount = 0;
     this.framesInWindow = 0;
     this.fpsWindowStart = null;
+    this.requestSequence = 0;
+    this.appliedSequence = 0;
+    this.pendingRequest = null;
 
     const state = this.store.getState();
     this.referenceEnergy = computeTotalEnergy(state.appState.bodies, state.appState.simulationConfig);
   }
 
   prepareForResume() {
+    this.runId += 1;
     this.accumulator = 0;
     this.lastFrameTime = null;
+    this.requestSequence = 0;
+    this.appliedSequence = 0;
+    this.pendingRequest = null;
   }
 
   prepareForPause() {
+    this.runId += 1;
     this.accumulator = 0;
     this.lastFrameTime = null;
+    this.pendingRequest = null;
   }
 
   reset() {
+    this.runId += 1;
     this.accumulator = 0;
     this.lastFrameTime = null;
     this.referenceEnergy = null;
     this.stepCount = 0;
     this.framesInWindow = 0;
     this.fpsWindowStart = null;
+    this.requestSequence = 0;
+    this.appliedSequence = 0;
+    this.pendingRequest = null;
   }
 
   handleFrame(now) {
@@ -111,28 +135,58 @@ export class SimulationLoop {
       return;
     }
 
+    if (this.pendingRequest !== null) {
+      return;
+    }
+
+    if (!Number.isFinite(this.referenceEnergy)) {
+      this.referenceEnergy = computeTotalEnergy(state.appState.bodies, state.appState.simulationConfig);
+    }
+
     this.accumulator -= stepCount * dt;
+
+    const sequence = this.requestSequence + 1;
+    this.requestSequence = sequence;
+
+    this.pendingRequest = this.executionBackend.submit({
+      bodies: state.appState.bodies,
+      simulationConfig: state.appState.simulationConfig,
+      stepCount,
+      referenceEnergy: this.referenceEnergy,
+      initialStepCount: this.stepCount,
+      runId: this.runId,
+      sequence
+    });
+
+    this.pendingRequest
+      .then(this.handleExecutionResult)
+      .catch(() => {
+        this.pendingRequest = null;
+        this.store.update((model) => {
+          model.runtime.statusMessage = "Worker backend unavailable. Falling back to main-thread simulation.";
+        });
+      });
+  }
+
+  handleExecutionResult(result) {
+    this.pendingRequest = null;
+
+    if (result.runId !== this.runId || result.sequence <= this.appliedSequence) {
+      return;
+    }
+
+    this.appliedSequence = result.sequence;
+    this.stepCount = result.totalStepCount;
 
     this.store.update((model) => {
       if (model.appState.uiState.playbackState !== "running") {
         return;
       }
 
-      if (!Number.isFinite(this.referenceEnergy)) {
-        this.referenceEnergy = computeTotalEnergy(model.appState.bodies, model.appState.simulationConfig);
-      }
-
-      for (let index = 0; index < stepCount; index += 1) {
-        stepVelocityVerlet(model.appState.bodies, model.appState.simulationConfig);
-      }
-
-      this.stepCount += stepCount;
-      model.runtime.simulationTime = this.stepCount * dt;
-
-      const totalEnergy = computeTotalEnergy(model.appState.bodies, model.appState.simulationConfig);
-      const denominator = Math.max(Math.abs(this.referenceEnergy), 1e-12);
-      const energyError = Math.abs(totalEnergy - this.referenceEnergy) / denominator;
-      model.runtime.metrics.energyError = formatEnergyError(energyError);
+      model.appState.bodies = result.bodies;
+      model.runtime.simulationTime = result.simulationTime;
+      model.runtime.metrics.energyError = formatEnergyError(result.energyError);
+      model.runtime.metrics.pipelineTime = formatPipelineTime(result.pipelineTimeMs);
     });
   }
 

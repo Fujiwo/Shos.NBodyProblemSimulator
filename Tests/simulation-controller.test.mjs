@@ -68,6 +68,7 @@ function testGenerateResetsRuntimeAndCommitsState() {
 
   controller.refreshValidation();
   controller.updateSimulationConfig("presetId", "binary-orbit");
+  controller.updateSimulationConfig("integrator", "rk4");
   controller.generate();
 
   const state = store.getState();
@@ -75,6 +76,7 @@ function testGenerateResetsRuntimeAndCommitsState() {
   assert.equal(state.appState.uiState.playbackState, "idle");
   assert.equal(state.runtime.simulationTime, 0);
   assert.equal(state.appState.bodyCount, 2);
+  assert.equal(state.appState.simulationConfig.integrator, "rk4");
   assert.deepEqual(
     state.appState.committedInitialState.bodies.map((body) => body.name),
     state.appState.bodies.map((body) => body.name)

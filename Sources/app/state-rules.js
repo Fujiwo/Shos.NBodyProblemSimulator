@@ -80,7 +80,7 @@ function normalizeSimulationConfig(rawConfig) {
     gravitationalConstant: toFiniteNumber(config.gravitationalConstant, fallback.gravitationalConstant),
     timeStep: toFiniteNumber(config.timeStep, fallback.timeStep),
     softening: toFiniteNumber(config.softening, fallback.softening),
-    integrator: config.integrator === "velocity-verlet" ? config.integrator : fallback.integrator,
+    integrator: config.integrator === "velocity-verlet" || config.integrator === "rk4" ? config.integrator : fallback.integrator,
     maxTrailPoints: Number.isInteger(config.maxTrailPoints) && config.maxTrailPoints > 0 ? config.maxTrailPoints : fallback.maxTrailPoints,
     presetId,
     seed: config.seed === null || (Number.isInteger(config.seed) && config.seed >= 0) ? config.seed : fallback.seed

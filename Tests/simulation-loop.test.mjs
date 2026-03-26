@@ -15,8 +15,31 @@ function createLoopHarness() {
   installAnimationFrameStub();
   const model = createInitialModel();
   const store = new AppStore(model);
-  const loop = new SimulationLoop(store);
+  const executionBackend = {
+    submit(job) {
+      return Promise.resolve({
+        bodies: job.bodies.map((body) => ({
+          ...body,
+          position: { ...body.position, x: body.position.x + 0.1 },
+          velocity: { ...body.velocity, y: body.velocity.y + 0.1 }
+        })),
+        energyError: 1e-4,
+        totalStepCount: job.initialStepCount + job.stepCount,
+        simulationTime: (job.initialStepCount + job.stepCount) * Number(job.simulationConfig.timeStep),
+        runId: job.runId,
+        sequence: job.sequence,
+        pipelineTimeMs: 1.5
+      });
+    },
+    dispose() {}
+  };
+  const loop = new SimulationLoop(store, executionBackend);
   return { store, loop };
+}
+
+async function flushPromises() {
+  await Promise.resolve();
+  await Promise.resolve();
 }
 
 function setPlaybackState(store, playbackState) {
@@ -25,7 +48,7 @@ function setPlaybackState(store, playbackState) {
   });
 }
 
-function testAccumulatorCapLimitsStepsPerFrame() {
+async function testAccumulatorCapLimitsStepsPerFrame() {
   const { store, loop } = createLoopHarness();
 
   loop.prepareForStart();
@@ -33,12 +56,14 @@ function testAccumulatorCapLimitsStepsPerFrame() {
   loop.lastFrameTime = 0;
 
   loop.handleFrame(1000);
+  await flushPromises();
 
   const state = store.getState();
 
   assert.equal(loop.stepCount, 4);
   assert.equal(state.runtime.simulationTime, 0.02);
   assert.ok(Math.abs(loop.accumulator - 0.23) < 1e-12);
+  assert.equal(state.runtime.metrics.pipelineTime, "1.50 ms");
 }
 
 function testPausedStateDoesNotAdvanceBodiesOrTime() {
@@ -93,9 +118,11 @@ function testEnergyReferenceResetsAndReinitializes() {
   loop.lastFrameTime = 0;
   loop.handleFrame(1000);
 
-  const state = store.getState();
-  assert.ok(Number.isFinite(loop.referenceEnergy));
-  assert.notEqual(state.runtime.metrics.energyError, "--");
+  return flushPromises().then(() => {
+    const state = store.getState();
+    assert.ok(Number.isFinite(loop.referenceEnergy));
+    assert.notEqual(state.runtime.metrics.energyError, "--");
+  });
 }
 
 function testIdleStateDoesNotUpdateFpsMetric() {
@@ -129,11 +156,46 @@ function testInvalidTimeStepIsNoOp() {
   assert.deepEqual(after.appState.bodies, before.appState.bodies);
 }
 
-testAccumulatorCapLimitsStepsPerFrame();
+async function testStaleAsyncResultsAreIgnoredAfterReset() {
+  installAnimationFrameStub();
+  const store = new AppStore(createInitialModel());
+  let resolver = null;
+  const loop = new SimulationLoop(store, {
+    submit(job) {
+      return new Promise((resolve) => {
+        resolver = () => resolve({
+          bodies: job.bodies,
+          energyError: 1e-4,
+          totalStepCount: job.initialStepCount + job.stepCount,
+          simulationTime: (job.initialStepCount + job.stepCount) * Number(job.simulationConfig.timeStep),
+          runId: job.runId,
+          sequence: job.sequence,
+          pipelineTimeMs: 2
+        });
+      });
+    },
+    dispose() {}
+  });
+
+  loop.prepareForStart();
+  setPlaybackState(store, "running");
+  loop.lastFrameTime = 0;
+  loop.handleFrame(1000);
+  loop.reset();
+  resolver();
+  await flushPromises();
+
+  const state = store.getState();
+  assert.equal(state.runtime.simulationTime, 0);
+  assert.equal(state.runtime.metrics.pipelineTime, "--");
+}
+
+await testAccumulatorCapLimitsStepsPerFrame();
 testPausedStateDoesNotAdvanceBodiesOrTime();
 testFpsWindowUpdatesAfterThreshold();
-testEnergyReferenceResetsAndReinitializes();
+await testEnergyReferenceResetsAndReinitializes();
 testIdleStateDoesNotUpdateFpsMetric();
 testInvalidTimeStepIsNoOp();
+await testStaleAsyncResultsAreIgnoredAfterReset();
 
 console.log("simulation-loop.test.mjs ok");
