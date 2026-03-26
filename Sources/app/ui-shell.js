@@ -36,6 +36,10 @@ function formatReproducibilityKey(appState) {
   return presetId;
 }
 
+function formatLifecycleMetric(runtime) {
+  return runtime.lifecycleNotice || "--";
+}
+
 function renderCameraTargetOptions(appState) {
   const selectedValue = appState.uiState.cameraTarget;
   const systemCenterOption = `<option value="system-center"${selectedValue === "system-center" ? " selected" : ""}>System Center</option>`;
@@ -179,6 +183,7 @@ export class UiShell {
       metricCurrentSeed: rootElement.querySelector('[data-role="metric-current-seed"]'),
       metricBodyCount: rootElement.querySelector('[data-role="metric-body-count"]'),
       metricReproducibilityKey: rootElement.querySelector('[data-role="metric-reproducibility-key"]'),
+      metricLifecycle: rootElement.querySelector('[data-role="metric-lifecycle"]'),
       controlFieldWrappers: {
         bodyCount: rootElement.querySelector('[data-field-wrapper="bodyCount"]'),
         seed: rootElement.querySelector('[data-field-wrapper="seed"]'),
@@ -351,5 +356,6 @@ export class UiShell {
     this.elements.metricCurrentSeed.textContent = formatCurrentSeed(appState.simulationConfig.seed);
     this.elements.metricBodyCount.textContent = String(appState.bodyCount);
     this.elements.metricReproducibilityKey.textContent = formatReproducibilityKey(appState);
+    this.elements.metricLifecycle.textContent = formatLifecycleMetric(runtime);
   }
 }

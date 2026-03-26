@@ -36,6 +36,7 @@ test("compact controls keep short visible text and full accessible names", async
   await expect(page.locator('[data-role="validation-panel"]')).toBeHidden();
   await expect(page.locator('[data-role="execution-notice"]')).toBeHidden();
   await expect(page.locator('[data-role="metric-integrator"]')).toHaveText("velocity-verlet");
+  await expect(page.locator('[data-role="metric-lifecycle"]')).toContainText("Restart initial-load #1 @");
 });
 
 test("header stays compact while visualization keeps a tall viewport", async ({ page }) => {
@@ -187,7 +188,10 @@ test("seed input shows auto generation hint and generate applies an auto seed in
 
   const seedInput = page.getByLabel("Seed");
 
-  await seedInput.fill("");
+  await seedInput.evaluate((input) => {
+    input.value = "";
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
   await expect(seedInput).toHaveValue("");
   await expect(seedInput).toHaveAttribute("placeholder", "auto on Gen");
   await expect(page.locator('[data-role="validation-panel"]')).toBeHidden();

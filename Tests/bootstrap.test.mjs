@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 
 import { APP_VERSION } from "../Sources/app/defaults.js";
-import { bootstrapApp, buildDestroyableDisposePlan, hasValidDestroyableOrder } from "../Sources/app/bootstrap.js";
+import {
+  bootstrapApp,
+  buildDestroyableDisposePlan,
+  DESTROYABLE_PLAN_ERROR,
+  hasValidDestroyableOrder
+} from "../Sources/app/bootstrap.js";
 
 const MAIN_THREAD_STATUS = "Main-thread simulation backend ready.";
 const WORKER_FALLBACK_STATUS = "Worker backend unavailable. Falling back to main-thread simulation.";
@@ -76,7 +81,8 @@ function createRootStub() {
     "metric-active-preset",
     "metric-current-seed",
     "metric-body-count",
-    "metric-reproducibility-key"
+    "metric-reproducibility-key",
+    "metric-lifecycle"
   ];
 
   for (const role of dataRoles) {
@@ -316,6 +322,23 @@ function testBootstrapOverwritesCorruptedStorageWithFallbackState() {
   assert.equal(hasValidDestroyableOrder(app.destroyables), true);
 }
 
+function testBootstrapRendersLifecycleNoticeAndMetric() {
+  const { rootElement, documentRef } = createBootstrapHarness(undefined);
+
+  bootstrapApp(documentRef, {
+    lifecycleMetadata: {
+      reinitializeReason: "initial-load",
+      reinitializeSequence: 1,
+      reinitializedAt: "2026-03-27T00:00:00.000Z"
+    }
+  });
+
+  assert.equal(
+    rootElement.elements.get('[data-role="metric-lifecycle"]').textContent,
+    "Restart initial-load #1 @ 2026-03-27T00:00:00.000Z"
+  );
+}
+
 function testBootstrapComposesMigrationStatusAndStagesNormalizedState() {
   const { storage, rootElement, documentRef } = createBootstrapHarness(createLegacyPersistedState());
 
@@ -463,7 +486,9 @@ function testBuildDestroyableDisposePlanSortsByDependencies() {
 }
 
 function testBuildDestroyableDisposePlanRejectsCycles() {
-  assert.throws(() => {
+  let error;
+
+  try {
     buildDestroyableDisposePlan([
       {
         category: "bindings",
@@ -476,10 +501,59 @@ function testBuildDestroyableDisposePlanRejectsCycles() {
         destroyables: []
       }
     ]);
-  }, /unresolved or cyclic dependencies/);
+  } catch (caughtError) {
+    error = caughtError;
+  }
+
+  assert.match(error.message, /cyclic dependencies/);
+  assert.equal(error.code, DESTROYABLE_PLAN_ERROR.CYCLIC_DEPENDENCY);
+}
+
+function testBuildDestroyableDisposePlanRejectsDuplicateCategories() {
+  let error;
+
+  try {
+    buildDestroyableDisposePlan([
+      {
+        category: "bindings",
+        dependsOn: [],
+        destroyables: []
+      },
+      {
+        category: "bindings",
+        dependsOn: [],
+        destroyables: []
+      }
+    ]);
+  } catch (caughtError) {
+    error = caughtError;
+  }
+
+  assert.match(error.message, /Duplicate destroyable category/);
+  assert.equal(error.code, DESTROYABLE_PLAN_ERROR.DUPLICATE_CATEGORY);
+}
+
+function testBuildDestroyableDisposePlanRejectsUnknownDependencies() {
+  let error;
+
+  try {
+    buildDestroyableDisposePlan([
+      {
+        category: "bindings",
+        dependsOn: ["missing"],
+        destroyables: []
+      }
+    ]);
+  } catch (caughtError) {
+    error = caughtError;
+  }
+
+  assert.match(error.message, /unknown category/);
+  assert.equal(error.code, DESTROYABLE_PLAN_ERROR.UNKNOWN_DEPENDENCY);
 }
 
 testBootstrapOverwritesCorruptedStorageWithFallbackState();
+testBootstrapRendersLifecycleNoticeAndMetric();
 testBootstrapComposesMigrationStatusAndStagesNormalizedState();
 testBootstrapComposesNoSavedStateStatusWithoutRestorePrefix();
 testBootstrapComposesWorkerUnavailableFallbackStatus();
@@ -488,5 +562,7 @@ testBootstrapDisposeUsesDeclaredCategoryOrder();
 testDestroyableOrderValidationRejectsDependencyViolations();
 testBuildDestroyableDisposePlanSortsByDependencies();
 testBuildDestroyableDisposePlanRejectsCycles();
+testBuildDestroyableDisposePlanRejectsDuplicateCategories();
+testBuildDestroyableDisposePlanRejectsUnknownDependencies();
 
 console.log("bootstrap.test.mjs ok");

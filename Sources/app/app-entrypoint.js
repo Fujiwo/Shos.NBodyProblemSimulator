@@ -15,17 +15,23 @@ export function createReinitializeApp({ createApp, globalRef = globalThis, now =
 
   return function reinitializeApp(options = {}) {
     const { reason = "manual-restart", ...appOptions } = options;
+    const nextSequence = reinitializeSequence + 1;
+    const reinitializedAt = now();
 
     return replaceActiveApp(() => {
-      const app = createApp(appOptions);
-
-      reinitializeSequence += 1;
-
-      return annotateReinitializeLifecycle(app, {
+      const lifecycleMetadata = {
         reinitializeReason: reason,
-        reinitializeSequence,
-        reinitializedAt: now()
+        reinitializeSequence: nextSequence,
+        reinitializedAt
+      };
+      const app = createApp({
+        ...appOptions,
+        lifecycleMetadata
       });
+
+      reinitializeSequence = nextSequence;
+
+      return annotateReinitializeLifecycle(app, lifecycleMetadata);
     }, globalRef);
   };
 }

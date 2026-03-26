@@ -133,6 +133,8 @@ export function createInitialRuntimeState() {
     },
     statusMessage: "Phase 4 runtime ready. Generate a preset or start the current committed initial state.",
     executionNotice: "",
+    lifecycleNotice: "",
+    lifecycleMetadata: null,
     validationErrors: [],
     fieldErrors: {},
     fieldDrafts: {}

@@ -35,8 +35,28 @@ function testReinitializeAppReplacesActiveAppAndPassesOptions() {
   assert.equal(secondApp.lifecycle.reinitializeSequence, 2);
   assert.equal(secondApp.lifecycle.reinitializedAt, "2026-03-27T00:00:01.000Z");
   assert.deepEqual(calls, [
-    { type: "create", options: { id: "first" } },
-    { type: "create", options: { id: "second" } },
+    {
+      type: "create",
+      options: {
+        id: "first",
+        lifecycleMetadata: {
+          reinitializeReason: "initial-load",
+          reinitializeSequence: 1,
+          reinitializedAt: "2026-03-27T00:00:00.000Z"
+        }
+      }
+    },
+    {
+      type: "create",
+      options: {
+        id: "second",
+        lifecycleMetadata: {
+          reinitializeReason: "hmr",
+          reinitializeSequence: 2,
+          reinitializedAt: "2026-03-27T00:00:01.000Z"
+        }
+      }
+    },
     { type: "dispose", id: "first" }
   ]);
 }
@@ -102,6 +122,7 @@ function testReinitializeSequenceAdvancesOnlyAfterSuccessfulCreation() {
   const globalRef = {};
   const timestamps = [
     "2026-03-27T00:00:03.000Z",
+    "2026-03-27T00:00:03.500Z",
     "2026-03-27T00:00:04.000Z"
   ];
 

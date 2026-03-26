@@ -46,6 +46,7 @@ function testCompactControlsMarkup() {
   assert.match(indexHtml, /<option value="random-cluster">Random<\/option>/);
   assert.match(indexHtml, /<dt>Pipeline Time<\/dt>/);
   assert.match(indexHtml, /<dt>Integrator<\/dt>/);
+  assert.match(indexHtml, /<dt>Lifecycle<\/dt>/);
 }
 
 function testValidationPanelDefaultsToHidden() {

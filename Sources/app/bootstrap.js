@@ -29,6 +29,27 @@ function createDestroyableCategory(category, owner, purpose, dependsOn, destroya
   return { category, owner, purpose, dependsOn, destroyables };
 }
 
+export const DESTROYABLE_PLAN_ERROR = {
+  DUPLICATE_CATEGORY: "duplicate-category",
+  UNKNOWN_DEPENDENCY: "unknown-dependency",
+  CYCLIC_DEPENDENCY: "cyclic-dependency"
+};
+
+function createDestroyablePlanError(code, message, details = {}) {
+  const error = new Error(message);
+  error.code = code;
+  error.details = details;
+  return error;
+}
+
+function formatLifecycleNotice(lifecycleMetadata) {
+  if (!lifecycleMetadata) {
+    return "";
+  }
+
+  return `Restart ${lifecycleMetadata.reinitializeReason} #${lifecycleMetadata.reinitializeSequence} @ ${lifecycleMetadata.reinitializedAt}`;
+}
+
 export function hasValidDestroyableOrder(destroyableCategories) {
   const resolvedCategories = new Set();
 
@@ -44,6 +65,35 @@ export function hasValidDestroyableOrder(destroyableCategories) {
 }
 
 export function buildDestroyableDisposePlan(destroyableCategories) {
+  const categoryNames = new Set();
+
+  for (const destroyableCategory of destroyableCategories) {
+    if (categoryNames.has(destroyableCategory.category)) {
+      throw createDestroyablePlanError(
+        DESTROYABLE_PLAN_ERROR.DUPLICATE_CATEGORY,
+        `Duplicate destroyable category was declared: ${destroyableCategory.category}.`,
+        { category: destroyableCategory.category }
+      );
+    }
+
+    categoryNames.add(destroyableCategory.category);
+  }
+
+  for (const destroyableCategory of destroyableCategories) {
+    for (const dependency of destroyableCategory.dependsOn) {
+      if (!categoryNames.has(dependency)) {
+        throw createDestroyablePlanError(
+          DESTROYABLE_PLAN_ERROR.UNKNOWN_DEPENDENCY,
+          `Destroyable category ${destroyableCategory.category} depends on unknown category ${dependency}.`,
+          {
+            category: destroyableCategory.category,
+            dependency
+          }
+        );
+      }
+    }
+  }
+
   const remainingCategories = new Map(
     destroyableCategories.map((destroyableCategory) => [destroyableCategory.category, destroyableCategory])
   );
@@ -55,7 +105,13 @@ export function buildDestroyableDisposePlan(destroyableCategories) {
       .filter((destroyableCategory) => destroyableCategory.dependsOn.every((dependency) => resolvedCategories.has(dependency)));
 
     if (readyCategories.length === 0) {
-      throw new Error("Destroyable categories contain unresolved or cyclic dependencies.");
+      throw createDestroyablePlanError(
+        DESTROYABLE_PLAN_ERROR.CYCLIC_DEPENDENCY,
+        "Destroyable categories contain cyclic dependencies.",
+        {
+          remainingCategories: [...remainingCategories.keys()]
+        }
+      );
     }
 
     for (const readyCategory of readyCategories) {
@@ -79,7 +135,12 @@ function disposeDestroyables(destroyableCategories) {
 }
 
 export function bootstrapApp(documentRef, options = {}) {
-  const { three = globalThis.THREE, executionMode: executionModeOverride, workerFactory = createWorkerFactory() } = options;
+  const {
+    three = globalThis.THREE,
+    executionMode: executionModeOverride,
+    workerFactory = createWorkerFactory(),
+    lifecycleMetadata = null
+  } = options;
   const rootElement = documentRef.querySelector('[data-role="app-root"]');
   const canvasElement = documentRef.querySelector('[data-role="viewport-canvas"]');
 
@@ -121,6 +182,8 @@ export function bootstrapApp(documentRef, options = {}) {
   simulationLoop.start();
 
   const initialModel = store.getState();
+  initialModel.runtime.lifecycleMetadata = lifecycleMetadata;
+  initialModel.runtime.lifecycleNotice = formatLifecycleNotice(lifecycleMetadata);
   persistence.stage(initialModel.appState);
   uiShell.render(initialModel);
   renderer.render(initialModel);
