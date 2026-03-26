@@ -242,7 +242,7 @@ Reset 実行時の復元内容は以下で固定する。
 - 各 Body の色は `Body.color` を使う。
 - Body マテリアルの画像テクスチャは `Sources/images/` 配下の画像ファイルから取得する。
 - texture 解決の既定キーは `Body.name` の小文字英字ベース名とし、`Earth` は `earth.jpg`、`Mars` は `mars.jpg` のように対応付ける。
-- 初回利用対象の既存画像は `sun.jpg`、`mercury.jpg`、`venus.jpg`、`earth.jpg`、`moon.jpg`、`mars.jpg`、`jupiter.jpg`、`saturn.jpg` とする。
+- 現行 baseline で利用対象とする既存画像は `sun.jpg`、`mercury.jpg`、`venus.jpg`、`earth.jpg`、`moon.jpg`、`mars.jpg`、`jupiter.jpg`、`saturn.jpg` とする。
 - 対応する画像が存在しない Body は color-only material へ fallback し、描画やシミュレーションを停止しない。
 - 原点補助および座標把握のための基準表示を用意する。
 - camera はシーン全体を視認可能な初期位置から開始する。
@@ -308,9 +308,9 @@ Reset 実行時の復元内容は以下で固定する。
 
 ### 6.2.1 採用アルゴリズム
 
-- 現行既定積分法は Velocity Verlet とする。
-- Phase 4 では比較対象として RK4 を追加する。
-- 既定値は Phase 4 実装後も `velocity-verlet` のままとする。
+- 現行 baseline の既定積分法は Velocity Verlet とする。
+- Phase 4 以降では比較対象として RK4 を追加する。
+- 既定値は Phase 4 以降も `velocity-verlet` のままとする。
 - 時間刻みは固定時間刻みとする。
 - 重力定数は `G = 1.0` とする。
 - 既定値は `dt = 0.005` とする。
@@ -531,7 +531,7 @@ AppState {
 ## 11. Worker 対応仕様
 
 - 現行 baseline ではメインスレッド版を既定実行経路とする。
-- Phase 4 では main thread と Worker の両実行経路を持つ。
+- Phase 4 以降では main thread と Worker の両実行経路を持つ。
 - 物理演算モジュールは Worker 移行可能な API を前提に設計する。
 - Worker 有効化条件は以下とする。
   - Desktop Chrome 最新安定版で、Body 数 10、Trail on、60 秒計測時に FPS または simulation pipeline time の目標を満たせない場合

@@ -4,6 +4,8 @@ Browser-only 3D N-body problem simulator built with HTML5, CSS3, Vanilla JavaScr
 
 ## Runtime
 
+- The current baseline uses the main-thread simulation path with Velocity Verlet as the default integrator.
+- Phase 4 onward adds RK4 comparison, Worker execution paths, and simulation pipeline time validation on top of the current baseline.
 - Three.js is loaded from local vendored files under Sources/vendor.
 - Body textures are resolved from Sources/images using normalized Body.name values.
 - If Three.js cannot initialize, the app stays usable in 2D fallback mode and the status message explains that texture-backed bodies are unavailable.
