@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
 import { APP_VERSION } from "../Sources/app/defaults.js";
-import { bootstrapApp } from "../Sources/app/bootstrap.js";
+import { bootstrapApp, hasValidDestroyableOrder } from "../Sources/app/bootstrap.js";
 
 const MAIN_THREAD_STATUS = "Main-thread simulation backend ready.";
 const WORKER_FALLBACK_STATUS = "Worker backend unavailable. Falling back to main-thread simulation.";
@@ -286,21 +286,34 @@ function testBootstrapOverwritesCorruptedStorageWithFallbackState() {
   assert.equal(typeof app.dispose, "function");
   assert.deepEqual(app.destroyables.map((entry) => ({
     category: entry.category,
+    owner: entry.owner,
+    purpose: entry.purpose,
+    dependsOn: entry.dependsOn,
     labels: entry.destroyables.map((destroyable) => destroyable.label)
   })), [
     {
       category: "bindings",
+      owner: "bootstrap",
+      purpose: "Detach store and DOM bindings before subsystem shutdown.",
+      dependsOn: [],
       labels: ["store-subscription", "ui-shell"]
     },
     {
       category: "runtime-services",
+      owner: "bootstrap",
+      purpose: "Stop resize orchestration and simulation work before renderer disposal.",
+      dependsOn: ["bindings"],
       labels: ["layout-service", "simulation-loop"]
     },
     {
       category: "rendering",
+      owner: "renderer-facade",
+      purpose: "Release rendering resources after producers and listeners are stopped.",
+      dependsOn: ["runtime-services"],
       labels: ["renderer"]
     }
   ]);
+  assert.equal(hasValidDestroyableOrder(app.destroyables), true);
 }
 
 function testBootstrapComposesMigrationStatusAndStagesNormalizedState() {
@@ -403,11 +416,32 @@ function testBootstrapDisposeUsesDeclaredCategoryOrder() {
   ]);
 }
 
+function testDestroyableOrderValidationRejectsDependencyViolations() {
+  assert.equal(hasValidDestroyableOrder([
+    {
+      category: "rendering",
+      dependsOn: ["runtime-services"],
+      destroyables: []
+    },
+    {
+      category: "runtime-services",
+      dependsOn: ["bindings"],
+      destroyables: []
+    },
+    {
+      category: "bindings",
+      dependsOn: [],
+      destroyables: []
+    }
+  ]), false);
+}
+
 testBootstrapOverwritesCorruptedStorageWithFallbackState();
 testBootstrapComposesMigrationStatusAndStagesNormalizedState();
 testBootstrapComposesNoSavedStateStatusWithoutRestorePrefix();
 testBootstrapComposesWorkerUnavailableFallbackStatus();
 testBootstrapDisposeStopsResizeBindingAndLoop();
 testBootstrapDisposeUsesDeclaredCategoryOrder();
+testDestroyableOrderValidationRejectsDependencyViolations();
 
 console.log("bootstrap.test.mjs ok");

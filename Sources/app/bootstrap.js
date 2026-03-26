@@ -25,8 +25,22 @@ function createDestroyable(label, dispose) {
   return { label, dispose };
 }
 
-function createDestroyableCategory(category, destroyables) {
-  return { category, destroyables };
+function createDestroyableCategory(category, owner, purpose, dependsOn, destroyables) {
+  return { category, owner, purpose, dependsOn, destroyables };
+}
+
+export function hasValidDestroyableOrder(destroyableCategories) {
+  const resolvedCategories = new Set();
+
+  for (const destroyableCategory of destroyableCategories) {
+    if (destroyableCategory.dependsOn.some((dependency) => !resolvedCategories.has(dependency))) {
+      return false;
+    }
+
+    resolvedCategories.add(destroyableCategory.category);
+  }
+
+  return true;
 }
 
 function disposeDestroyables(destroyableCategories) {
@@ -85,17 +99,35 @@ export function bootstrapApp(documentRef, options = {}) {
   renderer.render(initialModel);
 
   const destroyables = [
-    createDestroyableCategory("bindings", [
+    createDestroyableCategory(
+      "bindings",
+      "bootstrap",
+      "Detach store and DOM bindings before subsystem shutdown.",
+      [],
+      [
       createDestroyable("store-subscription", unsubscribe),
       createDestroyable("ui-shell", () => uiShell.dispose())
-    ]),
-    createDestroyableCategory("runtime-services", [
+      ]
+    ),
+    createDestroyableCategory(
+      "runtime-services",
+      "bootstrap",
+      "Stop resize orchestration and simulation work before renderer disposal.",
+      ["bindings"],
+      [
       createDestroyable("layout-service", () => layoutService.stop()),
       createDestroyable("simulation-loop", () => simulationLoop.dispose())
-    ]),
-    createDestroyableCategory("rendering", [
+      ]
+    ),
+    createDestroyableCategory(
+      "rendering",
+      "renderer-facade",
+      "Release rendering resources after producers and listeners are stopped.",
+      ["runtime-services"],
+      [
       createDestroyable("renderer", () => renderer.dispose())
-    ])
+      ]
+    )
   ];
 
   let disposed = false;
