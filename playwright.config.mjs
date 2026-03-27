@@ -10,7 +10,8 @@ export default defineConfig({
   expect: {
     timeout: 5000
   },
-  fullyParallel: true,
+  // Keep UI acceptance sequential within the spec because concurrent WebGL pages have been flaky in headless Chromium.
+  fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   use: {

@@ -72,6 +72,15 @@ test("header stays compact while visualization keeps a tall viewport", async ({ 
   expect(viewportBox.height).toBeGreaterThanOrEqual(720);
 });
 
+test("execution=worker selects the worker backend in the browser", async ({ page }) => {
+  await page.goto("/?execution=worker", { waitUntil: "domcontentloaded" });
+
+  await expect(page.locator('[data-role="app-root"]')).toBeVisible();
+  await expect(page.locator('[data-role="playback-state"]')).toHaveText("Idle");
+  await expect(page.locator('[data-role="status-message"]')).toContainText("Worker simulation backend ready.");
+  await expect(page.locator('[data-role="execution-notice"]')).toBeHidden();
+});
+
 test.describe("responsive layout thresholds", () => {
   test.describe("mobile", () => {
     test.use({ viewport: { width: 390, height: 844 } });

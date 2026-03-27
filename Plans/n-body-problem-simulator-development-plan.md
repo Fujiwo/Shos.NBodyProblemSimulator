@@ -268,11 +268,11 @@ Large レイアウトの受け入れ基準は以下とする。
 
 現行 UI の compact controls は、表示文言を短縮した上で `title` または `aria-label` に正式名称を保持する。
 
-- UI に表示する実数値は小数点以下 2 桁までとする
-  - controls の数値 input に表示する同期値
+- UI に表示する実数値は原則として小数点以下 2 桁までとする
+  - metrics overlay の数値
   - Body settings の数値 input に表示する同期値
   - Body card summary の質量、位置、速度
-  - metrics overlay の数値
+- `Time Step` と `Softening` の controls 数値 input に表示する同期値は小数点以下 3 桁までとする
 
 - 表示ラベル例
   - `Body Count` -> `Count`
