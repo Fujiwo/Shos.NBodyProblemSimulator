@@ -7,7 +7,7 @@
 ## 用途別の見方
 
 - Phase 1 から Phase 4 の prompt は、N-body simulator 本体の段階的実装に使います。
-- repository 全体の修正、性能調査、コメント追加、Sources の整理などは、日付付きまたは目的別 prompt を使います。
+- repository 全体の修正、レビュー、性能調査、コメント追加、Sources の整理などは、日付付きまたは目的別 prompt を使います。
 - prompt を追加する場合は、frontmatter の `name`、`description`、`argument-hint` を明示し、関連する Plans、Specifications、README、Skill への参照を揃えます。
 
 ## Prompt 一覧
@@ -24,11 +24,13 @@
 | [sourcecode-comment-prompt.md](./sourcecode-comment-prompt.md) | コメント追加作業の計画書と実行 prompt を設計する prompt | Sources 全体への英語コメント追加方針の策定 |
 | [20260327-sourcecode-comment-execution.prompt.md](./20260327-sourcecode-comment-execution.prompt.md) | コメント追加を実行する prompt | Sources 配下への保守的な英語コメント追加の実施 |
 | [20260327-performance-tuning.prompt.md](./20260327-performance-tuning.prompt.md) | 性能調査と必要最小限の tuning 実行 prompt | hotspot 調査、測定、改善、回帰確認 |
+| [20260327-repository-full-review-execution.prompt.md](./20260327-repository-full-review-execution.prompt.md) | repository 全体レビューを findings first で実行する prompt | 実装、Tests、Plans、README、.github 指示の整合確認と high-confidence findings の報告書作成 |
 
 ## 使い分けの目安
 
 - 新規 phase の実装や phase 単位の追加作業では、phase 名付き prompt を優先します。
 - Sources 全体の構造改善や repository 横断の修正では、目的別または日付付き prompt を使います。
+- repository 全体レビューや stale guidance 点検では、review 用の実行 prompt を使います。
 - 計画を作る prompt と、実際に変更を実行する prompt は分けて管理します。
 - 単発作業でも再利用価値が高い場合は、日付だけでなく目的が分かる語をファイル名に残します。
 
