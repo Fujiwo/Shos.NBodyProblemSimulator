@@ -24,44 +24,44 @@ The runtime keeps physics, rendering, UI updates, and persistence separated so t
 
 ```mermaid
 flowchart TD
-	User[User Interaction] --> Controls[UI Shell and Controls]
-	Controls --> Controller[Simulation Controller]
-	Controller --> Loop[Simulation Loop]
-	Controller --> Renderer[Renderer Facade]
+    User[User Interaction] --> Controls[UI Shell and Controls]
+    Controls --> Controller[Simulation Controller]
+    Controller --> Loop[Simulation Loop]
+    Controller --> Renderer[Renderer Facade]
 
-	subgraph StateDomain[State Management Domain]
-		Store[Application Store]
-		Bootstrap[Bootstrap Initialization]
-		Persistence[Persistence and localStorage]
-	end
+    subgraph StateDomain[State Management Domain]
+        Store[Application Store]
+        Bootstrap[Bootstrap Initialization]
+        Persistence[Persistence and localStorage]
+    end
 
-	subgraph PhysicsDomain[Physics Domain]
-		Loop --> MainPath[Main-thread Physics Path]
-		Loop --> WorkerPath[Worker Physics Path]
-		MainPath --> Physics[Physics Engine]
-		WorkerPath --> WorkerExecutor[Worker Executor]
-		WorkerExecutor --> WorkerScript[Physics Worker Script]
-		WorkerExecutor -- worker fallback detected --> MainPath
-	end
+    subgraph PhysicsDomain[Physics Domain]
+        Loop --> MainPath[Main-thread Physics Path]
+        Loop --> WorkerPath[Worker Physics Path]
+        MainPath --> Physics[Physics Engine]
+        WorkerPath --> WorkerExecutor[Worker Executor]
+        WorkerExecutor --> WorkerScript[Physics Worker Script]
+        WorkerExecutor -- worker fallback detected --> MainPath
+    end
 
-	subgraph RenderingDomain[Rendering Domain]
-		Renderer --> RenderMode{Renderer Mode}
-		RenderMode --> ThreeMode[Three.js Textured Mode]
-		RenderMode --> FallbackMode[2D Fallback Mode]
-		ThreeMode --> ThreeHost[Three Scene Host]
-		ThreeHost --> TextureAssets[Local Textures in Sources/images]
-		ThreeHost --> Viewport[Viewport Canvas]
-		FallbackMode --> Viewport
-	end
+    subgraph RenderingDomain[Rendering Domain]
+        Renderer --> RenderMode{Renderer Mode}
+        RenderMode --> ThreeMode[Three.js Textured Mode]
+        RenderMode --> FallbackMode[2D Fallback Mode]
+        ThreeMode --> ThreeHost[Three Scene Host]
+        ThreeHost --> TextureAssets[Local Textures in Sources/images]
+        ThreeHost --> Viewport[Viewport Canvas]
+        FallbackMode --> Viewport
+    end
 
-	Controller --> Store
-	Controller -- save --> Persistence
-	Persistence -- initial restore --> Bootstrap
-	Bootstrap --> Store
-	Physics --> Store
-	WorkerScript --> Store
-	Store --> Controls
-	Store --> Renderer
+    Controller --> Store
+    Controller -- save --> Persistence
+    Persistence -- initial restore --> Bootstrap
+    Bootstrap --> Store
+    Physics --> Store
+    WorkerScript --> Store
+    Store --> Controls
+    Store --> Renderer
 ```
 
 Persistence writes are routed through the controller boundary, while the initial restore path is performed by bootstrap before the first steady-state store flow begins.
@@ -128,7 +128,7 @@ Non-persisted fields:
 - The helper copy in the header is hidden on small and medium layouts and reappears only on wide desktop layouts.
 - The controls panel sits directly below the header at every breakpoint, and on large layouts it becomes a compact full-width strip above the body editor and viewport row.
 - The controls panel uses compact visible labels such as Count, dt, Soft, Target, and Trail while keeping full accessible names via title or aria-label.
-- Real numbers displayed in the UI are rounded to at most two decimal places.
+- Real numbers displayed in the UI are rounded to at most two decimal places, except the Time Step and Softening control inputs, which keep three decimal places.
 - The Seed field shows `auto on Gen` while blank for `random-cluster`, so the next Generate action is understood to assign an automatic seed.
 - The playback buttons use compact visible text such as Gen, Run, Hold, Go, and Reset.
 - Validation is hidden when there are no errors and is emphasized only when invalid input exists.
@@ -136,6 +136,81 @@ Non-persisted fields:
 - The visualization stage is intentionally tall to prioritize the canvas area over non-interactive chrome.
 - The visualization height scales in stages across mobile, tablet, desktop, and wide desktop breakpoints.
 - The simulation metrics overlay is intentionally compact so it does not dominate the viewport on desktop and wide desktop layouts.
+
+## Controls reference
+
+### Count
+
+- Formal name: `Body Count`
+- Visible text: `Count`
+- Meaning: Sets how many bodies are currently configured in the simulation.
+- Range: The general UI range is 2 to 10 bodies.
+- Preset interaction: The active preset can narrow the usable range. `Binary` always uses 2 bodies, `Sample` always uses 8 bodies, and `Random` allows 3 to 10 bodies.
+- Reproducibility note: For `Random`, body count is part of the reproducibility key together with the preset and seed.
+
+### Preset
+
+- Formal name: `Preset`
+- Visible text: `Preset`
+- Meaning: Selects which initial-condition template Generate will use.
+- `Binary`: Loads a two-body setup intended to behave like a near-circular orbit. Seed is not used.
+- `Sample`: Loads the bundled fixed eight-body dataset from `Sources/data/default-bodies.js`. Seed is not used.
+- `Random`: Generates a seeded random cluster using the current body count, with a massive first body and lighter companion bodies. Seed is used.
+
+### Seed
+
+- Formal name: `Seed`
+- Visible text: `Seed`
+- Meaning: Controls reproducibility for `Random` generation.
+- Range: A 32-bit unsigned integer from 0 to 4294967295.
+- Blank behavior: When `Random` is selected, leaving the field blank means `auto on Gen`, so the next Generate assigns a new seed automatically.
+- Preset interaction: `Binary` and `Sample` ignore Seed and treat it as fixed preset data.
+
+### DT
+
+- Formal name: `Time Step`
+- Visible text: `dt`
+- Meaning: The fixed simulation time advanced by one numerical integration step.
+- Rule: Must be greater than 0.
+- Default: `0.005`
+- Practical effect: Smaller values usually improve stability and energy behavior but require more computation. Larger values run faster but can make close approaches less stable.
+- Display rule: The control input keeps three decimal places so the default value remains visible as `0.005`.
+
+### SOFT
+
+- Formal name: `Softening`
+- Visible text: `Soft`
+- Meaning: The gravitational softening coefficient used to reduce near-collision singularities in the force calculation.
+- Rule: Must be 0 or greater.
+- Default: `0.010` in the control display, corresponding to an internal default value of `0.01`.
+- Practical effect: Larger values smooth close-range interactions more aggressively. Smaller values stay closer to the raw inverse-square behavior but become numerically harsher during close passes.
+- Display rule: The control input keeps three decimal places.
+
+### INT
+
+- Formal name: `Integrator`
+- Visible text: `Int`
+- Meaning: Selects the numerical integrator used for body updates.
+- `Verlet`: Short for Velocity Verlet. This is the default integrator and is preferred for long-running orbital motion because it balances cost and stability well.
+- `RK4`: Short for fourth-order Runge-Kutta. It is useful as a comparison integrator and often gives high local accuracy, but it is not symplectic.
+
+### TARGET
+
+- Formal name: `Camera Target`
+- Visible text: `Target`
+- Meaning: Chooses what the camera follows in the viewport.
+- `System Center`: Tracks the mass-weighted center of mass of all bodies. If the total mass is zero, it falls back to the average position of all bodies.
+- Body options: Every configured body also appears as an option in the form `Body Name (body-id)`, allowing the camera to follow a specific body.
+
+### TRAIL
+
+- Formal name: `Trails`
+- Visible text: `Trail`
+- Meaning: Turns orbit history rendering on or off.
+- Default: Enabled.
+- Scope: This changes visualization only. It does not change the physics calculation itself.
+- Reset behavior: Generate and Reset clear the existing trail history.
+- Capacity: The current trail buffer keeps up to 300 points per body before discarding the oldest points.
 
 ## Local setup
 
@@ -189,7 +264,7 @@ Set-Location Dist; python -m http.server 8080
 - Run npm run test:ui:install once to install the Chromium browser used by Playwright.
 - Run npm run test:ui for real-browser UI acceptance checks against a local static server.
 - Run npm run benchmark:phase4 to execute the 60-second benchmark comparison for `?execution=main` and `?execution=worker`.
-- Benchmark outputs are saved under Works/benchmarks/phase4/ as timestamped *.raw.json and *.ci.json files plus latest.raw.json and latest.ci.json.
+- Benchmark outputs are saved under Works/benchmarks/phase4/ as timestamped `*.raw.json` and `*.ci.json` files plus `latest.raw.json` and `latest.ci.json`.
 
 ### Benchmark comparison workflow
 
@@ -237,15 +312,16 @@ Manual alternative:
 ## Author
 
 Fujio Kojima: a software developer in Japan
-* Microsoft MVP for Development Tools - Visual C# (Jul. 2005 - Dec. 2014)
-* Microsoft MVP for .NET (Jan. 2015 - Oct. 2015)
-* Microsoft MVP for Visual Studio and Development Technologies (Nov. 2015 - Jun. 2018)
-* Microsoft MVP for Developer Technologies (Nov. 2018 - Jun. 2026)
-* [MVP Profile](https://mvp.microsoft.com/en-US/mvp/profile/4185d172-3c9a-e411-93f2-9cb65495d3c4 "MVP Profile")
-* [Blog (Japanese)](http://wp.shos.info "Blog (Japanese)")
-* [Web Site (Japanese)](http://www.shos.info "Web Site (Japanese)")
-* [Twitter](https://twitter.com/Fujiwo)
-* [Instagram](https://www.instagram.com/fujiwo/)
+
+- Microsoft MVP for Development Tools - Visual C# (Jul. 2005 - Dec. 2014)
+- Microsoft MVP for .NET (Jan. 2015 - Oct. 2015)
+- Microsoft MVP for Visual Studio and Development Technologies (Nov. 2015 - Jun. 2018)
+- Microsoft MVP for Developer Technologies (Nov. 2018 - Jun. 2026)
+- [MVP Profile](https://mvp.microsoft.com/en-US/mvp/profile/4185d172-3c9a-e411-93f2-9cb65495d3c4 "MVP Profile")
+- [Blog (Japanese)](http://wp.shos.info "Blog (Japanese)")
+- [Web Site (Japanese)](http://www.shos.info "Web Site (Japanese)")
+- [Twitter](https://twitter.com/Fujiwo)
+- [Instagram](https://www.instagram.com/fujiwo/)
 
 ## License
 

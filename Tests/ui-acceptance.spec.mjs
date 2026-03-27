@@ -50,9 +50,9 @@ test("sample preset applies the bundled default body dataset", async ({ page }) 
   await expect(page.locator('[data-body-card="body-1"] input[data-field="mass"]')).toHaveValue("52.00");
 });
 
-test("displayed real numbers stay within two decimal places", async ({ page }) => {
-  await expect(page.getByLabel("Time Step")).toHaveValue("0.01");
-  await expect(page.getByLabel("Softening")).toHaveValue("0.01");
+test("displayed real numbers keep DT and SOFT at three decimal places", async ({ page }) => {
+  await expect(page.getByLabel("Time Step")).toHaveValue("0.005");
+  await expect(page.getByLabel("Softening")).toHaveValue("0.010");
   await expect(page.locator('[data-role="metric-simulation-time"]')).toHaveText("0.00");
 
   const firstMassInput = page.locator('[data-body-card="body-1"] input[data-field="mass"]');

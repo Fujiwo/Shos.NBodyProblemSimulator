@@ -427,10 +427,11 @@ UI 文言は英語とし、accessible name は正式名称を保持する。visi
   - `binary-orbit` -> `Binary`
   - `sample` -> `Sample`
   - `random-cluster` -> `Random`
-- UI に表示する実数値は小数点以下 2 桁までとする
+- UI に表示する実数値は原則として小数点以下 2 桁までとする
   - metrics overlay の数値
   - Body card summary の質量、位置、速度
-  - Body editor と controls の数値 input に表示する既定値および同期値
+  - Body editor の数値 input に表示する既定値および同期値
+- `Time Step` と `Softening` の controls 数値 input に表示する既定値および同期値は小数点以下 3 桁までとする
 - Validation panel
   - title: `Errors`
   - hidden when no validation errors exist

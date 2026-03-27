@@ -111,8 +111,22 @@ function formatDisplayFloat(value) {
   return numeric.toFixed(2);
 }
 
+function formatSimulationControlFloat(value) {
+  const numeric = Number(value);
+
+  if (!Number.isFinite(numeric)) {
+    return "";
+  }
+
+  return numeric.toFixed(3);
+}
+
 function formatNumericInputValue(value, draftValue) {
   return draftValue ?? formatDisplayFloat(value);
+}
+
+function formatSimulationControlInputValue(value, draftValue) {
+  return draftValue ?? formatSimulationControlFloat(value);
 }
 
 function formatVectorSummary(vector) {
@@ -371,8 +385,8 @@ export class UiShell {
     this.elements.seed.placeholder = appState.simulationConfig.presetId === "random-cluster"
       ? "auto on Gen"
       : "Preset fixed";
-    this.elements.timeStep.value = formatNumericInputValue(appState.simulationConfig.timeStep, runtime.fieldDrafts.timeStep);
-    this.elements.softening.value = formatNumericInputValue(appState.simulationConfig.softening, runtime.fieldDrafts.softening);
+    this.elements.timeStep.value = formatSimulationControlInputValue(appState.simulationConfig.timeStep, runtime.fieldDrafts.timeStep);
+    this.elements.softening.value = formatSimulationControlInputValue(appState.simulationConfig.softening, runtime.fieldDrafts.softening);
     this.elements.integrator.value = appState.simulationConfig.integrator;
 
     const cameraTargetKey = buildCameraTargetRenderKey(appState);
