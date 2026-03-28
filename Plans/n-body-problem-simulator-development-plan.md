@@ -243,12 +243,12 @@ $$
   - 各 Body カードに mass, position, velocity を配置
 - Visualization area
   - 3D canvas
-  - Overlay metrics
+  - Simulation metrics panel
     - FPS
     - Simulation time
     - Energy error
     - Active preset
-    - Large では右下に固定した compact overlay とし、視認性を維持したまま占有面積を抑える
+    - viewport-stage の直下に配置し、canvas と重ならない compact panel とする
 
 ### 3.3 モバイル操作性要件
 
@@ -263,13 +263,13 @@ Large レイアウトの受け入れ基準は以下とする。
 
 - 1440px 幅では Control panel が Header の直下に全幅で配置され、Body settings より上段にあること
 - 1440px x 1024px の表示で Control panel 高さが 220px 以下に収まること
-- 1440px 幅では Simulation metrics overlay の最大幅を 240px 以下とし、canvas の可視面積を優先すること
-- Simulation metrics overlay は padding と文字サイズを縮小しても、全項目名と値が視認できること
+- 1440px 幅では Simulation metrics panel が viewport-stage の直下に配置され、canvas の可視面積を優先すること
+- Simulation metrics panel は padding と文字サイズを縮小しても主要項目と値が視認できること
 
 現行 UI の compact controls は、表示文言を短縮した上で `title` または `aria-label` に正式名称を保持する。
 
 - UI に表示する実数値は原則として小数点以下 2 桁までとする
-  - metrics overlay の数値
+  - simulation metrics panel の数値
   - Body settings の数値 input に表示する同期値
   - Body card summary の質量、位置、速度
 - `Time Step` と `Softening` の controls 数値 input に表示する同期値は小数点以下 3 桁までとする

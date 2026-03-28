@@ -135,7 +135,8 @@ Non-persisted fields:
 - Body settings provide an Open or Closed toggle for every body card and allow multiple body editors to stay open at the same time.
 - The visualization stage is intentionally tall to prioritize the canvas area over non-interactive chrome.
 - The visualization height scales in stages across mobile, tablet, desktop, and wide desktop breakpoints.
-- The simulation metrics overlay is intentionally compact so it does not dominate the viewport on desktop and wide desktop layouts.
+- The simulation metrics panel sits directly below the viewport stage so the canvas is never occluded by runtime metrics.
+- The simulation metrics panel remains compact on desktop and wide desktop layouts by using a low-height inline layout with truncation for long values.
 
 ## Controls reference
 

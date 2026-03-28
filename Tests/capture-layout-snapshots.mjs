@@ -63,6 +63,7 @@ try {
 
     const headerBox = await page.locator('.app-header').boundingBox();
     const viewportBox = await page.locator('.viewport-stage').boundingBox();
+    const metricsBox = await page.locator('.metrics-overlay').boundingBox();
 
     const filePath = path.join(outputDir, `${target.name}.png`);
     await page.screenshot({ path: filePath, fullPage: true, timeout: 0 });
@@ -73,7 +74,13 @@ try {
       height: target.height,
       filePath,
       headerHeight: headerBox?.height ?? null,
-      viewportHeight: viewportBox?.height ?? null
+      viewportHeight: viewportBox?.height ?? null,
+      metricsHeight: metricsBox?.height ?? null,
+      metricsWidth: metricsBox?.width ?? null,
+      metricsBelowViewport:
+        viewportBox && metricsBox
+          ? metricsBox.y >= viewportBox.y + viewportBox.height
+          : null
     });
 
     await context.close();

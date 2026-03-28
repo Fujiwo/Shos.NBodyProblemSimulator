@@ -135,7 +135,8 @@ flowchart TD
 - Body settings は各 body card ごとに Open または Closed toggle を持ち、複数の body editor を同時に開いたままにできます。
 - visualization stage は、非インタラクティブな UI よりも canvas 領域を優先するため、意図的に高さを大きめにしています。
 - visualization height は mobile、tablet、desktop、wide desktop の各 breakpoint に応じて段階的に変化します。
-- simulation metrics overlay は desktop と wide desktop で viewport を占有しすぎないよう、意図的にコンパクトにしています。
+- simulation metrics panel は viewport-stage の直下に配置し、runtime metrics が canvas に重ならないようにします。
+- simulation metrics panel は desktop と wide desktop でも低い高さを維持するため、inline レイアウトと長い値の省略表示を使います。
 
 ## Controls 詳細
 

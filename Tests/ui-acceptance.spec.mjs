@@ -69,7 +69,7 @@ test("header stays compact while visualization keeps a tall viewport", async ({ 
   expect(viewportBox).not.toBeNull();
 
   expect(headerBox.height).toBeLessThanOrEqual(94);
-  expect(viewportBox.height).toBeGreaterThanOrEqual(720);
+  expect(viewportBox.height).toBeGreaterThanOrEqual(680);
 });
 
 test("execution=worker selects the worker backend in the browser", async ({ page }) => {
@@ -121,7 +121,7 @@ test.describe("responsive layout thresholds", () => {
   test.describe("wide desktop", () => {
     test.use({ viewport: { width: 1440, height: 1024 } });
 
-    test("restores header helper copy, keeps controls below header, and compacts metrics", async ({ page }) => {
+    test("restores header helper copy, keeps controls below header, and keeps metrics below the viewport", async ({ page }) => {
       await expect(page.locator('.app-header')).toBeVisible();
       await expect(page.locator('.control-panel')).toBeVisible();
       await expect(page.locator('.viewport-stage')).toBeVisible();
@@ -141,7 +141,9 @@ test.describe("responsive layout thresholds", () => {
       expect(controlsBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height);
       expect(controlsBox.height).toBeLessThanOrEqual(220);
       expect(controlsBox.width).toBeGreaterThanOrEqual(1100);
-      expect(metricsBox.width).toBeLessThanOrEqual(240);
+      expect(metricsBox.y).toBeGreaterThanOrEqual(viewportBox.y + viewportBox.height);
+      expect(Math.abs(metricsBox.width - viewportBox.width)).toBeLessThanOrEqual(2);
+      expect(metricsBox.height).toBeLessThanOrEqual(220);
       expect(viewportBox.height).toBeGreaterThanOrEqual(820);
     });
   });

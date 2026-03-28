@@ -44,6 +44,7 @@ function testCompactControlsMarkup() {
   assert.match(indexHtml, /<option value="binary-orbit">Binary<\/option>/);
   assert.match(indexHtml, /<option value="sample">Sample<\/option>/);
   assert.match(indexHtml, /<option value="random-cluster">Random<\/option>/);
+  assert.match(indexHtml, /<div class="viewport-stage">[\s\S]*?<\/div>\s*<aside class="metrics-overlay panel panel--overlay" aria-label="Simulation metrics">/);
   assert.match(indexHtml, /<dt>Pipeline Time<\/dt>/);
   assert.match(indexHtml, /<dt>Integrator<\/dt>/);
   assert.match(indexHtml, /<dt>Lifecycle<\/dt>/);
@@ -72,7 +73,10 @@ function testCompactControlsCssContract() {
   assert.match(styleCss, /grid-template-columns: minmax\(240px, 300px\) minmax\(0, 1fr\);/);
   assert.match(styleCss, /grid-template-areas:[\s\S]*?"controls controls"[\s\S]*?"bodies viewport"/);
   assert.match(styleCss, /@media \(min-width: 600px\) \{[\s\S]*?\.viewport-stage \{[\s\S]*?min-height: clamp\(520px, 66vh, 700px\);/);
-  assert.match(styleCss, /\.metrics-overlay \{[\s\S]*?width: min\(calc\(100% - 20px\), 228px\);[\s\S]*?padding: 10px 12px;/);
+  assert.match(styleCss, /\.metrics-overlay \{[\s\S]*?padding: 6px 8px;[\s\S]*?border-radius: 14px;/);
+  assert.match(styleCss, /\.metrics-grid \{[\s\S]*?grid-template-columns: repeat\(auto-fit, minmax\(92px, max-content\)\);[\s\S]*?justify-content: space-between;/);
+  assert.match(styleCss, /\.metrics-grid > div \{[\s\S]*?display: inline-flex;[\s\S]*?gap: 4px;/);
+  assert.match(styleCss, /\.metrics-item--wide \{[\s\S]*?grid-column: 1 \/ -1;/);
   assert.match(styleCss, /@media \(min-width: 1024px\) \{[\s\S]*?\.viewport-panel \{[\s\S]*?min-height: calc\(var\(--app-height\) \* 1\.08 - 88px\);/);
   assert.match(styleCss, /@media \(min-width: 1024px\) \{[\s\S]*?\.control-panel \{[\s\S]*?grid-template-columns: minmax\(140px, 170px\) minmax\(0, 1fr\) minmax\(280px, 340px\);/);
   assert.match(styleCss, /@media \(min-width: 1024px\) \{[\s\S]*?\.viewport-stage \{[\s\S]*?min-height: clamp\(680px, 78vh, 900px\);/);
@@ -80,6 +84,7 @@ function testCompactControlsCssContract() {
   assert.match(styleCss, /@media \(min-width: 1440px\) \{[\s\S]*?\.header-copy \{[\s\S]*?display: block;/);
   assert.match(styleCss, /@media \(min-width: 1440px\) \{[\s\S]*?\.control-panel \.control-grid \{[\s\S]*?grid-template-columns: repeat\(8, minmax\(0, 1fr\)\);/);
   assert.match(styleCss, /@media \(min-width: 1440px\) \{[\s\S]*?\.viewport-stage \{[\s\S]*?min-height: clamp\(760px, 86vh, 1020px\);/);
+  assert.match(styleCss, /@media \(min-width: 1440px\) \{[\s\S]*?\.metrics-grid \{[\s\S]*?grid-template-columns: repeat\(6, minmax\(92px, 1fr\)\);/);
   assert.match(styleCss, /\.control-panel \.button-grid \{[\s\S]*?grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/);
   assert.match(styleCss, /\.body-card-toggle \{[\s\S]*?min-height: 24px;/);
   assert.match(styleCss, /\.body-card-body\[hidden\] \{[\s\S]*?display: none;/);
